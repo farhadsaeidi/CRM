@@ -18,7 +18,11 @@ The `CRM` database lives on the **Windows** PostgreSQL 18 instance, port **5433*
   Windows Firewall drop. No inbound rule for postgres/5433 exists.
 
 The dangerous part: `manage.py check` passes anyway (Django doesn't open a
-connection), so the project looks healthy right up until the first query.
+connection), so the project looks healthy right up until something touches the DB.
+And `runserver` **cannot start at all** in WSL — its `check_migrations()` opens a
+connection unconditionally and `--skip-checks` does not skip that step, so the backend
+dies with `OperationalError` before binding the port. The Vite dev server still runs;
+only `/api` calls fail (Vite logs `ECONNREFUSED 127.0.0.1:8000`).
 
 **Why:** SAM's `CLAUDE.md` claims WSL is on `networkingMode=mirrored` and that all
 three Postgres ports answer on `localhost`. That is **stale** — it is NAT now, which

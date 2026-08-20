@@ -15,6 +15,11 @@ Tailwind v4 on `:5173`, Vite proxying `/api`, `/media`, `/static`, `/django-admi
 dark mode all confirmed live in the browser. eslint clean, `npm run build` and
 `manage.py check` pass on both Windows and WSL.
 
+**But the backend only actually *runs* on Windows.** In WSL, `runserver` dies at
+startup: `check_migrations()` opens a DB connection unconditionally (`--skip-checks`
+does not skip it) and the database is unreachable from WSL — see [[crm-db-access]].
+The Vite dev server runs fine in WSL on its own; only `/api` calls fail.
+
 **Deliberately absent:** no `account`/`home` apps, no models, no authentication —
 Farhad chose "فقط اسکلت خالی، بدون احراز هویت" so he could direct each phase himself.
 `frontend/src/index.css` already carries `grid-customer` and `grid-transaction`, ready
