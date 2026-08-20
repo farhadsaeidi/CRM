@@ -1,36 +1,38 @@
 ---
 name: crm-db-access
-description: "CRM's database is Windows Postgres 18 on port 5433, and WSL cannot reach it — NAT networking plus a firewall drop; manage.py check passes but every query fails"
+description: "CRM's live database was moved to the Linux Postgres 18 cluster on port 5434 (like SAM); a stale copy remains on Windows 5433 and connecting to it fails silently"
 metadata:
   node_type: memory
   type: project
 ---
 
-The `CRM` database lives on the **Windows** PostgreSQL 18 instance, port **5433**
-(port 5432 is Windows PG 17 and has no `CRM` database — connecting there gives
-`database "CRM" does not exist`). The Linux cluster on 5434 is `down`.
+**Migrated 2026-08-20**, at Farhad's request, mirroring what was done for SAM: the
+`CRM` database now lives on the **Linux** PostgreSQL 18 cluster, **port 5434**.
+Method: `pg_dump` from Windows PG 18 `:5433` (using the *18* client at
+`C:\Program Files\PostgreSQL\18\bin\pg_dump.exe` — the 17 client would refuse a
+version mismatch) → `createdb` → restore. Verified identical afterwards: 12 owners,
+32 customers, 32 customer-owner links, 43 transactions, 36 permissions, 9 content
+types, 28 migrations, 9 sessions. Sequences carried over, so new inserts won't collide.
 
-**From WSL this database is unreachable** (measured 2026-08-20):
-- `~/.wslconfig` has `networkingMode=NAT`, so WSL's `localhost` is *not* Windows'
-  loopback. `127.0.0.1:5433` from WSL → connection refused.
-- Postgres does listen on `0.0.0.0:5433`, but connecting to the Windows host IP
-  (`192.168.0.1`, the `vEthernet (WSL)` adapter) **times out after 6s** — a silent
-  Windows Firewall drop. No inbound rule for postgres/5433 exists.
+> **Two `CRM` databases now exist.** The one on Windows `:5433` is frozen at the moment
+> of migration and is still what the legacy `CustomerManagement` project uses.
+> Connecting to it raises no error — you just silently work on stale data. Always pass
+> the port explicitly. Port 5432 (Windows PG 17) has no `CRM` at all.
 
-The dangerous part: `manage.py check` passes anyway (Django doesn't open a
-connection), so the project looks healthy right up until something touches the DB.
-And `runserver` **cannot start at all** in WSL — its `check_migrations()` opens a
-connection unconditionally and `--skip-checks` does not skip that step, so the backend
-dies with `OperationalError` before binding the port. The Vite dev server still runs;
-only `/api` calls fail (Vite logs `ECONNREFUSED 127.0.0.1:8000`).
+Two operational facts:
+- **The Linux cluster does not autostart** — this WSL has no systemd (`init` is
+  `init(Ubuntu)`, `/run/systemd/system` absent). After a WSL restart `pg_lsclusters`
+  shows `down` and Django dies at startup, because `runserver`'s `check_migrations()`
+  opens a connection unconditionally and `--skip-checks` does not skip it. Fix:
+  `wsl -u root -e pg_ctlcluster 18 main start`.
+- **`sudo` needs a password here**, but `wsl -u root -e …` gives root from the Windows
+  host without one — that is the way to run privileged WSL commands.
 
-**Why:** SAM's `CLAUDE.md` claims WSL is on `networkingMode=mirrored` and that all
-three Postgres ports answer on `localhost`. That is **stale** — it is NAT now, which
-[[pycharm-wsl-tailwind]] independently confirms. Trusting that note wastes time.
-**How to apply:** before any DB work in WSL, actually test the connection rather than
-assuming. Three fixes, all requiring Farhad (firewall and sudo are his to run):
-1. inbound firewall rule for 5433 on the WSL interface + `DB_HOST=192.168.0.1`
-2. `sudo pg_ctlcluster 18 main start`, restore a `CRM` dump onto 5434, `DB_PORT=5434`
-3. do DB-dependent work from the Windows copy at `D:\Python\Django\CRM` instead
-
-Credentials come from `.env` (mode 600, gitignored) — never print its values.
+**Why:** before the migration the database was unreachable from WSL entirely
+(`.wslconfig` is `networkingMode=NAT`, so Linux `localhost` is not Windows' loopback,
+and Windows Firewall drops connections from the WSL subnet — they time out rather than
+refuse). Moving the data removed the dependency instead of poking a firewall hole.
+**How to apply:** the project `.env` holds `DB_HOST=localhost` / `DB_PORT=5434` — read
+credentials from there, never hardcode or print them. The Windows copy of the project
+keeps `DB_PORT=5433` and should stay that way; the WSL copy is the reference. See
+[[crm-legacy-migrations]] and [[crm-wsl-env]].

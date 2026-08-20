@@ -14,7 +14,7 @@
 | Django | 6.0 + djangorestframework 3.17 |
 | Node.js | 24.19 |
 | React | 19 + Vite 8 + Tailwind **v4** |
-| PostgreSQL | 18.4 (پورت **5433** روی ویندوز — پستگرس ۱۷ روی ۵۴۳۲ است) |
+| PostgreSQL | 18.4 لینوکس (پورت **5434**) |
 
 ## راه‌اندازی اولیه
 
@@ -54,16 +54,23 @@ Vite درخواست‌های `/api`، `/media`، `/static` و `/django-admin` ر
 
 ## دیتابیس — نکتهٔ مهم
 
-پروژه به همان دیتابیس **قدیمیِ `CRM`** وصل است؛ همانی که `CustomerManagement` استفاده می‌کند:
+دیتابیس `CRM` با همهٔ دادهٔ قدیمی، روی **پستگرس ۱۸ لینوکس، پورت ۵۴۳۴** است
+(۲۰۲۶-۰۸-۲۰ با `pg_dump` از پستگرس ویندوز منتقل شد — همان کاری که برای SAM شده بود):
 
 ```bash
-psql -h localhost -p 5433 -U postgres -d CRM
+psql -h localhost -p 5434 -U postgres -d CRM
 ```
 
-> ⚠️ **از داخل WSL این دیتابیس در دسترس نیست.** `.wslconfig` روی `networkingMode=NAT`
-> است، پس `localhost`ِ لینوکس همان لوپ‌بکِ ویندوز نیست؛ و اتصال به IP هاست
-> (`192.168.0.1`) را فایروال ویندوز drop می‌کند. `manage.py check` سبز می‌ماند ولی هر
-> کوئری‌ای می‌شکند. راه‌حل‌ها در `CLAUDE.md`، بخش «دیتابیس — دو تله».
+> ⚠️ **دو `CRM` وجود دارد.** نسخهٔ روی پورت ۵۴۳۳ (پستگرس ویندوز) از لحظهٔ انتقال فریز
+> شده و دیگر مرجع نیست؛ همان است که پروژهٔ قدیمی `CustomerManagement` استفاده می‌کند.
+> اتصال اشتباهی به آن خطا نمی‌دهد، فقط روی دادهٔ کهنه کار می‌کنید. همیشه پورت را بنویسید.
+
+کلاستر لینوکس خودکار بالا نمی‌آید (این WSL بدون systemd است). اگر `pg_lsclusters`
+وضعیت `down` نشان داد:
+
+```bash
+wsl -u root -e pg_ctlcluster 18 main start
+```
 
 جدول‌های موجود: `account_owner`، `home_customer`، `home_customerowner`، `home_transaction`
 و جدول‌های سیستمی جنگو.
@@ -81,7 +88,7 @@ psql -h localhost -p 5433 -U postgres -d CRM
 گرفتن پشتیبان پیش از هر تغییر ساختاری:
 
 ```bash
-pg_dump -h localhost -p 5433 -U postgres -d CRM --no-owner --no-privileges -f backup.sql
+pg_dump -h localhost -p 5434 -U postgres -d CRM --no-owner --no-privileges -f backup.sql
 ```
 
 ## ساختار
