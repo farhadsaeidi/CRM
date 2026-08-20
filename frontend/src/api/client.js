@@ -71,6 +71,10 @@ export const api = {
     delete: (path, options) => request(path, {method: "DELETE", ...options}),
 };
 
-// تنها endpointِ فعلیِ اسکلت — برای اطمینان از برقراری زنجیرهٔ فرانت → پراکسی → جنگو.
-// وقتی لایهٔ احراز هویت اضافه شد، اینجا ensureCsrf و بقیهٔ فراخوان‌ها کنارش می‌آیند.
+// یک‌بار در شروع اپ صدا زده می‌شود تا کوکی CSRF ست شود.
+// نکته: توکن CSRF بعد از login می‌چرخد، ولی چون هر درخواست کوکی را دوباره
+// می‌خواند (getCookie داخل request)، نیازی به فراخوانی دوبارهٔ این نیست.
+export const ensureCsrf = () => api.get("/auth/csrf/");
+
+// بررسی سلامتِ زنجیرهٔ فرانت → پراکسی → جنگو
 export const health = () => api.get("/health/");

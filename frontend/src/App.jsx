@@ -1,17 +1,17 @@
-import { RouterProvider } from "react-router";
-import { Toaster } from "react-hot-toast";
+import {RouterProvider} from "react-router";
+import {Toaster} from "react-hot-toast";
 import router from "./routes";
+import {AuthProvider} from "./context/AuthProvider";
 
 const App = () => {
   return (
-    // RouterProvider ---> تابلوی راهنمای طبقات
-    // Toaster ---> ظرفِ نمایش پیغام‌ها (react-hot-toast)
-    // نکته: AuthProvider هنوز نیست؛ با اضافه شدن لایهٔ احراز هویت، همین‌جا
-    // دورِ RouterProvider پیچیده می‌شود — دقیقاً مثل SAM.
-    <>
+    // AuthProvider ---> وضعیت احراز هویت را در سراسر برنامه در دسترس می‌گذارد
+    // RouterProvider ---> تابلوی راهنمای مسیرها
+    // Toaster ---> ظرفِ نمایش پیغام‌ها
+    <AuthProvider>
       <RouterProvider router={router} />
       <Toaster position="top-right" containerClassName="!z-[9999]" />
-    </>
+    </AuthProvider>
   );
 };
 
