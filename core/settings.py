@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "account.apps.AccountConfig",
     "api.apps.ApiConfig",
 ]
 
@@ -59,6 +60,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "core.urls"
+
+# به‌جای یوزر دیفالت جنگو از این یوزر استفاده کن
+AUTH_USER_MODEL = "account.MyUser"
 
 TEMPLATES = [
     {

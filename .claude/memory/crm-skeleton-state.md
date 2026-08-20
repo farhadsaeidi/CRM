@@ -20,8 +20,11 @@ cluster later the same day — Django reads the real data (12 owners, 32 custome
 43 transactions) and `/api/health/` answers through the Vite proxy. See
 [[crm-db-access]] for the one manual step needed after a WSL restart.
 
-**Deliberately absent:** no `account`/`home` apps, no models, no authentication —
-Farhad chose "فقط اسکلت خالی، بدون احراز هویت" so he could direct each phase himself.
+**Step 1 landed 2026-08-20:** `account` app with `MyUser` (phone as `USERNAME_FIELD`,
+roles owner/superuser, `is_superuser` a property off the role — SAM's pattern), plus
+`csrf`/`me`/`register`/`login`/`logout` verified end to end with curl. `core/permissions.py`
+carries the `role_permission` factory. Still absent: OTP + forget-password (need the
+`kavenegar` package and a key), the `home` app, and everything on the frontend.
 `frontend/src/index.css` already carries `grid-customer` and `grid-transaction`, ready
 for the future tables.
 
