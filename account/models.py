@@ -89,3 +89,37 @@ class MyUser(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return self.is_superuser
+
+
+class SMSLog(models.Model):
+    """ثبت تمام پیامک‌های ارسالی (رهگیری، هزینه، خطاها).
+
+    در SAM این مدل داخل اپ `comms` است چون آنجا دامنهٔ پیام‌رسانی وجود دارد. اینجا
+    تنها پیامک‌های سامانه احراز هویتی‌اند (کد یکبار مصرف و رمز فراموش‌شده)، پس
+    ساختنِ یک اپ جدا برای یک مدل بی‌مورد بود.
+
+    نکتهٔ امنیتی: هرگز خودِ کد یکبار مصرف یا رمز عبور در `body` ذخیره نمی‌شود —
+    این جدول از پنل ادمین قابل خواندن است و لاگ نباید به کلیدِ ورود تبدیل شود.
+    """
+
+    class SendStatus(models.TextChoices):
+        SENT = "sent", "ارسال شد"
+        FAILED = "failed", "ناموفق"
+        DEV = "dev", "حالت توسعه"
+
+    to_phone = models.CharField(max_length=11, verbose_name="گیرنده")
+    body = models.TextField(verbose_name="متن")
+    event = models.CharField(max_length=40, blank=True, verbose_name="رویداد")
+    status = models.CharField(max_length=10, choices=SendStatus.choices,
+                              default=SendStatus.DEV, verbose_name="وضعیت")
+    error = models.CharField(max_length=300, blank=True, verbose_name="خطا")
+    created = models.DateTimeField(auto_now_add=True, verbose_name="زمان")
+
+    class Meta:
+        ordering = ["-created"]
+        indexes = [models.Index(fields=["-created"])]
+        verbose_name = "پیامک"
+        verbose_name_plural = "پیامک‌ها"
+
+    def __str__(self):
+        return f"{self.to_phone} | {self.event} | {self.status}"

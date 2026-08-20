@@ -11,6 +11,10 @@ auth_patterns = [
     path("auth/register/", account_views.RegisterView.as_view(), name="register"),
     path("auth/login/", account_views.LoginView.as_view(), name="login"),
     path("auth/logout/", account_views.LogoutView.as_view(), name="logout"),
+    path("auth/otp/phone/", account_views.OtpPhoneView.as_view(), name="otp_phone"),
+    path("auth/otp/confirm/", account_views.OtpConfirmView.as_view(), name="otp_confirm"),
+    path("auth/forget-password/", account_views.ForgetPasswordView.as_view(), name="forget_password"),
+    path("auth/change-password/", account_views.ChangePasswordView.as_view(), name="change_password"),
 ]
 
 # عمومی

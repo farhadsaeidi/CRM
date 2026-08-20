@@ -219,3 +219,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# پیامک (کاوه‌نگار)
+# SMS_DEV_MODE=True یعنی پیامک واقعاً ارسال نمی‌شود و فقط در SMSLog ثبت می‌گردد.
+# لازم است چون کاوه‌نگار فقط به شماره‌های تاییدشدهٔ صاحب حساب ارسال دارد و
+# شماره‌های تست همیشه ۵۰۲ می‌گیرند، یعنی فلوی تایید کد اصلاً قابل آزمایش نمی‌شد.
+# برای پروداکشن باید False شود، وگرنه کاربران هیچ پیامکی دریافت نمی‌کنند.
+SMS_DEV_MODE = config("SMS_DEV_MODE", default=True, cast=bool)
+KAVENEGAR_API_KEY = config("KAVENEGAR_API_KEY", default="")
+# این خط حقوقیه و خدماتی نشده. برای خدماتی شدن باید حقوقی بود مثلا باید شرکت ثبت شده داشت
+# بنابراین با این حال از این خط فقط برای پیام های تبلیغاتی (مسیج بدون توکن) میشه استفاده کرد
+KAVENEGAR_SENDER = config("KAVENEGAR_SENDER", default="1000009999090")
