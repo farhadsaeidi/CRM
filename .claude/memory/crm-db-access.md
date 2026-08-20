@@ -20,10 +20,13 @@ types, 28 migrations, 9 sessions. Sequences carried over, so new inserts won't c
 > the port explicitly. Port 5432 (Windows PG 17) has no `CRM` at all.
 
 Two operational facts:
-- **The Linux cluster does not autostart** — this WSL has no systemd (`init` is
-  `init(Ubuntu)`, `/run/systemd/system` absent). After a WSL restart `pg_lsclusters`
-  shows `down` and Django dies at startup, because `runserver`'s `check_migrations()`
-  opens a connection unconditionally and `--skip-checks` does not skip it. Fix:
+- **The cluster autostarts since 2026-08-20.** This WSL has no systemd (`init` is
+  `init(Ubuntu)`, `/run/systemd/system` absent), so `/etc/wsl.conf` now carries a
+  `[boot] command = /usr/bin/pg_ctlcluster 18 main start` hook — the only hook
+  available without systemd. It covers SAM too, since both databases share the
+  cluster. This matters because `runserver`'s `check_migrations()` opens a connection
+  unconditionally (`--skip-checks` does not skip it), so a `down` cluster killed
+  Django at startup. If `pg_lsclusters` ever shows `down`, start it by hand with
   `wsl -u root -e pg_ctlcluster 18 main start`.
 - **`sudo` needs a password here**, but `wsl -u root -e …` gives root from the Windows
   host without one — that is the way to run privileged WSL commands.
