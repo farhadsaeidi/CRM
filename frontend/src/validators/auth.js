@@ -57,9 +57,17 @@ const fullnameSchema = z
 // تا خطای سرور بدون نگاشت روی همان اینپوت بنشیند.
 export const loginSchema = z.object({username: phoneSchema, password: loginPasswordSchema});
 
+const addressSchema = z
+    .string({required_error: "فیلد آدرس الزامی است."})
+    .trim()
+    .nonempty("فیلد آدرس الزامی است.")
+    .min(3, "فیلد آدرس باید حداقل ۳ حرف داشته باشد.")
+    .max(300, "فیلد آدرس باید حداکثر ۳۰۰ کاراکتر داشته باشد.");
+
 export const registerSchema = z.object({
     fullname: fullnameSchema,
     phone: phoneSchema,
+    address: addressSchema,
     password: newPasswordSchema,
 });
 

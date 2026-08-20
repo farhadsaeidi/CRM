@@ -404,6 +404,15 @@
         @apply flex justify-center items-center cursor-pointer text-var-color-06 hover:text-var-color-00 dark:hover:text-var-color-11 transition-all duration-250 ease-in-out;
     }
 
+    /* آیکون رنگی گوگل: روی هاورِ دکمه (group)، رنگ‌های داخلی SVG به رنگِ متنِ دکمه درمی‌آیند */
+    .google-icon path {
+        transition: fill 0.25s ease-in-out;
+    }
+
+    .group:hover .google-icon path {
+        fill: currentColor;
+    }
+
     .btn-bluish {
         @apply border border-var-color-13 dark:border-var-color-16 hover:border-transparent bg-var-color-12 dark:bg-var-color-12 hover:bg-var-color-15 dark:text-var-color-15;
     }

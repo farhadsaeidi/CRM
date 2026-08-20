@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-20 23:45 · کامیت `eda5166`
+آخرین تولید: 2026-08-20 23:59 · کامیت `5547a93`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 27 | 1571 |
-| فرانت‌اند | 25 | 1587 |
+| بک‌اند | 27 | 1579 |
+| فرانت‌اند | 25 | 1632 |
 
 اپ‌های جنگو: account api home
 
@@ -20,12 +20,12 @@
 | `/api/auth/csrf/` | CSRFView | account/views.py:79 | [AllowAny] |
 | `/api/auth/me/` | MeView | account/views.py:87 | [AllowAny] |
 | `/api/auth/register/` | RegisterView | account/views.py:99 | [AllowAny] |
-| `/api/auth/login/` | LoginView | account/views.py:139 | [AllowAny] |
-| `/api/auth/logout/` | LogoutView | account/views.py:340 | [AllowAny] |
-| `/api/auth/otp/phone/` | OtpPhoneView | account/views.py:177 | [AllowAny] |
-| `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:224 | [AllowAny] |
-| `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:285 | [AllowAny] |
-| `/api/auth/change-password/` | ChangePasswordView | account/views.py:320 | _(پیش‌فرض DRF)_ |
+| `/api/auth/login/` | LoginView | account/views.py:144 | [AllowAny] |
+| `/api/auth/logout/` | LogoutView | account/views.py:345 | [AllowAny] |
+| `/api/auth/otp/phone/` | OtpPhoneView | account/views.py:182 | [AllowAny] |
+| `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:229 | [AllowAny] |
+| `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:290 | [AllowAny] |
+| `/api/auth/change-password/` | ChangePasswordView | account/views.py:325 | _(پیش‌فرض DRF)_ |
 | `/api/customers/` | CustomerListCreateView | home/views.py:39 | _(پیش‌فرض DRF)_ |
 | `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:74 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
@@ -34,8 +34,8 @@
 
 - `account.MyUserManager` — 0 فیلد — ./account/models.py:10
 - `account.Roles` — 0 فیلد — ./account/models.py:40
-- `account.MyUser` — 9 فیلد — ./account/models.py:45
-- `account.SMSLog` — 6 فیلد — ./account/models.py:94
+- `account.MyUser` — 10 فیلد — ./account/models.py:45
+- `account.SMSLog` — 6 فیلد — ./account/models.py:97
 - `home.AccountCode` — 0 فیلد — ./home/models.py:7
 - `home.Customer` — 5 فیلد — ./home/models.py:17
 - `home.CustomerOwner` — 3 فیلد — ./home/models.py:55
@@ -48,12 +48,12 @@
     - `SMSLogAdmin` :14
 - **./account/apps.py** (5 خط، 1 نماد)
     - `AccountConfig` :4
-- **./account/models.py** (125 خط، 15 نماد)
+- **./account/models.py** (128 خط، 15 نماد)
     - `MyUserManager` :10
     - `upload_file` :29
     - `Roles` :40
     - `MyUser` :45
-    - `SMSLog` :94
+    - `SMSLog` :97
 - **./account/serializers.py** (15 خط، 2 نماد)
     - `UserSerializer` :8
 - **./account/services.py** (112 خط، 8 نماد)
@@ -63,7 +63,7 @@
     - `_run_with_timeout` :36
     - `send_sms` :45
     - `send_token_sms` :65
-- **./account/views.py** (348 خط، 24 نماد)
+- **./account/views.py** (353 خط، 24 نماد)
     - `normalize_digits` :35
     - `to_persian_digits` :42
     - `generate_otp_code` :47
@@ -73,11 +73,11 @@
     - `CSRFView` :79
     - `MeView` :87
     - `RegisterView` :99
-    - `LoginView` :139
-    - `OtpPhoneView` :177
-    - `OtpConfirmView` :224
-    - `ForgetPasswordView` :285
-    - `ChangePasswordView` :320
+    - `LoginView` :144
+    - `OtpPhoneView` :182
+    - `OtpConfirmView` :229
+    - `ForgetPasswordView` :290
+    - `ChangePasswordView` :325
 - **./api/apps.py** (5 خط، 1 نماد)
     - `ApiConfig` :4
 - **./api/views.py** (15 خط، 2 نماد)

@@ -107,6 +107,7 @@ class RegisterView(APIView):
             return Response({"message": "فرمت داده‌های ارسالی نامعتبر است."}, status=status.HTTP_400_BAD_REQUEST)
         fullname = str(data.get("fullname", "")).strip()
         phone = normalize_phone_number(data.get("phone", ""))
+        address = str(data.get("address", "")).strip()
         password = str(data.get("password", ""))
         # نام و نام خانوادگی
         if len(fullname) < 3:
@@ -114,6 +115,10 @@ class RegisterView(APIView):
         # معتبر بودن شماره همراه
         if not is_valid_iranian_mobile(phone):
             return Response({"fieldErrors": {"phone": "شماره همراه معتبر نیست."}}, status=status.HTTP_400_BAD_REQUEST)
+        # آدرس در فرم ثبت‌نام الزامی است (هم‌راستا با اعتبارسنجی فرانت)، هرچند
+        # در سطح مدل blank=True است تا کاربرانِ منتقل‌شدهٔ بدون آدرس معتبر بمانند
+        if len(address) < 3:
+            return Response({"fieldErrors": {"address": "فیلد آدرس باید حداقل ۳ حرف داشته باشد."}}, status=status.HTTP_400_BAD_REQUEST)
         # رمز عبور
         if len(password) < 4:
             return Response({"fieldErrors": {"password": "کلمه عبور باید حداقل ۴ کاراکتر داشته باشد."}}, status=status.HTTP_400_BAD_REQUEST)
@@ -122,7 +127,7 @@ class RegisterView(APIView):
             return Response({"fieldErrors": {"phone": "این شماره همراه قبلاً در سیستم ثبت شده است."}}, status=status.HTTP_409_CONFLICT)
         try:
             with transaction.atomic():
-                user = User.objects.create_user(fullname=fullname, phone=phone, password=password)
+                user = User.objects.create_user(fullname=fullname, phone=phone, password=password, address=address)
                 login(request, user)
                 return Response(
                     {

@@ -52,6 +52,9 @@ class MyUser(AbstractBaseUser):
     fullname = models.CharField(max_length=100, verbose_name="نام و نام خانوادگی")
     phone = models.CharField(max_length=11, unique=True, verbose_name="شماره تلفن")
     role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.OWNER, verbose_name="نقش")
+    # blank=True چون ۱۲ کاربرِ منتقل‌شده از پروژهٔ قدیمی آدرس ندارند؛ الزامی بودنش
+    # فقط در فرم ثبت‌نام اعمال می‌شود، نه در سطح مدل
+    address = models.CharField(max_length=300, blank=True, verbose_name="نشانی")
     created = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)  # لازمه ورود به پنل ادمین جنگو

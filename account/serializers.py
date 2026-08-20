@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # لیست فیلدهایی که در خروجی JSON نمایش داده می‌شوند
-        fields = ["id", "fullname", "phone", "role", "image", "created"]
+        fields = ["id", "fullname", "phone", "role", "address", "image", "created"]
         # همه فیلدها را فقط خواندنی می‌کند، یعنی این سریالایزر فقط برای نمایش
         # اطلاعات است و امکان ایجاد یا ویرایش کاربر از طریق آن وجود ندارد.
         read_only_fields = fields

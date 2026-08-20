@@ -5,6 +5,7 @@ import {GrPhone} from "react-icons/gr";
 import {FaRegEye, FaRegEyeSlash} from "react-icons/fa6";
 import {FiLock, FiLogIn} from "react-icons/fi";
 import {HiOutlineDevicePhoneMobile} from "react-icons/hi2";
+import {FcGoogle} from "react-icons/fc";
 import {useAuth} from "../../../../context/AuthContext.js";
 import {authApi} from "../../../../api/auth.js";
 import ThemeSwitcher from "../../../../components/common/ThemeSwitcher.jsx";
@@ -87,7 +88,7 @@ const Login = ({active = true}) => {
     };
 
     return (
-        <form className="w-100 h-127 rounded-3xl px-6 pt-6 pb-8 form-container" onSubmit={onSubmit} autoComplete="off" inert={!active}>
+        <form className="w-100 h-150 rounded-3xl px-6 pt-6 pb-8 form-container" onSubmit={onSubmit} autoComplete="off" inert={!active}>
             <header className="w-full py-3 flex flex-row justify-between items-center">
                 <div className="w-8 h-8"/>
                 <h2 className="text-var-color-08 dark:text-var-color-01 text-2xl text-center">ورود به سیستم</h2>
@@ -160,6 +161,15 @@ const Login = ({active = true}) => {
                         onClick={() => navigate("/auth/otp/phone")}>
                     <HiOutlineDevicePhoneMobile className="w-6 h-6 ml-2"/>
                     <span className="text-[17px]">ورود با پیامک</span>
+                </button>
+
+                {/* ورود با حساب گوگل — اتصال واقعی بعداً اضافه می‌شود.
+                    آیکون رنگی است و روی هاورِ دکمه (group) رنگ داخلی SVG به رنگ متن
+                    درمی‌آید؛ قاعده‌اش کلاس google-icon در index.css است. */}
+                <button type="button" className="group w-full py-2.5 mt-2.5 rounded-xl btn btn-bluish"
+                        onClick={() => notify("ورود با حساب گوگل به‌زودی فعال می‌شود.", "info")}>
+                    <FcGoogle className="google-icon w-5.5 h-5.5 ml-2"/>
+                    <span className="text-[17px]">ورود با حساب گوگل</span>
                 </button>
             </main>
 
