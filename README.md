@@ -3,15 +3,18 @@
 بازنویسی پروژهٔ `CustomerManagement` روی معماری **DRF + React**، هم‌سبک با پروژهٔ SAM.
 این مخزن فعلاً فقط **اسکلت** است: پشتهٔ فنی سرِ پا و متصل، بدون اپ دامنه و بدون احراز هویت.
 
+نسخهٔ اصلی روی **WSL Ubuntu** است: `/home/farhad/projects/python/django/CRM`.
+نسخهٔ ویندوزی در `D:\Python\Django\CRM` مبدأ همین کپی است و از این پس ثانویه محسوب می‌شود.
+
 ## پشتهٔ فنی
 
-| لایه | نسخهٔ این محیط |
+| لایه | نسخهٔ این محیط (WSL) |
 |---|---|
-| Python | 3.12.7 |
+| Python | 3.14.4 |
 | Django | 6.0 + djangorestframework 3.17 |
-| Node.js | 24.16 |
+| Node.js | 24.19 |
 | React | 19 + Vite 8 + Tailwind **v4** |
-| PostgreSQL | 18.4 (پورت **5433** — پستگرس ۱۷ روی ۵۴۳۲ است) |
+| PostgreSQL | 18.4 (پورت **5433** روی ویندوز — پستگرس ۱۷ روی ۵۴۳۲ است) |
 
 ## راه‌اندازی اولیه
 
@@ -22,7 +25,7 @@ cp .env.example .env
 سپس مقادیر را پر کنید (به‌ویژه `SECRET_KEY` و `DB_PASSWORD`). بعد:
 
 ```bash
-.venv/Scripts/python.exe -m pip install -r requirements.txt
+python3 -m venv venv && venv/bin/pip install -r requirements.txt
 ```
 
 ```bash
@@ -34,7 +37,7 @@ cd frontend && npm install
 بک‌اند (ترمینال اول):
 
 ```bash
-.venv/Scripts/python.exe manage.py runserver 8000
+venv/bin/python manage.py runserver 8000
 ```
 
 فرانت (ترمینال دوم):
@@ -56,6 +59,11 @@ Vite درخواست‌های `/api`، `/media`، `/static` و `/django-admin` ر
 ```bash
 psql -h localhost -p 5433 -U postgres -d CRM
 ```
+
+> ⚠️ **از داخل WSL این دیتابیس در دسترس نیست.** `.wslconfig` روی `networkingMode=NAT`
+> است، پس `localhost`ِ لینوکس همان لوپ‌بکِ ویندوز نیست؛ و اتصال به IP هاست
+> (`192.168.0.1`) را فایروال ویندوز drop می‌کند. `manage.py check` سبز می‌ماند ولی هر
+> کوئری‌ای می‌شکند. راه‌حل‌ها در `CLAUDE.md`، بخش «دیتابیس — دو تله».
 
 جدول‌های موجود: `account_owner`، `home_customer`، `home_customerowner`، `home_transaction`
 و جدول‌های سیستمی جنگو.
@@ -122,5 +130,5 @@ cd frontend && npx eslint src/ && npm run build
 ```
 
 ```bash
-.venv/Scripts/python.exe manage.py check
+venv/bin/python manage.py check
 ```
