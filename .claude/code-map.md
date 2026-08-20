@@ -4,14 +4,14 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-20 22:40 · کامیت `da9938e`
+آخرین تولید: 2026-08-20 23:14 · کامیت `f4160f6`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 20 | 998 |
+| بک‌اند | 25 | 1284 |
 | فرانت‌اند | 11 | 472 |
 
-اپ‌های جنگو: account api
+اپ‌های جنگو: account api home
 
 ## endpointها
 
@@ -34,6 +34,10 @@
 - `account.Roles` — 0 فیلد — ./account/models.py:40
 - `account.MyUser` — 9 فیلد — ./account/models.py:45
 - `account.SMSLog` — 6 فیلد — ./account/models.py:94
+- `home.AccountCode` — 0 فیلد — ./home/models.py:7
+- `home.Customer` — 5 فیلد — ./home/models.py:17
+- `home.CustomerOwner` — 3 فیلد — ./home/models.py:55
+- `home.Transaction` — 8 فیلد — ./home/models.py:71
 
 ## ماژول‌های بک‌اند
 
@@ -78,6 +82,25 @@
     - `HealthView` :7
 - **./core/permissions.py** (22 خط، 3 نماد)
     - `role_permission` :5
+- **./home/admin.py** (26 خط، 3 نماد)
+    - `CustomerAdmin` :6
+    - `CustomerOwnerAdmin` :14
+    - `TransactionAdmin` :22
+- **./home/apps.py** (5 خط، 1 نماد)
+    - `HomeConfig` :4
+- **./home/models.py** (110 خط، 12 نماد)
+    - `AccountCode` :7
+    - `Customer` :17
+    - `CustomerOwner` :55
+    - `Transaction` :71
+- **./home/services.py** (144 خط، 7 نماد)
+    - `account_code_from_remainder` :16
+    - `calculate_remainder` :24
+    - `recalculate_account` :37
+    - `build_period_query` :57
+    - `_to_int` :85
+    - `_field_query` :95
+    - `build_date_search_query` :133
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
