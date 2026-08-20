@@ -26,10 +26,16 @@ cd frontend && npm run dev                   # :5173، پراکسی /api و /med
 
 محیط مجازی اینجا `venv/` است، نه `.venv/` (برخلاف SAM). هر دو در `.gitignore` هستند.
 
-دستورها را با `wsl -e env -i /bin/bash -lc '...'` اجرا کنید؛ `wsl` خالی متغیرهای ویندوز را
-به ارث می‌برد و `$HOME` را خراب می‌کند. **اگر از Git Bash ویندوز صدا می‌زنید**، حتماً
-`MSYS_NO_PATHCONV=1` را جلویش بگذارید وگرنه `/bin/bash` به مسیر ویندوزی ترجمه می‌شود
-و خطای `env: 'C:/Program Files/Git/usr/bin/bash': No such file or directory` می‌گیرید.
+دستورها را با `wsl -e env -i HOME=/home/farhad /bin/bash -lc '...'` اجرا کنید؛ `wsl` خالی
+متغیرهای ویندوز را به ارث می‌برد و `$HOME` را خراب می‌کند. **اگر از Git Bash ویندوز صدا
+می‌زنید**، حتماً `MSYS_NO_PATHCONV=1` را جلویش بگذارید وگرنه `/bin/bash` به مسیر ویندوزی
+ترجمه می‌شود و خطای `env: 'C:/Program Files/Git/usr/bin/bash': No such file or directory`
+می‌گیرید.
+
+> ⚠️ **`HOME=/home/farhad` را جا نیندازید.** خودِ `env -i` هم `HOME` را پاک می‌کند و
+> شلِ لاگین برش نمی‌گرداند. بدون آن گیت نه `~/.gitconfig` را می‌خواند نه
+> `credential.helper` را، سراغ پرسیدن یوزر/پسورد می‌رود و چون ورودی تعاملی نیست
+> **تا ابد معلق می‌ماند** — نه خطا می‌دهد نه timeout.
 
 نسخهٔ ویندوزی در `D:\Python\Django\CRM` مبدأ همین کپی است و همان یک کامیت را دارد؛
 از این به بعد فقط نسخهٔ WSL را ویرایش کنید تا دو شاخه نشوند.
@@ -209,8 +215,16 @@ pg_dump -h localhost -p 5434 -U postgres -d CRM --no-owner --no-privileges -f ba
 ## سبک کد
 
 کامنت‌ها فارسی‌اند و «چرا» را توضیح می‌دهند نه «چه». همین سبک را ادامه دهید.
-هر تغییرِ تمام‌شده را خودتان روی `main` کامیت کنید؛ پیام کوتاه و انگلیسی، با تریلر
-`Co-Authored-By: Claude <noreply@anthropic.com>`.
+
+هر تغییرِ تمام‌شده را خودتان روی `main` کامیت **و پوش** کنید؛ پیام کوتاه و انگلیسی، با
+تریلر `Co-Authored-By: Claude <noreply@anthropic.com>`. ریموت:
+`https://github.com/farhadsaeidi/CRM.git` — احراز هویت با `credential.helper=store`
+(فایل `~/.git-credentials` با مجوز ۶۰۰) که همان اعتبارنامه برای SAM و CRM کار می‌کند،
+پس هیچ توکنی لازم نیست جایی تایپ شود.
 
 قبل از کامیت: `npx eslint src/` و `npm run build` در `frontend/`، و
 `venv/bin/python manage.py check` در ریشه.
+
+قبل از پوش: مطمئن شوید `.env` ردیابی نمی‌شود (`git ls-files | grep '\.env$'` باید خالی
+باشد) و چیزی حساس وارد کامیت نشده. بازنویسی تاریخچهٔ پوش‌شده (force-push یا ریبیسِ
+کامیت‌های پوش‌شده) بدون پرسیدن انجام نشود.

@@ -9,4 +9,4 @@
 - [PyCharm + WSL + Tailwind](pycharm-wsl-tailwind.md) — Windows PyCharm over the WSL bridge can't auto-find the v4 CSS entry; set `experimental.configFile` or get false cssConflict warnings
 
 - [User working style](user-working-style.md) — fix clear bugs autonomously without asking; explain root causes, Persian comments about *why*
-- [Commit every change](commit-every-change.md) — commit each finished change yourself, straight to main; CRM has no remote, so nothing to push
+- [Commit every change](commit-every-change.md) — commit **and push** each finished change yourself, straight to main; `env -i` without `HOME` makes git hang forever on credentials
