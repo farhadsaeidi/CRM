@@ -1,0 +1,13 @@
+# خط‌پایانِ همهٔ فایل‌های متنی در مخزن LF بماند تا CRLF ویندوز برنگردد
+* text=auto eol=lf
+
+# فایل‌های باینری دست نخورند
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.pdf binary

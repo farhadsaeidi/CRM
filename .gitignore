@@ -1,0 +1,42 @@
+# ---------- Python / Django ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+*.log
+db.sqlite3
+db.sqlite3-journal
+
+# فایل تنظیمات حساس — هرگز کامیت نشود (نمونه‌اش .env.example است)
+.env
+.env.*
+!.env.example
+*.save
+
+# فایل‌های استاتیکِ جمع‌آوری‌شده (با collectstatic ساخته می‌شوند)
+/staticfiles/
+/static_root/
+
+# ---------- Media ----------
+# محتوای آپلودشدهٔ کاربران کامیت نمی‌شود، ولی تصاویر پیش‌فرض لازم‌اند
+media/user/upload/*
+!media/**/.gitkeep
+
+# ---------- Frontend ----------
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+.vite/
+
+# ---------- Editors / OS ----------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

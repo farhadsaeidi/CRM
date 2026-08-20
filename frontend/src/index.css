@@ -1,0 +1,552 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    /* Custom Colors */
+    /* Neutral: light to dark */
+    --color-var-color-00: #ffffff;
+    --color-var-color-01: #F9F9F9;
+    --color-var-color-02: #e5e7eb;
+    --color-var-color-03: #b9bfc8;
+    --color-var-color-04: #9F9FA2;
+    --color-var-color-05: #646b7a;
+    --color-var-color-06: #3F3F46;
+    --color-var-color-07: #32394C;
+    --color-var-color-08: #27272a;
+    --color-var-color-09: #161B28;
+    --color-var-color-10: #131823;
+    --color-var-color-11: #000000;
+    /* Blue / cyan */
+    --color-var-color-12: rgba(0, 188, 255, 0.05);
+    --color-var-color-13: rgba(0, 188, 255, 0.2);
+    --color-var-color-14: #a3e2ff;
+    --color-var-color-15: #00bcff;
+    --color-var-color-16: #2b586e;
+    --color-var-color-17: rgba(6, 182, 212, 0.08);
+    --color-var-color-18: rgba(6, 182, 212, 0.6);
+    --color-var-color-19: rgb(6, 150, 212);
+    --color-var-color-20: rgb(53, 135, 244, 1);
+    /* Purple */
+    --color-var-color-21: rgba(192, 132, 252, 0.08);
+    --color-var-color-22: rgba(192, 132, 252, 0.25);
+    --color-var-color-23: rgba(192, 132, 252, 0.4);
+    --color-var-color-24: rgba(192, 132, 252, 0.6);
+    --color-var-color-25: rgba(192, 132, 252, 1);
+    /* Red */
+    --color-var-color-26: rgba(249, 47, 96, 0.1);
+    --color-var-color-27: rgba(249, 47, 96, 0.6);
+    --color-var-color-28: rgba(249, 47, 96, 1);
+    /* Green */
+    --color-var-color-29: rgba(94, 175, 43, 0.07);
+    --color-var-color-30: rgba(94, 175, 43, 0.6);
+    --color-var-color-31: rgba(94, 175, 43, 1);
+    /* Orange */
+    --color-var-color-32: rgba(249, 115, 22, 1);
+    --color-var-color-33: rgb(242, 161, 103, 1);
+
+    --color-var-color-34: rgba(120, 120, 120, 0.07);
+    --color-var-color-35: #080a0e;
+    --color-var-color-36: #0D121E;
+    --color-var-color-37: #151B28;
+    --color-var-color-38: #1E293B;
+    --color-var-color-39: #c5c5c5;
+    --color-var-color-40: #192542ff;
+    --color-var-color-41: #1f2c4c;
+    --color-var-color-42: #37728fff;
+    --color-var-color-43: #0F131C;
+    --color-var-color-44: #082439ff;
+    --color-var-color-45: rgba(239, 68, 68, 0.15);
+    --color-var-color-46: #ddddddff;
+    --color-var-color-47: rgba(94, 175, 43, 0.12);
+    --color-var-color-48: #dfe3e6;
+    /* پس‌زمینهٔ پنل‌ها در تم لایت. عمداً سفید نیست تا هدر، فوتر و کارت‌های
+       سفید رویش «بالا» دیده شوند. */
+    --color-var-color-49: #f4f6fa;
+
+    --color-var-gradient-00: linear-gradient(to right, rgba(249, 47, 96, 1), rgba(249, 47, 96, 0.6));
+    --color-var-gradient-01: linear-gradient(to right, rgba(249, 115, 22, 1), rgba(249, 115, 22, 0.5));
+    --color-var-gradient-02: linear-gradient(to right, rgba(6, 182, 212, 1), rgba(6, 182, 212, 0.5));
+    --color-var-gradient-03: linear-gradient(to right, rgba(94, 175, 43, 1), rgba(94, 175, 43, 0.5));
+
+    /* Custom Measurements */
+    --header-height: 76px;
+    --footer-height: 55px;
+
+    /* Custom Box Shadow */
+    --shadow-var-shadow-00: 0 0 1px #00bcff, 0 0 2px #00bcff, 0 0 5px #00bcff, 0 0 5px #00bcff;
+    --shadow-var-shadow-01: 0 0 1px rgba(192, 132, 252, 1), 0 0 2px rgba(192, 132, 252, 1), 0 0 5px rgba(192, 132, 252, 1), 0 0 5px rgba(192, 132, 252, 1);
+    --shadow-var-shadow-02: inset 0 4px 12px rgba(120, 120, 120, 0.1), inset 0 -4px 12px rgba(120, 120, 120, 0.1), inset 4px 0 12px rgba(120, 120, 120, 0.1), inset -4px 0 12px rgba(120, 120, 120, 0.1);
+    --shadow-var-shadow-03: inset 0 4px 12px rgba(50, 57, 76, 0.4), inset 0 -4px 12px rgba(50, 57, 76, 0.4), inset 4px 0 12px rgba(50, 57, 76, 0.4), inset -4px 0 12px rgba(50, 57, 76, 0.4);
+    --shadow-var-shadow-04: inset 0 1px 3px rgba(120, 120, 120, 0.1), inset 0 -1px 3px rgba(120, 120, 120, 0.1), inset 1px 0 3px rgba(120, 120, 120, 0.1), inset -1px 0 3px rgba(120, 120, 120, 0.1);
+    --shadow-var-shadow-05: inset 0 1px 3px rgba(50, 57, 76, 0.4), inset 0 -1px 3px rgba(50, 57, 76, 0.4), inset 1px 0 3px rgba(50, 57, 76, 0.4), inset -1px 0 3px rgba(50, 57, 76, 0.4);
+    --shadow-var-shadow-06: 0 0 1px rgba(249, 47, 96, 1.0), 0 0 2px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0);
+
+    /* Custom Border Radius */
+    --radius-4xl: 2rem;
+
+    /* Custom Font Family */
+    --font-IRANSansXFaNumThin: "IRANSansXFaNum Thin";
+    --font-IRANSansXFaNumUltraLight: "IRANSansXFaNum UltraLight";
+    --font-IRANSansXFaNumLight: "IRANSansXFaNum Light";
+    --font-IRANSansXFaNumMedium: "IRANSansXFaNum Medium";
+    --font-IRANSansXFaNumDemiBold: "IRANSansXFaNum DemiBold";
+    --font-IRANSansXFaNumBold: "IRANSansXFaNum Bold";
+    --font-IRANSansXFaNumExtraBold: "IRANSansXFaNum ExtraBold";
+    --font-IRANSansXFaNumBlack: "IRANSansXFaNum Black";
+    --font-IRANSansXFaNumRegular: "IRANSansXFaNum Regular";
+    --font-MorabbaLight: "Morabba Light";
+    --font-MorabbaMedium: "Morabba Medium";
+    --font-MorabbaBold: "Morabba Bold";
+
+    /* Custom Letter Spacing */
+    --tracking-tightest: -0.065em;
+
+    /* Custom Breakpoint */
+    --breakpoint-3xs: 350px;
+    --breakpoint-2xs: 400px;
+    --breakpoint-xs: 500px;
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 768px;
+    --breakpoint-xm: 896px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
+    --breakpoint-2xl: 1536px;
+
+    /* Custom Spacing */
+    --spacing-18: 4.5rem;
+    --spacing-22: 5.5rem;
+    --spacing-25: 6.25rem;
+    --spacing-30: 7.5rem;
+    --spacing-50: 12.5rem;
+}
+
+/* تنظیمات اولیه */
+@layer base {
+    * {
+        box-sizing: border-box;
+        outline: none;
+    }
+
+    /* بافتِ نقطه‌ایِ بسیار ملایمِ پس‌زمینه — تا صفحه به‌جای رنگِ تخت، عمق داشته باشد */
+    .bg-dotted {
+        background-image: radial-gradient(circle, rgba(100, 116, 139, 0.07) 1.2px, transparent 1.3px);
+        background-size: 22px 22px;
+        background-repeat: repeat;
+    }
+
+    .dark .bg-dotted {
+        background-image: radial-gradient(circle, rgba(185, 198, 216, 0.10) 1.2px, transparent 1.3px);
+        background-size: 22px 22px;
+        background-repeat: repeat;
+    }
+
+    .glass-panel {
+        background: rgba(22, 27, 40, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* کلاس سفارشی برای فونت placeholder اینپوت ها */
+    .input-placeholder::placeholder {
+        font-size: 14px;
+        font-family: "IRANSansXFaNum UltraLight";
+        opacity: 1;
+    }
+}
+
+/* ایجاد فونت های سفارشی */
+@layer base {
+    @font-face {
+        font-family: "IRANSansXFaNum Thin";
+        src: local("IRANSansXFaNum Thin"), url("../public/fonts/IRANSansXFaNum-Thin.woff") format("woff");
+        font-display: swap;
+        font-weight: 100;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "IRANSansXFaNum UltraLight";
+        src: local("IRANSansXFaNum UltraLight"), url("../public/fonts/IRANSansXFaNum-UltraLight.woff") format("woff");
+        font-display: swap;
+        font-weight: 200;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "IRANSansXFaNum Light";
+        src: local("IRANSansXFaNum Light"), url("../public/fonts/IRANSansXFaNum-Light.woff") format("woff");
+        font-display: swap;
+        font-weight: 300;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "IRANSansXFaNum Medium";
+        src: local("IRANSansXFaNum Medium"), url("../public/fonts/IRANSansXFaNum-Medium.woff") format("woff");
+        font-display: swap;
+        font-weight: 500;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "IRANSansXFaNum DemiBold";
+        src: local("IRANSansXFaNum DemiBold"), url("../public/fonts/IRANSansXFaNum-DemiBold.woff") format("woff");
+        font-display: swap;
+        font-weight: 600;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "IRANSansXFaNum Bold";
+        src: local("IRANSansXFaNum Bold"), url("../public/fonts/IRANSansXFaNum-Bold.woff") format("woff");
+        font-display: swap;
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "IRANSansXFaNum ExtraBold";
+        src: local("IRANSansXFaNum ExtraBold"), url("../public/fonts/IRANSansXFaNum-ExtraBold.woff") format("woff");
+        font-display: swap;
+        font-weight: 800;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "IRANSansXFaNum Black";
+        src: local("IRANSansXFaNum Black"), url("../public/fonts/IRANSansXFaNum-Black.woff") format("woff");
+        font-display: swap;
+        font-weight: 900;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "IRANSansXFaNum Regular";
+        src: local("IRANSansXFaNum Regular"), url("../public/fonts/IRANSansXFaNum-Regular.woff") format("woff");
+        font-display: swap;
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "Morabba Light";
+        src: local("Morabba Light"), url("../public/fonts/Morabba-Light.woff2") format("woff2");
+        font-display: swap;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "Morabba Medium";
+        src: local("Morabba Medium"), url("../public/fonts/Morabba-Medium.woff2") format("woff2");
+        font-display: swap;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "Morabba Bold";
+        src: local("Morabba Bold"), url("../public/fonts/Morabba-Bold.woff2") format("woff2");
+        font-display: swap;
+        font-style: normal;
+    }
+}
+
+/* ایجاد تولتیپ سفارشی */
+@layer utilities {
+    .custom-tooltip {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .custom-tooltip::after,
+    .custom-tooltip::before {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease, translate 0.15s ease;
+        z-index: 1000;
+    }
+
+    .custom-tooltip::after {
+        content: attr(data-tooltip);
+        bottom: calc(100% + 8px);
+        max-width: 220px;
+        padding: 5px 8px;
+        font-size: 13px;
+        color: theme('colors.var-color-01');
+        text-align: center;
+        background-color: theme('colors.var-color-11');
+        border-radius: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        translate: 0 4px;
+    }
+
+    .custom-tooltip::before {
+        content: "";
+        bottom: calc(100% + 2px);
+        border-width: 8px 8px 0 8px;
+        border-style: solid;
+        border-color: theme('colors.var-color-11') transparent transparent transparent;
+        translate: 0 6px;
+    }
+
+    .custom-tooltip:focus-visible::after,
+    .custom-tooltip:focus-visible::before,
+    .custom-tooltip:hover::after,
+    .custom-tooltip:hover::before {
+        opacity: 1;
+        translate: 0 0;
+    }
+
+    .custom-tooltip:active::after,
+    .custom-tooltip:active::before {
+        opacity: 0 !important;
+    }
+
+    /* تم دارک */
+    .dark .custom-tooltip::after {
+        color: theme('colors.var-color-01');
+        background-color: theme('colors.var-color-11');
+    }
+
+    .dark .custom-tooltip::before {
+        border-color: theme('colors.var-color-11') transparent transparent transparent;
+    }
+}
+
+/* ایجاد کلاس های سفارشی */
+@layer utilities {
+    .form-container {
+        @apply bg-var-color-00 dark:bg-var-color-09 border border-var-color-02 dark:border-var-color-07 shadow-var-shadow-02 dark:shadow-var-shadow-03;
+    }
+
+    .input {
+        @apply bg-var-color-01 dark:bg-var-color-10 border border-var-color-02 dark:border-var-color-07 hover:bg-transparent dark:hover:bg-var-color-10 text-var-color-06 dark:text-var-color-03 caret-var-color-05 dark:caret-var-color-03 focus:bg-transparent dark:focus:bg-var-color-10 focus:outline-none focus:ring-0 transition-all duration-200 ease-in-out;
+    }
+
+    /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
+    .input:-webkit-autofill {
+        -webkit-transition: box-shadow 200ms ease-in-out, border-color 200ms ease-in-out !important;
+        transition: box-shadow 200ms ease-in-out, border-color 200ms ease-in-out !important;
+        -webkit-text-fill-color: var(--color-var-color-06) !important;
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-01) inset !important;
+        background-clip: padding-box !important;
+    }
+
+    .input:-webkit-autofill:focus, .input:-webkit-autofill:hover {
+        -webkit-transition: box-shadow 200ms ease-in-out, border-color 200ms ease-in-out !important;
+        transition: box-shadow 200ms ease-in-out, border-color 200ms ease-in-out !important;
+        -webkit-text-fill-color: var(--color-var-color-06) !important;
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset !important;
+        background-clip: padding-box !important;
+    }
+
+    .dark .input:-webkit-autofill {
+        -webkit-transition: box-shadow 200ms ease-in-out, border-color 200ms ease-in-out !important;
+        -webkit-text-fill-color: var(--color-var-color-03) !important;
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset !important;
+        background-clip: padding-box !important;
+    }
+
+    .dark .input:-webkit-autofill:focus, .dark .input:-webkit-autofill:hover {
+        -webkit-text-fill-color: var(--color-var-color-03) !important;
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset !important;
+        background-clip: padding-box !important;
+    }
+
+    .input-bluish {
+        @apply hover:border-var-color-14 dark:hover:border-var-color-16 focus:shadow-var-shadow-00 focus:border-var-color-14 dark:focus:border-var-color-16;
+    }
+
+    /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
+    .input-bluish:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-00) !important;
+        box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-00) !important;
+    }
+
+    .dark .input-bluish:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-00) !important;
+    }
+
+    .input-purplish {
+        @apply hover:border-var-color-23 dark:hover:border-var-color-23 focus:shadow-var-shadow-01 focus:border-var-color-23 dark:focus:border-var-color-23;
+    }
+
+    /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
+    .input-purplish:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-01) !important;
+        box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-01) !important;
+    }
+
+    .dark .input-purplish:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-01) !important;
+    }
+
+    .input-error {
+        @apply border-red-500! hover:border-red-500! dark:hover:border-red-500! shadow-var-shadow-06! focus:shadow-var-shadow-06! focus:border-red-500!;
+    }
+
+    /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
+    .input-error:-webkit-autofill, .input-error:-webkit-autofill:hover, .input-error:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-06) !important;
+        box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-06) !important;
+    }
+
+    .dark .input-error:-webkit-autofill, .dark .input-error:-webkit-autofill:hover, .dark .input-error:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-06) !important;
+    }
+
+    .btn {
+        @apply flex justify-center items-center cursor-pointer text-var-color-06 hover:text-var-color-00 dark:hover:text-var-color-11 transition-all duration-250 ease-in-out;
+    }
+
+    .btn-bluish {
+        @apply border border-var-color-13 dark:border-var-color-16 hover:border-transparent bg-var-color-12 dark:bg-var-color-12 hover:bg-var-color-15 dark:text-var-color-15;
+    }
+
+    .btn-purplish {
+        @apply border border-var-color-22 dark:border-var-color-24 hover:border-transparent bg-var-color-21 dark:bg-var-color-21 hover:bg-var-color-25 dark:text-var-color-25;
+    }
+
+    /* ستون‌بندی جدول‌های اصلی — نام و شماره تماس جا باز می‌کنند، ستون عملیات باریک می‌ماند */
+    .grid-customer {
+        @apply grid-cols-[minmax(12rem,1fr)_minmax(8rem,0.75fr)_minmax(8rem,0.75fr)_minmax(8rem,0.75fr)_minmax(6rem,0.2fr)];
+    }
+    .grid-transaction {
+        @apply grid-cols-[minmax(8rem,0.2fr)_minmax(8rem,0.8fr)_minmax(8rem,1fr)_minmax(5rem,0.1fr)];
+    }
+}
+
+/* ایجاد کلاس های سفارشی برای ظاهر شدن پیغام */
+@layer utilities {
+    .toast-enter {
+        animation: toast-in-top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .toast-leave {
+        animation: toast-out-top 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+
+    .icon-enter {
+        animation: iconPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards 20ms;
+    }
+
+    .icon-leave {
+        animation: iconPopOut 0.15s ease-out forwards;
+    }
+
+    @keyframes toast-in-top {
+        from {
+            opacity: 0;
+            transform: translateY(-100%) scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes toast-out-top {
+        from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-100%) scale(0.8);
+        }
+    }
+
+    @keyframes iconPopIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        60% {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+        80% {
+            transform: scale(0.9);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @keyframes iconPopOut {
+        from {
+            transform: scale(1);
+            opacity: 1;
+        }
+        to {
+            transform: scale(0);
+            opacity: 0;
+        }
+    }
+
+    @keyframes checkmark-draw {
+        from {
+            stroke-dashoffset: 24;
+        }
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+}
+
+/* ایجاد کلاس های سفارشی برای ظاهر شدن فرم مدال */
+@layer utilities {
+    .animate-modal-in {
+        animation: modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-modal-out {
+        animation: modal-out 0.2s ease-in-out forwards;
+    }
+
+    @keyframes modal-in {
+        from {
+            transform: scale(0.05);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @keyframes modal-out {
+        from {
+            transform: scale(1);
+            opacity: 1;
+        }
+        to {
+            transform: scale(0.05);
+            opacity: 0;
+        }
+    }
+}
+
+/* ورودِ محو + بالا آمدن (با تاخیرِ پلکانی از طریق animation-delay) */
+@layer utilities {
+    .animate-fade-up {
+        opacity: 0;
+        animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

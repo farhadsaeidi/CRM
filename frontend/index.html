@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fa-IR" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CRM</title>
+    <script>
+      // اعمالِ تمِ ذخیره‌شده قبل از اولین رندر — مستقل از هدر/سوییچر
+      // (بدونِ این، صفحاتِ بدونِ هدر تمِ دارک را نمی‌گرفتند و فلاشِ لایت داشتند)
+      (function () {
+        var dark = localStorage.theme === "dark" ||
+          (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
+  </head>
+  <body>
+    <section id="root"></section>
+    <script type="module" src="src/main.jsx"></script>
+  </body>
+</html>
