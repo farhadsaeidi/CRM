@@ -1,5 +1,6 @@
 from django.urls import path
 from account import views as account_views
+from home import views as home_views
 from . import views
 
 app_name = "api"
@@ -17,9 +18,21 @@ auth_patterns = [
     path("auth/change-password/", account_views.ChangePasswordView.as_view(), name="change_password"),
 ]
 
+# مشتریان و تراکنش‌ها — همه اسکوپ‌شده به مالکِ درخواست
+ledger_patterns = [
+    path("customers/", home_views.CustomerListCreateView.as_view(), name="customers"),
+    path("customers/<int:pk>/", home_views.CustomerDetailView.as_view(), name="customer_detail"),
+    path("customers/<int:customer_id>/transactions/",
+         home_views.TransactionListCreateView.as_view(), name="transactions"),
+    path("customers/<int:customer_id>/transactions/search/",
+         home_views.TransactionSearchView.as_view(), name="transaction_search"),
+    path("customers/<int:customer_id>/transactions/<int:pk>/",
+         home_views.TransactionDetailView.as_view(), name="transaction_detail"),
+]
+
 # عمومی
 misc_patterns = [
     path("health/", views.HealthView.as_view(), name="health"),
 ]
 
-urlpatterns = auth_patterns + misc_patterns
+urlpatterns = auth_patterns + ledger_patterns + misc_patterns

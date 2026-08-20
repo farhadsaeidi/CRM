@@ -4,11 +4,11 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-20 23:14 · کامیت `f4160f6`
+آخرین تولید: 2026-08-20 23:21 · کامیت `c401b50`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 25 | 1284 |
+| بک‌اند | 27 | 1571 |
 | فرانت‌اند | 11 | 472 |
 
 اپ‌های جنگو: account api home
@@ -26,6 +26,8 @@
 | `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:224 | [AllowAny] |
 | `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:285 | [AllowAny] |
 | `/api/auth/change-password/` | ChangePasswordView | account/views.py:320 | _(پیش‌فرض DRF)_ |
+| `/api/customers/` | CustomerListCreateView | home/views.py:39 | _(پیش‌فرض DRF)_ |
+| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:74 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -93,6 +95,11 @@
     - `Customer` :17
     - `CustomerOwner` :55
     - `Transaction` :71
+- **./home/serializers.py** (72 خط، 9 نماد)
+    - `normalize_phone_number` :12
+    - `PhoneField` :18
+    - `CustomerSerializer` :29
+    - `TransactionSerializer` :57
 - **./home/services.py** (144 خط، 7 نماد)
     - `account_code_from_remainder` :16
     - `calculate_remainder` :24
@@ -101,6 +108,13 @@
     - `_to_int` :85
     - `_field_query` :95
     - `build_date_search_query` :133
+- **./home/views.py** (202 خط، 21 نماد)
+    - `OwnerScopedMixin` :22
+    - `CustomerListCreateView` :39
+    - `CustomerDetailView` :74
+    - `TransactionListCreateView` :92
+    - `TransactionDetailView` :146
+    - `TransactionSearchView` :175
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
