@@ -159,6 +159,18 @@
         background-repeat: repeat;
     }
 
+    /* ورودِ پلکانیِ عناصرِ صفحهٔ چت (تیتر، کارت‌های پیشنهاد) */
+    @keyframes crm-rise {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* سه نقطهٔ «در حال آماده‌سازی پاسخ» */
+    @keyframes crm-blink {
+        0%, 100% { opacity: 0.25; }
+        50%      { opacity: 1; }
+    }
+
     .glass-panel {
         background: rgba(22, 27, 40, 0.7);
         backdrop-filter: blur(12px);
