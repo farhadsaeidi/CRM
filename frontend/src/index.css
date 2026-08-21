@@ -77,6 +77,7 @@
     --color-var-color-58: rgb(249, 251, 250);       /* پس‌زمینهٔ بدنهٔ جدول در لایت */
     --color-var-color-59: #F5F7F6;                  /* سرستون و هاورِ ردیف در لایت */
     --color-var-color-60: #617b89;                  /* متن سرستون در لایت */
+    --color-var-color-61: rgba(247, 181, 39, 0.6);  /* کهربایی ۶۰٪ — بوردر دکمهٔ ویرایش */
 
     --color-var-gradient-00: linear-gradient(to right, rgba(249, 47, 96, 1), rgba(249, 47, 96, 0.6));
     --color-var-gradient-01: linear-gradient(to right, rgba(249, 115, 22, 1), rgba(249, 115, 22, 0.5));
@@ -144,7 +145,7 @@
 
     /* بافتِ نقطه‌ایِ بسیار ملایمِ پس‌زمینه — تا صفحه به‌جای رنگِ تخت، عمق داشته باشد */
     .bg-dotted {
-        background-image: radial-gradient(circle, rgba(100, 116, 139, 0.07) 1.2px, transparent 1.3px);
+        background-image: radial-gradient(circle, rgba(100, 116, 139, 0.11) 1.2px, transparent 1.3px);
         background-size: 22px 22px;
         background-repeat: repeat;
     }
@@ -433,6 +434,15 @@
 
     .btn-purplish {
         @apply border border-var-color-22 dark:border-var-color-24 hover:border-transparent bg-var-color-21 dark:bg-var-color-21 hover:bg-var-color-25 dark:text-var-color-25;
+    }
+
+    /* دکمه‌های حذف و ویرایش در مودال‌ها — همان رنگ‌بندی پروژهٔ CustomerManagement */
+    .btn-redish {
+        @apply border border-var-color-27 dark:border-var-color-27 hover:border-transparent bg-var-color-26 dark:bg-var-color-26 hover:bg-var-color-28 dark:text-var-color-28;
+    }
+
+    .btn-yellowish {
+        @apply border border-var-color-61 dark:border-var-color-61 hover:border-transparent bg-var-color-54 dark:bg-var-color-54 hover:bg-var-color-53 dark:text-var-color-53;
     }
 
     /* ستون‌بندی جدول‌های اصلی — نام و شماره تماس جا باز می‌کنند، ستون عملیات باریک می‌ماند */

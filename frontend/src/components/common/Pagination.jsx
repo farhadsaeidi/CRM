@@ -54,8 +54,10 @@ export default function Pagination({page = 1, totalPages = 1, onPageClick}) {
                             type="button"
                             onClick={() => changePage(item.pageNumber)}
                             aria-current={item.isActive ? "page" : undefined}
+                            // در دارک، عددِ روی زمینهٔ فیروزه‌ای سیاه است نه خاکستریِ روشن —
+                            // کنتراستش روی var-color-15 خیلی بیشتر است
                             className={item.isActive
-                                ? "w-9 h-9 flex items-center justify-center rounded-full bg-var-color-15 text-var-color-00 dark:text-var-color-03 font-bold text-sm mx-0.5 transition-all duration-150 ease-in-out"
+                                ? "w-9 h-9 flex items-center justify-center rounded-full bg-var-color-15 text-var-color-00 dark:text-var-color-11 font-bold text-sm mx-0.5 transition-all duration-150 ease-in-out"
                                 : "w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium btn btn-bluish mx-0.5"}
                         >
                             {item.pageNumber}
