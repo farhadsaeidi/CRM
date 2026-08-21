@@ -240,7 +240,7 @@ const Footer = () => {
                 ref={dropdownMenuRef}
                 inert={!isDropdownMenuOpen}
                 style={{left: `${dropdownLeft}px`}}
-                className={`fixed z-20 flex flex-col justify-center items-start min-w-56 p-2.5 bottom-16.25 dark:bottom-16.75 rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-250 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
+                className={`fixed z-[5] flex flex-col justify-center items-start min-w-56 p-2.5 bottom-16.25 dark:bottom-16.75 rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-250 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
                     isDropdownMenuOpen ? "translate-y-0" : "translate-y-[110%]"
                 }`}
             >
@@ -254,7 +254,7 @@ const Footer = () => {
             <section
                 ref={startPanelRef}
                 inert={!isStartMenuOpen}
-                className={`fixed z-20 flex flex-col justify-center items-start min-w-60 mr-3 bottom-16.25 dark:bottom-16.75 rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-150 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${isStartMenuOpen ? "translate-y-0" : "translate-y-[110%]"}`}
+                className={`fixed z-[5] flex flex-col justify-center items-start min-w-60 mr-3 bottom-16.25 dark:bottom-16.75 rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-150 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${isStartMenuOpen ? "translate-y-0" : "translate-y-[110%]"}`}
             >
                 <div className="w-full p-2.5">
                     {menuItems.map((item) => (

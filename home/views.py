@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.exceptions import ParseError
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,6 +18,15 @@ from .services import (
     calculate_remainder,
     recalculate_account,
 )
+
+
+class CustomerPagination(PageNumberPagination):
+    """پنج مشتری در هر صفحه — نه پیش‌فرضِ ۱۰ تاییِ DRF.
+
+    ارتفاعِ جدول به تعداد ردیف گره خورده و پنج ردیف اندازه‌ای است که کارت در
+    ارتفاعِ صفحه جا شود بدون اینکه خودش اسکرول لازم داشته باشد.
+    """
+    page_size = 5
 
 
 class OwnerScopedMixin:
@@ -42,6 +52,7 @@ class CustomerListCreateView(OwnerScopedMixin, generics.ListCreateAPIView):
     پارامترها: `?query=` روی نام و شماره، `?filter=debt|credit|zero|all`
     """
     serializer_class = CustomerSerializer
+    pagination_class = CustomerPagination
 
     def get_queryset(self):
         queryset = self.owner_customers()

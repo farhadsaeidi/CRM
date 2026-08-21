@@ -1,12 +1,14 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useSearchParams} from "react-router";
-import {FiChevronUp, FiEdit2, FiFilter, FiPlus, FiRefreshCw, FiTrash2} from "react-icons/fi";
+import {FiChevronUp, FiFilter, FiPlus, FiRefreshCw} from "react-icons/fi";
 import {HiOutlineUsers} from "react-icons/hi";
-import {TbArrowsLeftRight, TbMoodNeutral} from "react-icons/tb";
+import {HiOutlineArrowsRightLeft, HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
+import {TbMoodNeutral} from "react-icons/tb";
 import {FaHandshakeSimple} from "react-icons/fa6";
 import {BsGraphDownArrow, BsGraphUpArrow} from "react-icons/bs";
 import {customersApi} from "../../api/customers.js";
 import {NEW_CUSTOMER_EVENT} from "../../components/common/Header.jsx";
+import CustomTooltip from "../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../components/common/MenuItem.jsx";
 import Pagination from "../../components/common/Pagination.jsx";
 import CustomerModal from "./components/CustomerModal.jsx";
@@ -49,8 +51,19 @@ const Customers = () => {
 
     const filterBtnRef = useRef(null);
     const filterMenuRef = useRef(null);
+    const refreshBtnRef = useRef(null);
+    const addBtnRef = useRef(null);
 
-    const pageSize = 10; // برابر با PAGE_SIZE در تنظیمات DRF
+    // تولتیپِ دکمه‌های نوارِ بالای جدول شناور است، نه شبه‌عنصر — کارت
+    // overflow-hidden دارد و بخشِ بیرون‌زدهٔ تولتیپِ معمولی را می‌بُرد
+    const [tooltip, setTooltip] = useState({text: "", pos: null, visible: false});
+    const showTooltip = (ref, text) => {
+        const rect = ref.current?.getBoundingClientRect();
+        if (rect) setTooltip({text, pos: {top: rect.top, left: rect.left + rect.width / 2}, visible: true});
+    };
+    const hideTooltip = () => setTooltip((t) => ({...t, visible: false}));
+
+    const pageSize = 5; // برابر با CustomerPagination.page_size در بک‌اند
     const totalPages = Math.max(1, Math.ceil(data.count / pageSize));
     const activeFilter = FILTER_ITEMS.find((item) => item.key === filter) ?? FILTER_ITEMS[0];
 
@@ -145,34 +158,36 @@ const Customers = () => {
                             <button
                                 type="button"
                                 ref={filterBtnRef}
-                                data-tooltip={showCustomTooltip && !isFilterMenuOpen ? "فیلترها" : undefined}
                                 onClick={() => {
                                     setIsFilterMenuOpen((v) => !v);
-                                    setShowCustomTooltip(false);
+                                    hideTooltip();
                                 }}
-                                onMouseLeave={() => setShowCustomTooltip(true)}
+                                onMouseEnter={() => !isFilterMenuOpen && showTooltip(filterBtnRef, "فیلترها")}
+                                onMouseLeave={hideTooltip}
                                 className={`w-auto h-7 rounded-full btn justify-between! btn-bluish pl-1 pr-2 font-IRANSansXFaNumRegular ${
                                     isFilterMenuOpen ? "bg-var-color-15! text-var-color-00! border-var-color-15!" : ""
-                                } ${showCustomTooltip && !isFilterMenuOpen ? "custom-tooltip" : ""}`}
+                                }`}
                             >
                                 <FiFilter className="w-4.5 h-4.5"/>
                                 <span className="mr-1.5 ml-2.5 font-IRANSansXFaNumUltraLight!">{activeFilter.button}</span>
                                 <FiChevronUp className={`inline-block w-4.5 h-4.5 transition-transform duration-200 ease-in-out ${isFilterMenuOpen ? "rotate-0" : "rotate-180"}`}/>
                             </button>
 
-                            <button type="button" data-tooltip={showCustomTooltip ? "بازنشانی جدول" : undefined}
+                            <button type="button" ref={refreshBtnRef}
                                     onClick={() => setRefreshKey((k) => k + 1)}
-                                    onMouseLeave={() => setShowCustomTooltip(true)}
-                                    className={`rounded-full btn btn-bluish ${showCustomTooltip ? "custom-tooltip" : ""}`}>
+                                    onMouseEnter={() => showTooltip(refreshBtnRef, "بازنشانی جدول")}
+                                    onMouseLeave={hideTooltip}
+                                    className="rounded-full btn btn-bluish">
                                 <div className="w-7 h-7 flex justify-center items-center">
                                     <FiRefreshCw className="w-4 h-4"/>
                                 </div>
                             </button>
 
-                            <button type="button" data-tooltip={showCustomTooltip ? "ثبت مشتری" : undefined}
+                            <button type="button" ref={addBtnRef}
                                     onClick={() => setModal({mode: "create", customer: null})}
-                                    onMouseLeave={() => setShowCustomTooltip(true)}
-                                    className={`rounded-full btn btn-bluish ${showCustomTooltip ? "custom-tooltip" : ""}`}>
+                                    onMouseEnter={() => showTooltip(addBtnRef, "ثبت مشتری")}
+                                    onMouseLeave={hideTooltip}
+                                    className="rounded-full btn btn-bluish">
                                 <div className="w-7 h-7 flex justify-center items-center">
                                     <FiPlus className="w-5 h-5"/>
                                 </div>
@@ -228,26 +243,28 @@ const Customers = () => {
                                                 </span>
                                             </th>
                                             <th className="px-2 flex justify-center items-center gap-3">
+                                                {/* هر سه آیکون از یک خانواده‌اند (Heroicons outline) تا کنار هم
+                                                    یکدست دیده شوند؛ ضخامت و گردیِ خطوطشان یکی است. */}
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "تراکنش های مالی" : undefined}
                                                         onClick={() => notify("صفحهٔ تراکنش‌ها در گام بعد اضافه می‌شود.", "info")}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-31 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
-                                                    <TbArrowsLeftRight className="w-4.5 h-4.5"/>
+                                                    <HiOutlineArrowsRightLeft className="w-5 h-5"/>
                                                 </button>
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "ویرایش" : undefined}
                                                         onClick={() => setModal({mode: "edit", customer})}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-53 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
-                                                    <FiEdit2 className="w-4.5 h-4.5"/>
+                                                    <HiOutlinePencilSquare className="w-5 h-5"/>
                                                 </button>
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "حذف" : undefined}
                                                         onClick={() => setModal({mode: "delete", customer})}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-28 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
-                                                    <FiTrash2 className="w-5 h-5"/>
+                                                    <HiOutlineTrash className="w-5 h-5"/>
                                                 </button>
                                             </th>
                                         </tr>
@@ -289,6 +306,9 @@ const Customers = () => {
                     />
                 ))}
             </div>
+
+            {/* تولتیپِ شناورِ دکمه‌های نوارِ بالای جدول */}
+            <CustomTooltip text={tooltip.text} pos={tooltip.pos} visible={tooltip.visible}/>
 
             {modal && (
                 <CustomerModal

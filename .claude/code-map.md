@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-21 21:16 · کامیت `19b04bb`
+آخرین تولید: 2026-08-21 21:42 · کامیت `9045a16`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 27 | 1579 |
-| فرانت‌اند | 35 | 2746 |
+| بک‌اند | 27 | 1590 |
+| فرانت‌اند | 36 | 2820 |
 
 اپ‌های جنگو: account api home
 
@@ -26,8 +26,8 @@
 | `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:229 | [AllowAny] |
 | `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:290 | [AllowAny] |
 | `/api/auth/change-password/` | ChangePasswordView | account/views.py:325 | _(پیش‌فرض DRF)_ |
-| `/api/customers/` | CustomerListCreateView | home/views.py:39 | _(پیش‌فرض DRF)_ |
-| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:74 | _(پیش‌فرض DRF)_ |
+| `/api/customers/` | CustomerListCreateView | home/views.py:49 | _(پیش‌فرض DRF)_ |
+| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:85 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -108,20 +108,22 @@
     - `_to_int` :85
     - `_field_query` :95
     - `build_date_search_query` :133
-- **./home/views.py** (202 خط، 21 نماد)
-    - `OwnerScopedMixin` :22
-    - `CustomerListCreateView` :39
-    - `CustomerDetailView` :74
-    - `TransactionListCreateView` :92
-    - `TransactionDetailView` :146
-    - `TransactionSearchView` :175
+- **./home/views.py** (213 خط، 22 نماد)
+    - `CustomerPagination` :23
+    - `OwnerScopedMixin` :32
+    - `CustomerListCreateView` :49
+    - `CustomerDetailView` :85
+    - `TransactionListCreateView` :103
+    - `TransactionDetailView` :157
+    - `TransactionSearchView` :186
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
 ## فرانت‌اند
 
 ### صفحه‌ها
-- **frontend/src/pages/Customers/Customers.jsx** (307 خط)
+- **frontend/src/pages/Customers/Customers.jsx** (327 خط)
+    - CustomTooltip
     - CustomerModal
     - Header
     - MenuItem
@@ -131,6 +133,7 @@
 
 ### کامپوننت‌های مشترک
 - `ChangePasswordModal` — 139 خط
+- `CustomTooltip` — 54 خط
 - `Footer` — 288 خط
 - `Header` — 45 خط
 - `LogoIcon` — 28 خط
