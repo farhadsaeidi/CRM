@@ -12,6 +12,11 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    // بایند روی همهٔ اینترفیس‌ها، نه فقط لوپ‌بکِ داخلِ WSL.
+    // لازم است چون رلهٔ localhostِ ویندوز↔WSL روی این ماشین کار نمی‌کند
+    // (شبکه در حالت NAT است و یک پراکسیِ localhost روی ویندوز فعال)، پس بدون این،
+    // مرورگرِ ویندوز به :5173 نمی‌رسد و باید با IPِ خودِ WSL صدا زده شود.
+    host: true,
     proxy: {
       '/api': 'http://localhost:8000',
       '/django-admin': 'http://localhost:8000',

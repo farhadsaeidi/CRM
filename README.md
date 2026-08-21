@@ -46,9 +46,19 @@ venv/bin/python manage.py runserver 8000
 cd frontend && npm run dev
 ```
 
-سپس مرورگر را روی <http://localhost:5173> باز کنید. **فقط از همین آدرس استفاده کنید** —
+سپس مرورگر را روی آدرسِ Vite باز کنید. **فقط از همین آدرس استفاده کنید** —
 Vite درخواست‌های `/api`، `/media`، `/static` و `/django-admin` را به جنگو روی `:8000`
 پراکسی می‌کند تا همه‌چیز Same-Origin باشد و کوکی سشن و CSRF بدون CORS کار کنند.
+
+> ⚠️ روی این ماشین `http://localhost:5173` از ویندوز باز نمی‌شود: رلهٔ localhostِ
+> ویندوز↔WSL کار نمی‌کند (شبکه NAT است و یک پراکسیِ localhost روی ویندوز فعال).
+> آدرس درست را خودِ Vite هنگام اجرا زیر `Network:` چاپ می‌کند، یا:
+>
+> ```bash
+> wsl -e bash -lc "hostname -I | awk '{print \$1}'"
+> ```
+>
+> برای همین `server.host: true` در `vite.config.js` ست شده است.
 
 پنل ادمین جنگو: <http://localhost:5173/django-admin/> (مسیر `/admin` متعلق به SPA است، نه جنگو.)
 
