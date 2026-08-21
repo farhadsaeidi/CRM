@@ -27,8 +27,14 @@ pattern) and the full auth layer: `csrf`/`me`/`register`/`login`/`logout`/`otp/p
 digits, attempt limiting, code reuse rejection, session survival after a password
 change). SMS goes through `account/services.py` with an `SMSLog` model in the same app
 — no separate `comms` app, since CRM's only messages are auth-related.
-`core/permissions.py` carries the `role_permission` factory. Still absent: the `home`
-app and everything on the frontend.
+`core/permissions.py` carries the `role_permission` factory.
+
+**Steps 3–7 landed the same day:** the `home` app (Customer, CustomerOwner,
+Transaction with Persian date columns) with the legacy rows copied across, the
+customers and transactions APIs, the frontend auth shell (AuthProvider, route
+guards, login/register/OTP/forget-password), and the customers page itself — header,
+footer, filter chips, pagination and one modal covering create/edit/delete. Remaining:
+step 8 (transactions page) and step 9 (tests, demo data, responsive pass).
 `frontend/src/index.css` already carries `grid-customer` and `grid-transaction`, ready
 for the future tables.
 

@@ -64,6 +64,29 @@ const addressSchema = z
     .min(3, "فیلد آدرس باید حداقل ۳ حرف داشته باشد.")
     .max(300, "فیلد آدرس باید حداکثر ۳۰۰ کاراکتر داشته باشد.");
 
+export const changePasswordSchema = z
+    .object({
+        old_password: z
+            .string({required_error: "فیلد رمز قبلی الزامی است."})
+            .trim()
+            .nonempty("فیلد رمز قبلی الزامی است."),
+        new_password: newPasswordSchema,
+        repeat_password: z
+            .string({required_error: "فیلد تکرار رمز جدید الزامی است."})
+            .trim()
+            .nonempty("فیلد تکرار رمز جدید الزامی است."),
+    })
+    // تطابق دو رمز روی خودِ فیلدِ تکرار گزارش می‌شود تا فوکوس جای درستی برود
+    .refine((data) => data.new_password === data.repeat_password, {
+        message: "رمز جدید و تکرار آن یکسان نیستند.",
+        path: ["repeat_password"],
+    })
+    // رمز جدید نباید همان رمز قبلی باشد، وگرنه تغییری رخ نداده
+    .refine((data) => data.old_password !== data.new_password, {
+        message: "رمز جدید نباید با رمز قبلی یکسان باشد.",
+        path: ["new_password"],
+    });
+
 export const registerSchema = z.object({
     fullname: fullnameSchema,
     phone: phoneSchema,
