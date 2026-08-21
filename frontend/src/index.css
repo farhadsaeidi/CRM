@@ -64,6 +64,20 @@
        سفید رویش «بالا» دیده شوند. */
     --color-var-color-49: #f4f6fa;
 
+    /* رنگ‌های جدول و وضعیت حساب — عیناً از پروژهٔ CustomerManagement منتقل شده‌اند
+       تا ظاهر جدول‌ها همان باشد. توجه: وضعیت‌ها عمداً سبز/قرمز نیستند. */
+    --color-var-color-50: rgba(6, 182, 212, 1);     /* بستانکار — متن */
+    --color-var-color-51: #94A3B8;                  /* متن سرستون در دارک */
+    --color-var-color-52: #172030;                  /* پس‌زمینهٔ سرستون در دارک */
+    --color-var-color-53: rgba(247, 181, 39, 1);    /* بی‌حساب — متن */
+    --color-var-color-54: rgba(247, 181, 39, 0.1);  /* بی‌حساب — پس‌زمینه */
+    --color-var-color-55: rgb(230, 59, 197);        /* بدهکار — متن */
+    --color-var-color-56: rgba(230, 59, 197, 0.1);  /* بدهکار — پس‌زمینه */
+    --color-var-color-57: rgb(232, 233, 236);       /* بوردر جدول در لایت */
+    --color-var-color-58: rgb(249, 251, 250);       /* پس‌زمینهٔ بدنهٔ جدول در لایت */
+    --color-var-color-59: #F5F7F6;                  /* سرستون و هاورِ ردیف در لایت */
+    --color-var-color-60: #617b89;                  /* متن سرستون در لایت */
+
     --color-var-gradient-00: linear-gradient(to right, rgba(249, 47, 96, 1), rgba(249, 47, 96, 0.6));
     --color-var-gradient-01: linear-gradient(to right, rgba(249, 115, 22, 1), rgba(249, 115, 22, 0.5));
     --color-var-gradient-02: linear-gradient(to right, rgba(6, 182, 212, 1), rgba(6, 182, 212, 0.5));

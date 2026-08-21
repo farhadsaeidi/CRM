@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-21 20:48 · کامیت `7080d8a`
+آخرین تولید: 2026-08-21 21:16 · کامیت `19b04bb`
 
 | بخش | فایل | خط |
 |---|---|---|
 | بک‌اند | 27 | 1579 |
-| فرانت‌اند | 35 | 2551 |
+| فرانت‌اند | 35 | 2746 |
 
 اپ‌های جنگو: account api home
 
@@ -121,20 +121,21 @@
 ## فرانت‌اند
 
 ### صفحه‌ها
-- **frontend/src/pages/Customers/Customers.jsx** (211 خط)
+- **frontend/src/pages/Customers/Customers.jsx** (307 خط)
     - CustomerModal
     - Header
+    - MenuItem
     - Pagination
     - notify
 - **frontend/src/pages/NotFound/NotFound.jsx** (21 خط)
 
 ### کامپوننت‌های مشترک
 - `ChangePasswordModal` — 139 خط
-- `Footer` — 214 خط
+- `Footer` — 288 خط
 - `Header` — 45 خط
 - `LogoIcon` — 28 خط
-- `MenuItem` — 17 خط
-- `Pagination` — 65 خط
+- `MenuItem` — 32 خط
+- `Pagination` — 75 خط
 - `ProgressToast` — 119 خط
 - `ThemeSwitcher` — 87 خط
 - `WindowsIcon` — 37 خط

@@ -1,9 +1,10 @@
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {useLocation, useNavigate, useSearchParams} from "react-router";
 import {HiOutlineSearch} from "react-icons/hi";
 import {IoIosClose} from "react-icons/io";
 import {FaPowerOff, FaRegUser} from "react-icons/fa6";
-import {FiLock} from "react-icons/fi";
+import {FiChevronUp, FiFileText, FiHelpCircle, FiLock} from "react-icons/fi";
+import {TbCoins} from "react-icons/tb";
 import WindowsIcon from "./WindowsIcon.jsx";
 import MenuItem from "./MenuItem.jsx";
 import ChangePasswordModal from "./ChangePasswordModal.jsx";
@@ -19,6 +20,8 @@ const Footer = () => {
     const [searchParams] = useSearchParams();
 
     const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
+    const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
+    const [dropdownLeft, setDropdownLeft] = useState(0);
     const [changePassOpen, setChangePassOpen] = useState(false);
     const [showCustomTooltip, setShowCustomTooltip] = useState(true);
     const [timeFooter, setTimeFooter] = useState("");
@@ -29,6 +32,8 @@ const Footer = () => {
     const startBtnRef = useRef(null);
     const startPanelRef = useRef(null);
     const searchInputRef = useRef(null);
+    const dropdownBtnRef = useRef(null);
+    const dropdownMenuRef = useRef(null);
 
     // ساعت و تاریخ شمسی
     useEffect(() => {
@@ -62,17 +67,41 @@ const Footer = () => {
         setSearchValue(urlQuery);
     }
 
-    // بستنِ منو با کلیک بیرون
+    // بستنِ منوها با کلیک بیرون
     useEffect(() => {
         const onDocClick = (e) => {
             if (startBtnRef.current && !startBtnRef.current.contains(e.target) &&
                 startPanelRef.current && !startPanelRef.current.contains(e.target)) {
                 setIsStartMenuOpen(false);
             }
+            if (dropdownBtnRef.current && !dropdownBtnRef.current.contains(e.target) &&
+                dropdownMenuRef.current && !dropdownMenuRef.current.contains(e.target)) {
+                setIsDropdownMenuOpen(false);
+            }
         };
         document.addEventListener("click", onDocClick);
         return () => document.removeEventListener("click", onDocClick);
     }, []);
+
+    // منوی دراپ‌داون زیر وسطِ دکمه‌اش بنشیند — چون فوتر ثابت است و دکمه جای متغیری
+    // نسبت به لبهٔ صفحه دارد، موقعیت باید هنگام باز شدن و هر ریسایز محاسبه شود
+    const positionDropdown = useCallback(() => {
+        const btn = dropdownBtnRef.current;
+        const menu = dropdownMenuRef.current;
+        if (!btn || !menu) return;
+        const btnRect = btn.getBoundingClientRect();
+        setDropdownLeft(btnRect.left + btnRect.width / 2 - menu.getBoundingClientRect().width / 2);
+    }, []);
+
+    useEffect(() => {
+        if (!isDropdownMenuOpen) return;
+        const frame = requestAnimationFrame(positionDropdown);
+        window.addEventListener("resize", positionDropdown);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener("resize", positionDropdown);
+        };
+    }, [isDropdownMenuOpen, positionDropdown]);
 
     // یوآرال منبعِ حقیقتِ جستجوست؛ صفحهٔ مشتریان از همان می‌خواند
     const applySearch = (value) => {
@@ -103,6 +132,19 @@ const Footer = () => {
             notify(err?.data?.message || "خروج از حساب انجام نشد. لطفاً دوباره تلاش کنید...", "error");
         }
     };
+
+    // آیتم‌های منوی دراپ‌داون — همان سه گزینهٔ پروژهٔ CustomerManagement.
+    // هنوز صفحه‌ای پشتشان نیست، پس فعلاً پیغام می‌دهند نه لینکِ مرده.
+    const soon = (label) => () => {
+        setIsDropdownMenuOpen(false);
+        notify(`${label} به‌زودی اضافه می‌شود.`, "info");
+    };
+
+    const dropdownItems = [
+        {id: "moneyItem", icon: TbCoins, text: "سرمایه در گردش شما", onClick: soon("سرمایه در گردش")},
+        {id: "billItem", icon: FiFileText, text: "صورتحساب همه مشتریان", onClick: soon("صورتحساب مشتریان")},
+        {id: "helpItem", icon: FiHelpCircle, text: "راهنمای نرم افزار", onClick: soon("راهنمای نرم‌افزار")},
+    ];
 
     const menuItems = [
         {
@@ -149,7 +191,7 @@ const Footer = () => {
                         <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-var-color-15 pointer-events-none"/>
                         <input
                             type="text"
-                            placeholder="جستجوی مشتری ..."
+                            placeholder="جستجوی نام یا شماره تماس مشتری ..."
                             ref={searchInputRef}
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
@@ -169,12 +211,44 @@ const Footer = () => {
                     </div>
                 </section>
 
-                {/* چپِ فوتر: ساعت و تاریخ */}
-                <section className="flex flex-col justify-center items-end ml-5">
-                    <div className="text-sm text-var-color-08 dark:text-var-color-01">{timeFooter}</div>
-                    <div className="text-sm text-var-color-08 dark:text-var-color-01">{dateFooter}</div>
+                {/* چپِ فوتر: دکمهٔ دراپ‌داون، ساعت و تاریخ */}
+                <section className="flex flex-row justify-end items-center gap-4.5">
+                    <button
+                        type="button"
+                        ref={dropdownBtnRef}
+                        aria-label="منوی گزارش‌ها"
+                        aria-expanded={isDropdownMenuOpen}
+                        onClick={() => setIsDropdownMenuOpen((v) => !v)}
+                        className={`flex justify-center items-center py-2.5 px-1.25 rounded-md cursor-pointer transition-all duration-200 ease-in-out border ${
+                            isDropdownMenuOpen ? "bg-var-color-40 border-var-color-41" : "bg-transparent border-transparent"
+                        } hover:bg-var-color-40 hover:border-var-color-41`}
+                    >
+                        <FiChevronUp className={`inline-block text-var-color-08 dark:text-var-color-01 w-5.5 h-5.5 transition-transform duration-200 ease-in-out ${
+                            isDropdownMenuOpen ? "rotate-180" : ""
+                        }`}/>
+                    </button>
+
+                    <div className="flex flex-col justify-center items-end ml-5">
+                        <div className="text-sm text-var-color-08 dark:text-var-color-01">{timeFooter}</div>
+                        <div className="text-sm text-var-color-08 dark:text-var-color-01">{dateFooter}</div>
+                    </div>
                 </section>
             </footer>
+
+            {/* منوی دکمهٔ دراپ‌داون */}
+            <section
+                ref={dropdownMenuRef}
+                inert={!isDropdownMenuOpen}
+                style={{left: `${dropdownLeft}px`}}
+                className={`fixed z-20 flex flex-col justify-center items-start min-w-56 p-2.5 bottom-16.25 dark:bottom-16.75 rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-250 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
+                    isDropdownMenuOpen ? "translate-y-0" : "translate-y-[110%]"
+                }`}
+            >
+                {dropdownItems.map((item) => (
+                    <MenuItem key={item.id} id={item.id} icon={item.icon} text={item.text}
+                              toggle="dropdown" onClick={item.onClick}/>
+                ))}
+            </section>
 
             {/* پنلِ منوی حساب کاربری */}
             <section

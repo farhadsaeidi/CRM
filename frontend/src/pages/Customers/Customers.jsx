@@ -1,28 +1,33 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {useSearchParams} from "react-router";
-import {FiEdit2, FiPlus, FiTrash2} from "react-icons/fi";
-import {HiOutlineSearch} from "react-icons/hi";
+import {FiChevronUp, FiEdit2, FiFilter, FiPlus, FiRefreshCw, FiTrash2} from "react-icons/fi";
+import {HiOutlineUsers} from "react-icons/hi";
+import {TbArrowsLeftRight, TbMoodNeutral} from "react-icons/tb";
+import {FaHandshakeSimple} from "react-icons/fa6";
+import {BsGraphDownArrow, BsGraphUpArrow} from "react-icons/bs";
 import {customersApi} from "../../api/customers.js";
 import {NEW_CUSTOMER_EVENT} from "../../components/common/Header.jsx";
+import MenuItem from "../../components/common/MenuItem.jsx";
 import Pagination from "../../components/common/Pagination.jsx";
 import CustomerModal from "./components/CustomerModal.jsx";
 import {notify} from "../../lib/notify.jsx";
 
-// همان کدهایی که سرور می‌فهمد؛ برچسب و رنگ کنارشان می‌ماند تا در یک جا عوض شود
-const FILTERS = [
-    {key: "all", label: "همه"},
-    {key: "debt", label: "بدهکار"},
-    {key: "credit", label: "بستانکار"},
-    {key: "zero", label: "بی حساب"},
+// آیتم‌های منوی فیلتر — همان چهار گزینهٔ پروژهٔ CustomerManagement
+const FILTER_ITEMS = [
+    {id: "customersItem", key: "all", icon: HiOutlineUsers, text: "همه مشتریان", button: "فیلترها"},
+    {id: "deptorsItem", key: "debt", icon: BsGraphDownArrow, text: "بدهکاران", button: "بدهکاران"},
+    {id: "creditorsItem", key: "credit", icon: BsGraphUpArrow, text: "بستانکاران", button: "بستانکاران"},
+    {id: "handshakeItem", key: "zero", icon: FaHandshakeSimple, text: "تسویه حساب کامل", button: "تسویه شده"},
 ];
 
-const CODE_STYLE = {
-    "-1": "bg-var-color-26 text-var-color-28 border-var-color-27",
-    "0": "bg-var-color-34 text-var-color-05 dark:text-var-color-03 border-var-color-02 dark:border-var-color-38",
-    "1": "bg-var-color-29 text-var-color-31 border-var-color-30",
+// شکلِ برچسبِ وضعیت — رنگ‌ها عمداً سبز/قرمز نیستند، همان پالتِ پروژهٔ اصلی است
+const STATUS_CLASSES = {
+    "1": "text-var-color-50 bg-var-color-17 border-var-color-17",
+    "-1": "text-var-color-55 bg-var-color-56 border-var-color-56",
+    "0": "text-var-color-53 bg-var-color-54 border-var-color-54",
 };
 
-const formatDate = (iso) =>
+const formatCreatedDate = (iso) =>
     iso ? new Intl.DateTimeFormat("fa-IR", {year: "numeric", month: "2-digit", day: "2-digit"})
         .format(new Date(iso)) : "—";
 
@@ -36,17 +41,20 @@ const Customers = () => {
 
     const [data, setData] = useState({count: 0, results: []});
     const [loading, setLoading] = useState(true);
-    const [modal, setModal] = useState(null); // {mode, customer}
-    // با هر تغییرِ این عدد، فهرست دوباره خوانده می‌شود (بعد از ثبت/ویرایش/حذف)
+    const [modal, setModal] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+    const [filterMenuPos, setFilterMenuPos] = useState(null);
+    const [showCustomTooltip, setShowCustomTooltip] = useState(true);
+
+    const filterBtnRef = useRef(null);
+    const filterMenuRef = useRef(null);
 
     const pageSize = 10; // برابر با PAGE_SIZE در تنظیمات DRF
     const totalPages = Math.max(1, Math.ceil(data.count / pageSize));
+    const activeFilter = FILTER_ITEMS.find((item) => item.key === filter) ?? FILTER_ITEMS[0];
 
-    // setLoading(true) عمداً اینجا نیست: setState همگام داخل بدنهٔ افکت رندرِ آبشاری
-    // می‌سازد و قاعدهٔ react-hooks/set-state-in-effect جلویش را می‌گیرد. مقدار اولیهٔ
-    // loading برابر true است و بعد از هر واکشی false می‌شود؛ در واکشی‌های بعدی
-    // دادهٔ قبلی چند لحظه سرِ جایش می‌ماند که از پرشِ جدول بهتر است.
+    // setLoading(true) عمداً داخل بدنهٔ افکت نیست — قاعدهٔ set-state-in-effect
     useEffect(() => {
         let ignore = false;
         customersApi.list({query, filter, page})
@@ -65,7 +73,6 @@ const Customers = () => {
         };
     }, [query, filter, page, refreshKey]);
 
-    // تغییرِ پارامترهای یوآرال با حفظِ بقیه
     const setParam = useCallback((changes) => {
         setSearchParams((prev) => {
             const next = new URLSearchParams(prev);
@@ -77,12 +84,41 @@ const Customers = () => {
         });
     }, [setSearchParams]);
 
-    // دکمهٔ «ثبت مشتری جدید» در هدر است و از طریق رویدادِ سراسری خبر می‌دهد
+    // دکمهٔ «ثبت مشتری جدید» در هدر است و با رویدادِ سراسری خبر می‌دهد
     useEffect(() => {
         const onNew = () => setModal({mode: "create", customer: null});
         window.addEventListener(NEW_CUSTOMER_EVENT, onNew);
         return () => window.removeEventListener(NEW_CUSTOMER_EVENT, onNew);
     }, []);
+
+    // بستنِ منوی فیلتر با کلیک بیرون
+    useEffect(() => {
+        const onDocClick = (e) => {
+            if (filterBtnRef.current?.contains(e.target) || filterMenuRef.current?.contains(e.target)) return;
+            setIsFilterMenuOpen(false);
+        };
+        document.addEventListener("click", onDocClick);
+        return () => document.removeEventListener("click", onDocClick);
+    }, []);
+
+    // موقعیتِ منو زیر دکمه‌اش محاسبه می‌شود. خواندن ref حین رندر ممنوع است
+    // (قاعدهٔ react-hooks/refs)، پس مقدار در state می‌نشیند و در افکت پر می‌شود.
+    const positionFilterMenu = useCallback(() => {
+        const rect = filterBtnRef.current?.getBoundingClientRect();
+        if (rect) setFilterMenuPos({top: rect.bottom + 8, right: window.innerWidth - rect.right});
+    }, []);
+
+    useEffect(() => {
+        if (!isFilterMenuOpen) return;
+        const frame = requestAnimationFrame(positionFilterMenu);
+        window.addEventListener("resize", positionFilterMenu);
+        window.addEventListener("scroll", positionFilterMenu, true);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener("resize", positionFilterMenu);
+            window.removeEventListener("scroll", positionFilterMenu, true);
+        };
+    }, [isFilterMenuOpen, positionFilterMenu]);
 
     const onModalDone = (mode) => {
         setModal(null);
@@ -91,112 +127,172 @@ const Customers = () => {
         else setRefreshKey((k) => k + 1);
     };
 
-    const iconBtn = "w-8 h-8 flex items-center justify-center rounded-lg border border-transparent transition-all duration-200 ease-in-out cursor-pointer";
+    const actionBtn = "cursor-pointer transition-all duration-200 ease-in-out";
 
     return (
-        <section className="h-full flex flex-col gap-4">
-            {/* نوار فیلتر و شمارش */}
-            <div className="shrink-0 flex flex-wrap items-center gap-2.5 px-4.5 py-3 rounded-[18px] bg-var-color-00 dark:bg-var-color-36 border border-var-color-02 dark:border-var-color-38">
-                {FILTERS.map((item) => (
-                    <button
-                        key={item.key}
-                        type="button"
-                        onClick={() => setParam({filter: item.key, page: 1})}
-                        className={`px-3.5 py-1.5 rounded-full text-sm border transition-all duration-200 ease-in-out cursor-pointer ${
-                            filter === item.key
-                                ? "bg-var-color-15 border-var-color-15 text-var-color-00"
-                                : "bg-transparent border-var-color-02 dark:border-var-color-38 text-var-color-06 dark:text-var-color-03 hover:border-var-color-15 hover:text-var-color-15"
-                        }`}
-                    >
-                        {item.label}
-                    </button>
-                ))}
-
-                {/* در RTL برای چسباندن به انتهای خط از mr-auto استفاده می‌شود */}
-                <div className="mr-auto flex items-center gap-3">
-                    {query && (
-                        <button type="button" onClick={() => setParam({query: null, page: 1})}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-var-color-13 bg-var-color-12 text-var-color-15 cursor-pointer hover:bg-var-color-15 hover:text-var-color-00 transition-all duration-200">
-                            <HiOutlineSearch className="w-4 h-4"/>
-                            <span>«{query}» ✕</span>
-                        </button>
-                    )}
-                    <span className="text-sm text-var-color-05 dark:text-var-color-04">
-                        {data.count.toLocaleString("fa-IR")} مشتری
-                    </span>
-                    {/* روی موبایل دکمهٔ هدر پنهان است، پس اینجا یکی هست */}
-                    <button type="button" onClick={() => setModal({mode: "create", customer: null})}
-                            className="2xs:hidden w-8 h-8 flex items-center justify-center rounded-lg btn btn-bluish">
-                        <FiPlus className="w-4.5 h-4.5"/>
-                    </button>
-                </div>
-            </div>
-
-            {/* جدول
-                سرستون و ردیف‌ها داخل یک ناحیهٔ اسکرول‌اند تا در نمای باریک با هم
-                افقی حرکت کنند؛ اگر سرستون بیرون بماند با اسکرول از ستون‌ها جدا می‌افتد.
-                min-w هم لازم است وگرنه ستون‌ها زیر عرضِ کفِ خودشان له می‌شوند. */}
-            <div className="flex-1 min-h-0 rounded-[18px] bg-var-color-00 dark:bg-var-color-36 border border-var-color-02 dark:border-var-color-38 overflow-hidden">
-                <div className="h-full overflow-auto">
-                    <div className="min-w-[46rem]">
-                        {/* سرستون‌ها — هنگام اسکرول عمودی بالا می‌ماند، پس پس‌زمینهٔ
-                            مات لازم دارد وگرنه ردیف‌ها از زیرش دیده می‌شوند */}
-                        <div className="sticky top-0 z-10 grid grid-customer gap-2 px-4 py-3 bg-var-color-00 dark:bg-var-color-36 border-b border-b-var-color-02 dark:border-b-var-color-38 text-sm text-var-color-05 dark:text-var-color-04">
-                            <span>نام و نام خانوادگی</span>
-                            <span>شماره تماس</span>
-                            <span>تاریخ ثبت</span>
-                            <span>وضعیت حساب</span>
-                            <span className="text-left">عملیات</span>
+        <>
+            <section className="w-[75%] mx-auto rounded-xl border border-var-color-57 dark:border-var-color-38 shadow-lg overflow-hidden flex flex-col max-h-full">
+                {/* هدر جدول */}
+                <header className="shrink-0 w-full bg-var-color-00 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
+                    <div className="relative flex flex-row justify-between items-center py-2 pl-3.5 pr-28.5">
+                        <div/>
+                        {/* عنوان جدول */}
+                        <div className="absolute left-1/2 -translate-x-1/2 text-ellipsis font-MorabbaMedium dark:font-MorabbaLight text-[25px] text-var-color-08 dark:text-var-color-02 tracking-wide whitespace-nowrap">
+                            جدول مشتریان
                         </div>
+                        {/* دکمه‌های فیلتر، بازنشانی و ثبت */}
+                        <div className="flex flex-row justify-between items-center gap-3">
+                            <button
+                                type="button"
+                                ref={filterBtnRef}
+                                data-tooltip={showCustomTooltip && !isFilterMenuOpen ? "فیلترها" : undefined}
+                                onClick={() => {
+                                    setIsFilterMenuOpen((v) => !v);
+                                    setShowCustomTooltip(false);
+                                }}
+                                onMouseLeave={() => setShowCustomTooltip(true)}
+                                className={`w-auto h-7 rounded-full btn justify-between! btn-bluish pl-1 pr-2 font-IRANSansXFaNumRegular ${
+                                    isFilterMenuOpen ? "bg-var-color-15! text-var-color-00! border-var-color-15!" : ""
+                                } ${showCustomTooltip && !isFilterMenuOpen ? "custom-tooltip" : ""}`}
+                            >
+                                <FiFilter className="w-4.5 h-4.5"/>
+                                <span className="mr-1.5 ml-2.5 font-IRANSansXFaNumUltraLight!">{activeFilter.button}</span>
+                                <FiChevronUp className={`inline-block w-4.5 h-4.5 transition-transform duration-200 ease-in-out ${isFilterMenuOpen ? "rotate-0" : "rotate-180"}`}/>
+                            </button>
 
-                        {loading ? (
-                        <p className="py-10 text-center text-var-color-05 dark:text-var-color-04">در حال بارگذاری ...</p>
-                    ) : data.results.length === 0 ? (
-                        <p className="py-10 text-center text-var-color-05 dark:text-var-color-04">
-                            {query || filter !== "all" ? "مشتری‌ای با این مشخصات پیدا نشد." : "هنوز مشتری‌ای ثبت نشده است."}
-                        </p>
-                    ) : (
-                        data.results.map((customer) => (
-                            <div key={customer.id}
-                                 className="grid grid-customer gap-2 items-center px-4 py-2.5 border-b border-b-var-color-02 dark:border-b-var-color-38 last:border-b-0 hover:bg-var-color-01 dark:hover:bg-var-color-37 transition-colors duration-150">
-                                <span className="truncate text-var-color-08 dark:text-var-color-01">{customer.fullname}</span>
-                                <span className="text-var-color-06 dark:text-var-color-03">{customer.phone}</span>
-                                <span className="text-var-color-06 dark:text-var-color-03">{formatDate(customer.created)}</span>
-                                <span>
-                                    <span className={`inline-block px-3 py-1 rounded-full text-xs border ${CODE_STYLE[String(customer.code)]}`}>
-                                        {customer.status}
-                                    </span>
-                                </span>
-                                <span className="flex items-center justify-end gap-1.5">
-                                    <button type="button" aria-label="ویرایش" data-tooltip="ویرایش"
-                                            onClick={() => setModal({mode: "edit", customer})}
-                                            className={`${iconBtn} custom-tooltip text-var-color-05 dark:text-var-color-03 hover:border-var-color-13 hover:bg-var-color-12 hover:text-var-color-15`}>
-                                        <FiEdit2 className="w-4 h-4"/>
-                                    </button>
-                                    <button type="button" aria-label="حذف" data-tooltip="حذف"
-                                            onClick={() => setModal({mode: "delete", customer})}
-                                            className={`${iconBtn} custom-tooltip text-var-color-05 dark:text-var-color-03 hover:border-var-color-45 hover:bg-var-color-26 hover:text-var-color-28`}>
-                                        <FiTrash2 className="w-4 h-4"/>
-                                    </button>
-                                </span>
-                            </div>
-                        ))
-                        )}
+                            <button type="button" data-tooltip={showCustomTooltip ? "بازنشانی جدول" : undefined}
+                                    onClick={() => setRefreshKey((k) => k + 1)}
+                                    onMouseLeave={() => setShowCustomTooltip(true)}
+                                    className={`rounded-full btn btn-bluish ${showCustomTooltip ? "custom-tooltip" : ""}`}>
+                                <div className="w-7 h-7 flex justify-center items-center">
+                                    <FiRefreshCw className="w-4 h-4"/>
+                                </div>
+                            </button>
+
+                            <button type="button" data-tooltip={showCustomTooltip ? "ثبت مشتری" : undefined}
+                                    onClick={() => setModal({mode: "create", customer: null})}
+                                    onMouseLeave={() => setShowCustomTooltip(true)}
+                                    className={`rounded-full btn btn-bluish ${showCustomTooltip ? "custom-tooltip" : ""}`}>
+                                <div className="w-7 h-7 flex justify-center items-center">
+                                    <FiPlus className="w-5 h-5"/>
+                                </div>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </header>
 
-            {/* صفحه‌بندی */}
-            {!loading && totalPages > 1 && (
-                <div className="shrink-0 pb-1">
-                    <Pagination page={page} totalPages={totalPages} onChange={(next) => setParam({page: next})}/>
-                </div>
-            )}
+                {/* بدنهٔ جدول */}
+                <main className="flex-1 min-h-0 overflow-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="w-full">
+                            <tr className="w-full grid grid-customer items-center bg-var-color-59 dark:bg-var-color-52 text-sm text-var-color-60 dark:text-var-color-51 border-b border-var-color-57 dark:border-var-color-38 font-IRANSansXFaNumLight px-4 py-3">
+                                <th className="px-2 text-right">نام و نام خانوادگی</th>
+                                <th className="px-2 text-center">شماره تماس</th>
+                                <th className="px-2 text-center">تاریخ ایجاد</th>
+                                <th className="px-2 text-center">وضعیت</th>
+                                <th className="px-2 text-center">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-var-color-58 dark:bg-var-color-37 text-[15px] text-var-color-06 dark:text-var-color-46 font-IRANSansXFaNumLight">
+                            {loading ? (
+                                <tr className="w-full">
+                                    <th className="block text-var-color-06 dark:text-var-color-39 text-center p-4 font-IRANSansXFaNumLight">
+                                        در حال بارگذاری ...
+                                    </th>
+                                </tr>
+                            ) : data.results.length === 0 ? (
+                                <tr className="w-full">
+                                    <th className="block text-var-color-06 dark:text-var-color-39 text-center p-4 font-IRANSansXFaNumLight">
+                                        محتوایی برای نمایش وجود ندارد!
+                                        <TbMoodNeutral className="w-5.75 h-5.75 text-var-color-53 inline-block mr-2"/>
+                                    </th>
+                                </tr>
+                            ) : (
+                                data.results.map((customer, index) => {
+                                    const isLastItem = index === data.results.length - 1;
+                                    return (
+                                        <tr
+                                            key={customer.id}
+                                            tabIndex={-1}
+                                            onDoubleClick={() => setModal({mode: "edit", customer})}
+                                            className={`w-full grid grid-customer items-center hover:bg-var-color-59 dark:hover:bg-var-color-52 p-4 ${
+                                                !isLastItem ? "border-b border-var-color-57 dark:border-var-color-38" : ""
+                                            }`}
+                                        >
+                                            <th className="px-2 text-right whitespace-nowrap overflow-hidden text-ellipsis">{customer.fullname}</th>
+                                            <th className="px-2 text-center whitespace-nowrap font-IRANSansXFaNumUltraLight">{customer.phone}</th>
+                                            <th className="px-2 text-center whitespace-nowrap font-IRANSansXFaNumUltraLight">{formatCreatedDate(customer.created)}</th>
+                                            <th className="px-2 flex justify-center items-center">
+                                                <span className={`w-19 py-0.5 text-[13px] text-center border rounded-full ${STATUS_CLASSES[String(customer.code)]}`}>
+                                                    {customer.status}
+                                                </span>
+                                            </th>
+                                            <th className="px-2 flex justify-center items-center gap-3">
+                                                <button type="button"
+                                                        data-tooltip={showCustomTooltip ? "تراکنش های مالی" : undefined}
+                                                        onClick={() => notify("صفحهٔ تراکنش‌ها در گام بعد اضافه می‌شود.", "info")}
+                                                        onMouseLeave={() => setShowCustomTooltip(true)}
+                                                        className={`${actionBtn} hover:text-var-color-31 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
+                                                    <TbArrowsLeftRight className="w-4.5 h-4.5"/>
+                                                </button>
+                                                <button type="button"
+                                                        data-tooltip={showCustomTooltip ? "ویرایش" : undefined}
+                                                        onClick={() => setModal({mode: "edit", customer})}
+                                                        onMouseLeave={() => setShowCustomTooltip(true)}
+                                                        className={`${actionBtn} hover:text-var-color-53 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
+                                                    <FiEdit2 className="w-4.5 h-4.5"/>
+                                                </button>
+                                                <button type="button"
+                                                        data-tooltip={showCustomTooltip ? "حذف" : undefined}
+                                                        onClick={() => setModal({mode: "delete", customer})}
+                                                        onMouseLeave={() => setShowCustomTooltip(true)}
+                                                        className={`${actionBtn} hover:text-var-color-28 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
+                                                    <FiTrash2 className="w-5 h-5"/>
+                                                </button>
+                                            </th>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </main>
+
+                {/* صفحه‌بندی */}
+                {!loading && data.results.length > 0 && (
+                    <div className="shrink-0">
+                        <Pagination page={page} totalPages={totalPages} onPageClick={(next) => setParam({page: next})}/>
+                    </div>
+                )}
+            </section>
+
+            {/* منوی فیلتر مشتریان — بیرونِ کارت رندر می‌شود تا overflow-hidden آن نبُرَدش */}
+            <div
+                ref={filterMenuRef}
+                className={`fixed w-48 p-2.5 rounded-xl bg-var-color-00 dark:bg-var-color-43 border border-var-color-02 dark:border-var-color-38 shadow-md dark:shadow-lg z-50 origin-top transition duration-200 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
+                    isFilterMenuOpen ? "opacity-100 scale-y-100 pointer-events-auto" : "opacity-0 scale-y-0 pointer-events-none"
+                }`}
+                style={{top: filterMenuPos?.top ?? -9999, right: filterMenuPos?.right ?? 16}}
+            >
+                {FILTER_ITEMS.map((item) => (
+                    <MenuItem
+                        key={item.id}
+                        id={item.id}
+                        icon={item.icon}
+                        text={item.text}
+                        toggle="customersFilter"
+                        active={item.key === filter}
+                        onClick={() => {
+                            setParam({filter: item.key, page: 1});
+                            setIsFilterMenuOpen(false);
+                        }}
+                    />
+                ))}
+            </div>
 
             {modal && (
                 <CustomerModal
-                    // key باعث می‌شود با باز شدن روی مشتریِ دیگر، فرم از نو ساخته و
-                    // مقادیرش ریست شود — بدون افکتِ ریست‌کننده
+                    // key: با باز شدن روی مشتریِ دیگر فرم از نو ساخته می‌شود — بدون افکتِ ریست
                     key={`${modal.mode}-${modal.customer?.id ?? "new"}`}
                     mode={modal.mode}
                     customer={modal.customer}
@@ -204,7 +300,7 @@ const Customers = () => {
                     onDone={onModalDone}
                 />
             )}
-        </section>
+        </>
     );
 };
 
