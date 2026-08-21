@@ -78,6 +78,7 @@
     --color-var-color-59: #F5F7F6;                  /* سرستون و هاورِ ردیف در لایت */
     --color-var-color-60: #617b89;                  /* متن سرستون در لایت */
     --color-var-color-61: rgba(247, 181, 39, 0.6);  /* کهربایی ۶۰٪ — بوردر دکمهٔ ویرایش */
+    --color-var-color-62: rgba(247, 181, 39, 0.4);  /* کهربایی ۴۰٪ — بوردر ورودی در دارک */
 
     --color-var-gradient-00: linear-gradient(to right, rgba(249, 47, 96, 1), rgba(249, 47, 96, 0.6));
     --color-var-gradient-01: linear-gradient(to right, rgba(249, 115, 22, 1), rgba(249, 115, 22, 0.5));
@@ -96,6 +97,8 @@
     --shadow-var-shadow-04: inset 0 1px 3px rgba(120, 120, 120, 0.1), inset 0 -1px 3px rgba(120, 120, 120, 0.1), inset 1px 0 3px rgba(120, 120, 120, 0.1), inset -1px 0 3px rgba(120, 120, 120, 0.1);
     --shadow-var-shadow-05: inset 0 1px 3px rgba(50, 57, 76, 0.4), inset 0 -1px 3px rgba(50, 57, 76, 0.4), inset 1px 0 3px rgba(50, 57, 76, 0.4), inset -1px 0 3px rgba(50, 57, 76, 0.4);
     --shadow-var-shadow-06: 0 0 1px rgba(249, 47, 96, 1.0), 0 0 2px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0);
+    /* هالهٔ کهربایی — فوکوسِ ورودی‌های مودالِ ویرایش */
+    --shadow-var-shadow-07: 0 0 1px rgba(251, 191, 36, 1), 0 0 2px rgba(251, 191, 36, 1), 0 0 5px rgba(251, 191, 36, 1), 0 0 5px rgba(251, 191, 36, 1);
 
     /* Custom Border Radius */
     --radius-4xl: 2rem;
@@ -399,6 +402,21 @@
 
     .dark .input-purplish:-webkit-autofill:focus {
         -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-01) !important;
+    }
+
+    /* ورودی‌های مودالِ ویرایش — کهربایی، تا با نوارِ بالای کارت و دکمه‌اش ست باشد */
+    .input-yellowish {
+        @apply hover:border-var-color-61 dark:hover:border-var-color-62 focus:shadow-var-shadow-07 focus:border-var-color-61 dark:focus:border-var-color-62;
+    }
+
+    /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
+    .input-yellowish:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-07) !important;
+        box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-07) !important;
+    }
+
+    .dark .input-yellowish:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-07) !important;
     }
 
     .input-error {

@@ -24,6 +24,8 @@ const MODES = {
         badgeIcon: "w-8 h-8",
         button: "btn-bluish",
         submitIcon: "w-7 h-7 ml-0.5",
+        input: "input-bluish",
+        fieldIcon: "text-var-color-15",
     },
     edit: {
         title: "ویرایش مشتری",
@@ -34,6 +36,10 @@ const MODES = {
         badgeIcon: "w-7 h-7",
         button: "btn-yellowish",
         submitIcon: "w-4.5 h-4.5 mx-2",
+        // در حالت ویرایش هیچ آبی‌ای نباید دیده شود — بوردر فوکوس و آیکون‌های
+        // فیلدها هم کهربایی‌اند تا با نوارِ بالای کارت و دکمه ست باشند
+        input: "input-yellowish",
+        fieldIcon: "text-var-color-53",
     },
     delete: {
         title: "حذف مشتری",
@@ -44,6 +50,8 @@ const MODES = {
         badgeIcon: "w-8 h-8",
         button: "btn-redish",
         submitIcon: "w-5 h-5 mx-2",
+        input: "input-error",
+        fieldIcon: "text-var-color-28",
     },
 };
 
@@ -154,7 +162,7 @@ const CustomerModal = ({mode, customer, onClose, onDone}) => {
     };
 
     const inputClass = (hasError) =>
-        `w-full h-full text-[15px] pr-8.5 rounded-xl input input-bluish input-placeholder ${hasError ? "input-error" : ""}`;
+        `w-full h-full text-[15px] pr-8.5 rounded-xl input ${config.input} input-placeholder ${hasError ? "input-error" : ""}`;
 
     return (
         <section
@@ -202,7 +210,7 @@ const CustomerModal = ({mode, customer, onClose, onDone}) => {
                                 نام و نام خانوادگی
                             </label>
                             <div className="relative w-full h-10 mt-2 rounded-xl">
-                                <FaRegUser className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-var-color-15 pointer-events-none"/>
+                                <FaRegUser className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${config.fieldIcon}`}/>
                                 <input
                                     id={id + "fullname"}
                                     ref={setInputRef(0)}
@@ -225,7 +233,7 @@ const CustomerModal = ({mode, customer, onClose, onDone}) => {
                                 شماره همراه
                             </label>
                             <div className="relative w-full h-10 mt-2 rounded-xl">
-                                <GrPhone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-var-color-15 pointer-events-none"/>
+                                <GrPhone className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${config.fieldIcon}`}/>
                                 <input
                                     id={id + "phone"}
                                     ref={setInputRef(1)}

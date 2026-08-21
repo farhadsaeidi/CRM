@@ -2,7 +2,7 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import {useSearchParams} from "react-router";
 import {FiChevronUp, FiFilter, FiPlus, FiRefreshCw} from "react-icons/fi";
 import {HiOutlineUsers} from "react-icons/hi";
-import {HiOutlineBanknotes, HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
+import {HiOutlineArrowsRightLeft, HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
 import {TbMoodNeutral} from "react-icons/tb";
 import {FaHandshakeSimple} from "react-icons/fa6";
 import {BsGraphDownArrow, BsGraphUpArrow} from "react-icons/bs";
@@ -250,7 +250,7 @@ const Customers = () => {
                                                         onClick={() => notify("صفحهٔ تراکنش‌ها در گام بعد اضافه می‌شود.", "info")}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-31 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
-                                                    <HiOutlineBanknotes className="w-5.5 h-5.5"/>
+                                                    <HiOutlineArrowsRightLeft className="w-5 h-5"/>
                                                 </button>
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "ویرایش" : undefined}
