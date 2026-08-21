@@ -146,7 +146,9 @@ const CustomersTable = () => {
 
     return (
         <>
-            <section className="w-full rounded-xl border border-var-color-57 dark:border-var-color-38 shadow-lg overflow-hidden flex flex-col max-h-full">
+            {/* بدون سایه — پنل‌ها فقط با رنگ و بوردر از هم جدا می‌شوند؛ سایه
+                در این پروژه فقط برای مودال‌ها عمدی است */}
+            <section className="w-full rounded-xl border border-var-color-57 dark:border-var-color-38 overflow-hidden flex flex-col max-h-full">
                 {/* هدر جدول */}
                 <header className="shrink-0 w-full bg-var-color-00 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
                     <div className="relative flex flex-row justify-between items-center py-2 pl-3.5 pr-28.5">
