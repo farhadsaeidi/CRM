@@ -2,10 +2,11 @@
 // متعلق به کدام منوست و رنگِ حالتِ فعال و هاور از همان می‌آید.
 export default function MenuItem({id, icon: Icon, text, active, toggle, onClick}) {
     const palette =
+        // روی زمینهٔ فیروزه‌ای متن و آیکونِ تیره خوانا‌تر از سفید است
         toggle === "customersFilter"
             ? active
-                ? "bg-var-color-15 dark:bg-var-color-35 text-var-color-00 dark:text-var-color-15 border-var-color-15 dark:border-var-color-37"
-                : "text-var-color-08 dark:text-var-color-46 hover:bg-var-color-15 dark:hover:bg-var-color-35 hover:text-var-color-00 dark:hover:text-var-color-15 hover:border-var-color-15 dark:hover:border-var-color-37"
+                ? "bg-var-color-15 dark:bg-var-color-35 text-var-color-11 dark:text-var-color-15 border-var-color-15 dark:border-var-color-37"
+                : "text-var-color-08 dark:text-var-color-46 hover:bg-var-color-15 dark:hover:bg-var-color-35 hover:text-var-color-11 dark:hover:text-var-color-15 hover:border-var-color-15 dark:hover:border-var-color-37"
             : toggle === "transactionsFilter"
                 ? active
                     ? "bg-var-color-29 text-var-color-31 border-var-color-47"

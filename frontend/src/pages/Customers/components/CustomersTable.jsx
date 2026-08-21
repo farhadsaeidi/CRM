@@ -166,8 +166,10 @@ const CustomersTable = () => {
                                 }}
                                 onMouseEnter={() => !isFilterMenuOpen && showTooltip(filterBtnRef, "فیلترها")}
                                 onMouseLeave={hideTooltip}
+                                // روی زمینهٔ فیروزه‌ای، متن و آیکونِ تیره کنتراست بیشتری
+                                // از سفید دارد — همان قاعده‌ای که برای شمارهٔ صفحهٔ فعال هم به کار رفت
                                 className={`w-auto h-7 rounded-full btn justify-between! btn-bluish pl-1 pr-2 font-IRANSansXFaNumRegular ${
-                                    isFilterMenuOpen ? "bg-var-color-15! text-var-color-00! border-var-color-15!" : ""
+                                    isFilterMenuOpen ? "bg-var-color-15! text-var-color-11! border-var-color-15!" : ""
                                 }`}
                             >
                                 <FiFilter className="w-4.5 h-4.5"/>
