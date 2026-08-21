@@ -181,7 +181,8 @@ const Footer = () => {
                         onMouseLeave={() => setShowCustomTooltip(true)}
                         className={`p-2 rounded-md cursor-pointer transition-all duration-200 ease-in-out border ${isStartMenuOpen ? "bg-var-color-01 dark:bg-var-color-40 border-var-color-02 dark:border-var-color-41" : "bg-transparent border-transparent"} hover:bg-var-color-01 dark:hover:bg-var-color-40 hover:border-var-color-02 dark:hover:border-var-color-41 ${showCustomTooltip ? "custom-tooltip" : ""} group`}
                     >
-                        <div className="w-6.75 h-6.75 inline-block align-middle text-var-color-46 group-hover:text-var-color-15 group-active:scale-75 transition-transform duration-150 ease-in-out">
+                        {/* var-color-46 خاکستریِ روشن است و روی زمینهٔ سفیدِ تم لایت گم می‌شود */}
+                        <div className="w-6.75 h-6.75 inline-block align-middle text-var-color-05 dark:text-var-color-46 group-hover:text-var-color-15 dark:group-hover:text-var-color-15 group-active:scale-75 transition-transform duration-150 ease-in-out">
                             <WindowsIcon className="w-full h-full"/>
                         </div>
                     </button>
@@ -219,9 +220,14 @@ const Footer = () => {
                         aria-label="منوی گزارش‌ها"
                         aria-expanded={isDropdownMenuOpen}
                         onClick={() => setIsDropdownMenuOpen((v) => !v)}
+                        // var-color-40/41 سرمه‌ای تیره‌اند و فقط برای تم دارک؛ بدون
+                        // پیشوند dark: در تم لایت هم اعمال می‌شدند و دکمه سیاه می‌شد.
+                        // همان جفت‌رنگی که دکمهٔ حساب کاربری استفاده می‌کند.
                         className={`flex justify-center items-center py-2.5 px-1.25 rounded-md cursor-pointer transition-all duration-200 ease-in-out border ${
-                            isDropdownMenuOpen ? "bg-var-color-40 border-var-color-41" : "bg-transparent border-transparent"
-                        } hover:bg-var-color-40 hover:border-var-color-41`}
+                            isDropdownMenuOpen
+                                ? "bg-var-color-01 dark:bg-var-color-40 border-var-color-02 dark:border-var-color-41"
+                                : "bg-transparent border-transparent"
+                        } hover:bg-var-color-01 dark:hover:bg-var-color-40 hover:border-var-color-02 dark:hover:border-var-color-41`}
                     >
                         <FiChevronUp className={`inline-block text-var-color-08 dark:text-var-color-01 w-5.5 h-5.5 transition-transform duration-200 ease-in-out ${
                             isDropdownMenuOpen ? "rotate-180" : ""

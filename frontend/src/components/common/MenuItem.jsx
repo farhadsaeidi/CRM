@@ -12,7 +12,9 @@ export default function MenuItem({id, icon: Icon, text, active, toggle, onClick}
                     ? "bg-var-color-29 text-var-color-31 border-var-color-47"
                     : "text-var-color-08 dark:text-var-color-46 hover:bg-var-color-29 hover:text-var-color-31 hover:border-var-color-47"
                 : active
-                    ? "bg-var-color-40 text-var-color-46 border-var-color-41"
+                    // var-color-40/41/46 فقط برای تم دارک‌اند؛ بدون پیشوند dark:
+                    // در تم لایت هم اعمال می‌شدند و آیتم سرمه‌ای تیره می‌شد
+                    ? "bg-var-color-17 dark:bg-var-color-40 text-var-color-19 dark:text-var-color-46 border-var-color-13 dark:border-var-color-41"
                     : "text-var-color-08 dark:text-var-color-46 hover:bg-var-color-17 dark:hover:bg-var-color-40 hover:text-var-color-19 dark:hover:text-var-color-46 hover:border-var-color-13 dark:hover:border-var-color-41";
 
     return (
