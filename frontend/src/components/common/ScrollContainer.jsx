@@ -1,5 +1,6 @@
 import {useMemo} from "react";
 import {OverlayScrollbarsComponent} from "overlayscrollbars-react";
+import {syncScrollHandles} from "../../lib/scrollSync.js";
 
 /**
  * ناحیهٔ اسکرول‌دار با اسکرول‌بارِ سفارشی — همان کتابخانهٔ OverlayScrollbars که در
@@ -64,7 +65,12 @@ const ScrollContainer = ({
     const events = useMemo(() => ({
         initialized: (instance) => {
             if (viewportRef) viewportRef.current = instance.elements().viewport;
+            syncScrollHandles(instance);
         },
+        // موقعیتِ دسته را خودمان می‌نویسیم تا به مسیرِ داخلیِ کتابخانه وابسته نباشد
+        // — دلیلِ کامل در lib/scrollSync.js
+        scroll: syncScrollHandles,
+        updated: syncScrollHandles,
         destroyed: () => {
             if (viewportRef) viewportRef.current = null;
         },

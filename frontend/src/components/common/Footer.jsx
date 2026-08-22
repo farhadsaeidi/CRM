@@ -58,6 +58,7 @@ const Footer = () => {
     const [dateSearchRight, setDateSearchRight] = useState(null);
     const dateSearchBoxRef = useRef(null);
     const dateSearchPanelRef = useRef(null);
+    const dateSearchInputRef = useRef(null);
 
     // با باز بودنِ صفحهٔ تراکنش‌ها (‎?customer=‎ در یوآرال) جستجوی نوارِ فوتر از
     // «نام مشتری» به «تاریخ تراکنش» عوض می‌شود — همان رفتار CustomerManagement
@@ -124,6 +125,13 @@ const Footer = () => {
         document.addEventListener("click", onDocClick);
         return () => document.removeEventListener("click", onDocClick);
     }, []);
+
+    // با بسته شدنِ پنل، فوکوس هم از کادر برداشته می‌شود. وگرنه اگر با کلیک روی
+    // خودِ کادر بسته شود، فوکوس می‌ماند و هالهٔ آبی روشن باقی می‌ماند در حالی که
+    // پنلی باز نیست.
+    useEffect(() => {
+        if (!isDateSearchOpen) dateSearchInputRef.current?.blur();
+    }, [isDateSearchOpen]);
 
     // موقعیتِ پنل نسبت به لبهٔ راستِ کادرِ جستجو
     const positionDateSearch = useCallback(() => {
@@ -253,6 +261,7 @@ const Footer = () => {
                             <input
                                 readOnly
                                 type="text"
+                                ref={dateSearchInputRef}
                                 placeholder="جستجوی تاریخ تراکنش های مالی ..."
                                 onClick={() => setIsDateSearchOpen((v) => !v)}
                                 className={`${SEARCH_INPUT_CLASS} pl-3 cursor-pointer caret-transparent`}

@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { OverlayScrollbars } from 'overlayscrollbars'
 import './index.css'
 import App from './App.jsx'
+import { syncScrollHandles } from './lib/scrollSync.js'
 
 // حالا که کتابخانه مقدارِ ScrollTimeline را خوانده، برای بقیهٔ صفحه برمی‌گردانیمش.
 if (window.__ScrollTimeline) {
@@ -19,6 +20,8 @@ if (window.__ScrollTimeline) {
 OverlayScrollbars(
     {target: document.body, cancel: {nativeScrollbarsOverlaid: true}},
     {scrollbars: {theme: 'os-theme-app', autoHide: 'move', autoHideDelay: 500, clickScroll: true}},
+    // موقعیتِ دسته را خودمان می‌نویسیم — دلیلش در lib/scrollSync.js
+    {initialized: syncScrollHandles, scroll: syncScrollHandles, updated: syncScrollHandles},
 )
 
 createRoot(document.getElementById('root')).render(
