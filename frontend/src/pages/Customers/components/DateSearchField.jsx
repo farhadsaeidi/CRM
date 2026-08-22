@@ -33,9 +33,21 @@ const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemCla
     const btnRef = useRef(null);
     const menuRef = useRef(null);
 
+    // منو زیرِ دکمه باز می‌شود، ولی اگر از پایینِ صفحه بزند بیرون بالا کشیده می‌شود
+    // تا با یک حاشیهٔ کوچک بالای لبهٔ پایین بایستد. کشوی «روز» ۳۱ گزینه دارد و
+    // پایین‌ترین کشوی پنل هم هست، پس بدون این، نیمی از تقویم بیرون از صفحه می‌ماند.
+    const MARGIN = 12;
     const place = useCallback(() => {
         const rect = btnRef.current?.getBoundingClientRect();
-        if (rect) setPos({top: rect.bottom + 6, right: window.innerWidth - rect.right});
+        if (!rect) return;
+        // ارتفاعِ منو حتی در حالت بسته درست خوانده می‌شود: scale-y-0 ترنسفورم است
+        // و اندازهٔ چیدمانی را عوض نمی‌کند
+        const menuHeight = menuRef.current?.offsetHeight ?? 0;
+        const maxTop = window.innerHeight - menuHeight - MARGIN;
+        setPos({
+            top: Math.max(MARGIN, Math.min(rect.bottom + 6, maxTop)),
+            right: window.innerWidth - rect.right,
+        });
     }, []);
 
     useEffect(() => {
