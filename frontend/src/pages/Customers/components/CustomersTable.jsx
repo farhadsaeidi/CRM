@@ -23,11 +23,11 @@ const FILTER_ITEMS = [
     {id: "handshakeItem", key: "zero", icon: FaHandshakeSimple, text: "تسویه حساب کامل", button: "تسویه شده"},
 ];
 
-// شکلِ برچسبِ وضعیت — سبز برای بستانکار، قرمز برای بدهکار و کهربایی برای بی‌حساب،
-// یعنی همان معنایی که رنگ‌ها در حسابداری دارند
+// شکلِ برچسبِ وضعیت — سبز برای بستانکار، صورتی برای بدهکار و کهربایی برای بی‌حساب.
+// همین سه رنگ در برچسبِ ماندهٔ فوترِ جدول تراکنش‌ها هم به کار می‌روند.
 const STATUS_CLASSES = {
     "1": "text-var-color-31 bg-var-color-47 border-var-color-47",
-    "-1": "text-var-color-28 bg-var-color-26 border-var-color-26",
+    "-1": "text-var-color-55 bg-var-color-56 border-var-color-56",
     "0": "text-var-color-53 bg-var-color-54 border-var-color-54",
 };
 
@@ -209,7 +209,7 @@ const CustomersTable = () => {
 
                 {/* بدنهٔ جدول — در نمای باریک اسکرول افقی هم لازم است، پس هیچ
                     محورش hidden نمی‌شود */}
-                <ScrollContainer className="flex-1 min-h-0" autoHide="never">
+                <ScrollContainer className="flex-1 min-h-0">
                     <table className="w-full text-left border-collapse">
                         <thead className="w-full">
                             <tr className="w-full grid grid-customer items-center bg-var-color-59 dark:bg-var-color-52 text-sm text-var-color-60 dark:text-var-color-51 border-b border-var-color-57 dark:border-var-color-38 font-IRANSansXFaNumLight px-4 py-3">

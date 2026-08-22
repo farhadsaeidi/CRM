@@ -29,9 +29,12 @@ const ScrollContainer = ({
     color = "var(--color-var-color-15)",
     opacity = 0.7,
     hoverOpacity = 1,
-    width = 6,          // ضخامتِ دستهٔ اسکرول‌بار به پیکسل
-    maxHeight = 120,    // بیشینهٔ درازای دسته — دستهٔ کشیده در فهرست‌های کوتاه زشت است
-    autoHide = "move",  // never | scroll | move | leave
+    width = 4,          // ضخامتِ دستهٔ اسکرول‌بار به پیکسل
+    maxHeight = 200,    // بیشینهٔ درازای دسته
+    // "leave" یعنی اسکرول‌بار در حالت عادی پنهان است و به‌محضِ رفتنِ موس روی ناحیه
+    // ظاهر می‌شود و با بیرون رفتنِ موس دوباره می‌رود. "move" با هر تکانِ موس نشان
+    // می‌دهد و بعد از تاخیر محو می‌کند، "never" همیشه نمایش می‌دهد.
+    autoHide = "leave",
     autoHideDelay = 500,
     overflowX = "scroll",
     overflowY = "scroll",

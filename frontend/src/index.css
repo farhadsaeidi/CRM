@@ -67,8 +67,8 @@
     --color-var-color-49: #f4f6fa;
 
     /* رنگ‌های جدول و وضعیت حساب — از پروژهٔ CustomerManagement منتقل شده‌اند.
-       بستانکار حالا همه‌جا سبز است (۳۱ و ۴۷). بدهکار در جدولِ مشتریان قرمز است
-       (۲۸ و ۲۶) ولی در برچسبِ ماندهٔ فوترِ تراکنش‌ها عمداً صورتی مانده (۵۵ و ۵۶).
+       وضعیت‌ها در هر دو جدول یکی‌اند: بستانکار سبز (۳۱ و ۴۷)، بدهکار صورتی
+       (۵۵ و ۵۶)، بی‌حساب کهربایی (۵۳ و ۵۴).
        شمارهٔ ۵۰ فعلاً مصرف‌کننده‌ای ندارد؛ چون شماره‌ها ترتیبی‌اند حذف نمی‌شود. */
     --color-var-color-50: rgba(6, 182, 212, 1);     /* فیروزه‌ای — بی‌مصرف */
     --color-var-color-51: #94A3B8;                  /* متن سرستون در دارک */
@@ -646,8 +646,8 @@
     --scroll-handle-color: var(--color-var-color-15);
     --scroll-handle-opacity: 0.7;
     --scroll-handle-hover-opacity: 1;
-    --scroll-size: 12px;
-    --scroll-handle-max: 120px;
+    --scroll-size: 10px;
+    --scroll-handle-max: 200px;
 
     /* نگاشت به متغیرهای OverlayScrollbars */
     --os-size: var(--scroll-size);

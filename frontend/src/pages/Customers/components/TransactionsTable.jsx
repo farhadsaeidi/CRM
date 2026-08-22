@@ -22,8 +22,8 @@ const FILTER_ITEMS = [
 ];
 
 // برچسبِ وضعیت در فوترِ جدول پررنگ‌تر از ستونِ وضعیتِ جدول مشتریان است — اینجا
-// یک عدد است که باید به چشم بیاید، آنجا یکی از پنج ردیف.
-// بستانکار سبز است (همان سبزِ جدول مشتریان)، ولی بدهکار عمداً صورتی مانده.
+// یک عدد است که باید به چشم بیاید، آنجا یکی از پنج ردیف. رنگ‌ها همان‌هایند:
+// سبز بستانکار، صورتی بدهکار، کهربایی بی‌حساب.
 const STATUS_CLASSES = {
     "1": "bg-var-color-31 text-var-color-00 dark:bg-var-color-47 dark:text-var-color-31",
     "-1": "bg-var-color-55 text-var-color-00 dark:bg-var-color-56 dark:text-var-color-55",
@@ -232,12 +232,9 @@ const TransactionsTable = ({customerId, onBack}) => {
                 </header>
 
                 {/* بدنهٔ جدول — ارتفاعش به اندازهٔ پنج ردیف بسته است و بقیه اسکرول
-                    می‌خورد؛ رنگِ اسکرول‌بار سبز است چون رنگِ این صفحه سبز است */}
-                <ScrollContainer className="flex-1 min-h-0 h-transactions-5"
-                                 // شفافیت بالا نگه داشته می‌شود وگرنه کنارِ آبیِ توپُرِ
-                                 // دکمه‌های جدول، خاکستری‌زده دیده می‌شود
-                                 opacity={0.85} hoverOpacity={1}
-                                 width={4.3} maxHeight={110} autoHide="never">
+                    می‌خورد. ظاهرِ اسکرول‌بار عمداً پراپِ اختصاصی ندارد تا با بقیهٔ
+                    برنامه یکی بماند؛ تنظیمش در ScrollContainer است. */}
+                <ScrollContainer className="flex-1 min-h-0 h-transactions-5">
                     <table className="w-full text-left border-collapse">
                         {/* سرستون داخل همان ناحیهٔ اسکرول است تا در نمای باریک از ستون‌ها جدا نیفتد */}
                         <thead className="w-full sticky top-0 z-[1]">
