@@ -1,8 +1,10 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
+import {useSearchParams} from "react-router";
 import Sidebar from "../../components/common/Sidebar.jsx";
 import {NEW_CUSTOMER_EVENT} from "../../components/common/Header.jsx";
 import CustomersTable from "./components/CustomersTable.jsx";
 import CustomersChat from "./components/CustomersChat.jsx";
+import TransactionsTable from "./components/TransactionsTable.jsx";
 import {CustomersNavSidebar, CustomersChatSidebar} from "./components/CustomersSidebar.jsx";
 
 // عنوانِ گفتگو از اولین پیامِ کاربر ساخته می‌شود (مثل چت مدل‌های زبانی)
@@ -25,18 +27,39 @@ const Customers = () => {
     const [view, setView] = useState("dashboard");   // dashboard | chat
     const [conversations, setConversations] = useState([]);
     const [activeId, setActiveId] = useState(null);
-    // دکمهٔ «ثبت مشتری جدید» هدر باید در نمای چت هم کار کند. اینجا فقط نما را به
-    // داشبورد برمی‌گردانیم؛ خودِ مودال را جدول باز می‌کند که به همان رویداد گوش می‌دهد.
+    // تراکنش‌های کدام مشتری باز است — در یوآرال می‌نشیند تا رفرش و دکمهٔ back
+    // درست کار کنند و فوتر هم بداند نوارِ جستجویش را عوض کند
+    const [searchParams, setSearchParams] = useSearchParams();
+    const openCustomerId = searchParams.get("customer");
+
+    const closeTransactions = useCallback(() => {
+        setSearchParams((prev) => {
+            const params = new URLSearchParams(prev);
+            params.delete("customer");
+            params.delete("tfilter");
+            return params;
+        });
+    }, [setSearchParams]);
+
+    // دکمهٔ «ثبت مشتری جدید» هدر باید در نمای چت و تراکنش‌ها هم کار کند. اینجا فقط
+    // نما را به داشبورد برمی‌گردانیم؛ خودِ مودال را جدول باز می‌کند که به همان
+    // رویداد گوش می‌دهد.
     useEffect(() => {
-        const onNew = () => setView("dashboard");
+        const onNew = () => {
+            setView("dashboard");
+            closeTransactions();
+        };
         window.addEventListener(NEW_CUSTOMER_EVENT, onNew);
         return () => window.removeEventListener(NEW_CUSTOMER_EVENT, onNew);
-    }, []);
+    }, [closeTransactions]);
 
     const active = conversations.find((c) => c.id === activeId) || null;
 
     const startChat = () => {
         setView("chat");
+        // رفتن به چت صفحهٔ تراکنش‌ها را می‌بندد — وگرنه ‎?customer=‎ در یوآرال
+        // می‌ماند و نوارِ جستجوی فوتر همچنان «تاریخ تراکنش» را نشان می‌دهد
+        closeTransactions();
         if (!conversations.length) {
             const c = newConversation();
             setConversations([c]);
@@ -83,7 +106,13 @@ const Customers = () => {
                                           onBack={() => setView("dashboard")} onNew={createConversation}
                                           onSelect={setActiveId} onDelete={deleteConversation}/>
                 ) : (
-                    <CustomersNavSidebar view={view} onSelect={(v) => (v === "chat" ? startChat() : setView(v))}/>
+                    <CustomersNavSidebar view={view} onSelect={(v) => {
+                        if (v === "chat") return startChat();
+                        // «داشبورد» یعنی جدول مشتریان، پس اگر تراکنش‌های مشتری باز
+                        // است هم بسته می‌شود
+                        setView(v);
+                        closeTransactions();
+                    }}/>
                 )}
             </Sidebar>
 
@@ -93,9 +122,17 @@ const Customers = () => {
                 جدول با hidden پنهان می‌شود نه با unmount: هم فیلتر و صفحهٔ جاری‌اش
                 حفظ می‌شود، هم شنوندهٔ رویدادِ دکمهٔ هدر زنده می‌ماند. با unmount،
                 رویداد در فاصلهٔ سوییچِ نما تا mount دوباره گم می‌شد. */}
-            <div className={`flex-1 min-w-0 min-h-0 ${view === "chat" ? "hidden" : ""}`}>
+            <div className={`flex-1 min-w-0 min-h-0 ${view === "chat" || openCustomerId ? "hidden" : ""}`}>
                 <CustomersTable/>
             </div>
+
+            {/* تراکنش‌های یک مشتری. key تضمین می‌کند با عوض شدن مشتری، فیلتر و
+                جستجوی تاریخِ مشتری قبلی روی این یکی نماند. */}
+            {view !== "chat" && openCustomerId && (
+                <div className="flex-1 min-w-0 min-h-0">
+                    <TransactionsTable key={openCustomerId} customerId={openCustomerId} onBack={closeTransactions}/>
+                </div>
+            )}
 
             {view === "chat" && (
                 <div className="flex-1 min-w-0 flex flex-col rounded-[18px] overflow-hidden

@@ -8,10 +8,17 @@ import {TbCoins} from "react-icons/tb";
 import WindowsIcon from "./WindowsIcon.jsx";
 import MenuItem from "./MenuItem.jsx";
 import ChangePasswordModal from "./ChangePasswordModal.jsx";
+import TransactionSearchPanel from "../../pages/Customers/components/TransactionSearchPanel.jsx";
 import personImage from "/images/person2.png";
 import {useAuth} from "../../context/AuthContext.js";
 import {authApi} from "../../api/auth.js";
 import {notify} from "../../lib/notify.jsx";
+
+// جستجوی تاریخِ تراکنش از همین نوار اجرا می‌شود ولی نتیجه‌اش را جدولِ تراکنش‌ها
+// نشان می‌دهد؛ فوتر در RootLayout است و جدول فرزندِ Outlet، پس رویدادِ سراسری
+// همان راهی است که برای دکمهٔ «ثبت مشتری جدید» هدر هم به کار رفت.
+// detail برابر null یعنی «جستجو پاک شد».
+export const TRANSACTION_SEARCH_EVENT = "crm:transaction-search";
 
 const Footer = () => {
     const {user, setUser} = useAuth();
@@ -28,6 +35,11 @@ const Footer = () => {
     const [dateFooter, setDateFooter] = useState("");
     // مقدارِ اولیه از یوآرال خوانده می‌شود تا رفرشِ صفحه جستجو را از دست ندهد
     const [searchValue, setSearchValue] = useState(() => searchParams.get("query") || "");
+    const [isDateSearchOpen, setIsDateSearchOpen] = useState(false);
+
+    // با باز بودنِ صفحهٔ تراکنش‌ها (‎?customer=‎ در یوآرال) جستجوی نوارِ فوتر از
+    // «نام مشتری» به «تاریخ تراکنش» عوض می‌شود — همان رفتار CustomerManagement
+    const isTransactionsView = Boolean(searchParams.get("customer"));
 
     const startBtnRef = useRef(null);
     const startPanelRef = useRef(null);
@@ -187,7 +199,25 @@ const Footer = () => {
                         </div>
                     </button>
 
-                    {/* جستجوی مشتری */}
+                    {/* جستجوی تاریخ تراکنش — فقط در صفحهٔ تراکنش‌ها */}
+                    {isTransactionsView ? (
+                        <div className={`relative w-52 xs:w-67 h-8.5 rounded-full border transition-all duration-200 ease-in-out ${
+                            isDateSearchOpen
+                                ? "bg-var-color-12 dark:bg-var-color-40 border-var-color-15"
+                                : "bg-var-color-00 dark:bg-var-color-37 border-var-color-48 dark:border-var-color-38 hover:border-var-color-03 dark:hover:border-transparent dark:hover:bg-var-color-40"
+                        }`}>
+                            <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-var-color-15 pointer-events-none"/>
+                            {/* readOnly است چون خودش ورودی نمی‌گیرد؛ فقط پنل را باز می‌کند */}
+                            <input
+                                readOnly
+                                type="text"
+                                placeholder="جستجوی تاریخ تراکنش های مالی ..."
+                                onClick={() => setIsDateSearchOpen((v) => !v)}
+                                className="w-full h-full text-sm rounded-full bg-transparent text-var-color-06 dark:text-var-color-01 pr-8.25 pl-3 cursor-pointer caret-transparent focus:outline-none focus:ring-0 input-placeholder"
+                            />
+                        </div>
+                    ) : (
+                    /* جستجوی مشتری */
                     <div className="relative w-52 xs:w-67 h-8.5 rounded-full bg-var-color-00 dark:bg-var-color-37 border border-var-color-48 dark:border-var-color-38 hover:bg-transparent dark:hover:bg-var-color-40 hover:border-var-color-03 dark:hover:border-transparent transition-all duration-200 ease-in-out">
                         <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-var-color-15 pointer-events-none"/>
                         <input
@@ -210,6 +240,7 @@ const Footer = () => {
                             <IoIosClose/>
                         </button>
                     </div>
+                    )}
                 </section>
 
                 {/* چپِ فوتر: دکمهٔ دراپ‌داون، ساعت و تاریخ */}
@@ -285,6 +316,20 @@ const Footer = () => {
                     </button>
                 </footer>
             </section>
+
+            {/* پنل جستجوی تاریخ تراکنش — فقط وقتی صفحهٔ تراکنش‌ها باز است mount می‌شود
+                تا state داخلی‌اش با هر بار برگشتن به آن صفحه از نو ساخته شود */}
+            {isTransactionsView && (
+                <TransactionSearchPanel
+                    open={isDateSearchOpen}
+                    onClose={() => setIsDateSearchOpen(false)}
+                    onSearch={(payload) => {
+                        window.dispatchEvent(new CustomEvent(TRANSACTION_SEARCH_EVENT, {detail: payload}));
+                        setIsDateSearchOpen(false);
+                        if (!payload) notify("هیچ شرطی برای جستجو انتخاب نشده — همهٔ تراکنش‌ها نمایش داده می‌شود.", "info");
+                    }}
+                />
+            )}
 
             <ChangePasswordModal open={changePassOpen} onClose={() => setChangePassOpen(false)}/>
         </>

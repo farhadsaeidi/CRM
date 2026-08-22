@@ -90,7 +90,10 @@ const CustomersTable = () => {
         setSearchParams((prev) => {
             const next = new URLSearchParams(prev);
             for (const [key, value] of Object.entries(changes)) {
-                if (value === null || value === "" || value === "all" || value === 1) next.delete(key);
+                // «صفحهٔ ۱» پیش‌فرض است و در یوآرال نمی‌نشیند — ولی این قاعده فقط
+                // مالِ page است: شناسهٔ مشتریِ ۱ هم عدد ۱ است و نباید حذف شود
+                const isDefault = value === null || value === "" || value === "all" || (key === "page" && Number(value) === 1);
+                if (isDefault) next.delete(key);
                 else next.set(key, String(value));
             }
             return next;
@@ -253,7 +256,7 @@ const CustomersTable = () => {
                                                     یکدست دیده شوند؛ ضخامت و گردیِ خطوطشان یکی است. */}
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "تراکنش های مالی" : undefined}
-                                                        onClick={() => notify("صفحهٔ تراکنش‌ها در گام بعد اضافه می‌شود.", "info")}
+                                                        onClick={() => setParam({customer: customer.id})}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-31 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
                                                     <HiOutlineArrowsRightLeft className="w-5 h-5"/>

@@ -99,6 +99,8 @@
     --shadow-var-shadow-06: 0 0 1px rgba(249, 47, 96, 1.0), 0 0 2px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0);
     /* هالهٔ کهربایی — فوکوسِ ورودی‌های مودالِ ویرایش */
     --shadow-var-shadow-07: 0 0 1px rgba(251, 191, 36, 1), 0 0 2px rgba(251, 191, 36, 1), 0 0 5px rgba(251, 191, 36, 1), 0 0 5px rgba(251, 191, 36, 1);
+    /* هالهٔ سبز — فوکوسِ ورودی‌های صفحهٔ تراکنش‌ها */
+    --shadow-var-shadow-08: 0 0 1px rgba(94, 175, 43, 1), 0 0 2px rgba(94, 175, 43, 1), 0 0 5px rgba(94, 175, 43, 1), 0 0 5px rgba(94, 175, 43, 1);
 
     /* Custom Border Radius */
     --radius-4xl: 2rem;
@@ -431,6 +433,21 @@
         -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-07) !important;
     }
 
+    /* سبز — رنگِ صفحهٔ تراکنش‌های مالی، همان‌طور که در CustomerManagement بود */
+    .input-greenish {
+        @apply hover:border-var-color-30 dark:hover:border-var-color-30 focus:shadow-var-shadow-08 focus:border-var-color-30 dark:focus:border-var-color-30;
+    }
+
+    /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیل */
+    .input-greenish:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-08) !important;
+        box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-08) !important;
+    }
+
+    .dark .input-greenish:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-08) !important;
+    }
+
     .input-error {
         @apply border-red-500! hover:border-red-500! dark:hover:border-red-500! shadow-var-shadow-06! focus:shadow-var-shadow-06! focus:border-red-500!;
     }
@@ -473,6 +490,11 @@
 
     .btn-yellowish {
         @apply border border-var-color-61 dark:border-var-color-61 hover:border-transparent bg-var-color-54 dark:bg-var-color-54 hover:bg-var-color-53 dark:text-var-color-53;
+    }
+
+    /* دکمه‌های صفحهٔ تراکنش‌ها — سبز، جدا از آبیِ صفحهٔ مشتریان */
+    .btn-greenish {
+        @apply border border-var-color-30 dark:border-var-color-30 hover:border-transparent bg-var-color-29 dark:bg-var-color-29 hover:bg-var-color-31 dark:text-var-color-31;
     }
 
     /* ستون‌بندی جدول‌های اصلی — نام و شماره تماس جا باز می‌کنند، ستون عملیات باریک می‌ماند */
