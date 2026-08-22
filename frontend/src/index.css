@@ -646,8 +646,8 @@
     --scroll-handle-color: var(--color-var-color-15);
     --scroll-handle-opacity: 0.7;
     --scroll-handle-hover-opacity: 1;
-    --scroll-size: 10px;
-    --scroll-handle-max: 200px;
+    --scroll-size: 9px;
+    --scroll-handle-max: 400px;
 
     /* نگاشت به متغیرهای OverlayScrollbars */
     --os-size: var(--scroll-size);
@@ -660,7 +660,7 @@
     --os-track-border-radius: 10px;
     --os-handle-border-radius: 10px;
     --os-handle-interactive-area-offset: 4px;
-    --os-handle-min-size: 33px;
+    --os-handle-min-size: 60px;
 }
 
 /* شفافیت جدا از رنگ نگه داشته می‌شود تا مثل پروژهٔ قدیمی، دسته در حالت عادی
