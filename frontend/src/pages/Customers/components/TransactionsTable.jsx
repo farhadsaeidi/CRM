@@ -233,8 +233,11 @@ const TransactionsTable = ({customerId, onBack}) => {
                 {/* بدنهٔ جدول — ارتفاعش به اندازهٔ پنج ردیف بسته است و بقیه اسکرول
                     می‌خورد؛ رنگِ اسکرول‌بار سبز است چون رنگِ این صفحه سبز است */}
                 <ScrollContainer className="flex-1 min-h-0 h-transactions-5"
-                                 color="rgba(94, 175, 43, 0.85)" width={4.3} maxHeight={110}
-                                 autoHide="never">
+                                 // همان توکنِ سبزِ خودِ جدول (var-color-31)، نه یک سبزِ
+                                 // نزدیک به آن؛ شفافیت هم بالا نگه داشته می‌شود وگرنه
+                                 // کنارِ سبزِ توپُرِ جدول خاکستری‌زده دیده می‌شود
+                                 color="var(--color-var-color-31)" opacity={0.85} hoverOpacity={1}
+                                 width={4.3} maxHeight={110} autoHide="never">
                     <table className="w-full text-left border-collapse">
                         {/* سرستون داخل همان ناحیهٔ اسکرول است تا در نمای باریک از ستون‌ها جدا نیفتد */}
                         <thead className="w-full sticky top-0 z-[1]">
