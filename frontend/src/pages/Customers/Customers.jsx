@@ -129,8 +129,10 @@ const Customers = () => {
 
             {/* تراکنش‌های یک مشتری. key تضمین می‌کند با عوض شدن مشتری، فیلتر و
                 جستجوی تاریخِ مشتری قبلی روی این یکی نماند. */}
+            {/* ۹۰٪ عرض و وسط‌چین، نه تمامِ عرض — سایدبار که برداشته شد جدول تا
+                لبه‌های صفحه کش می‌آمد و ستون‌ها بی‌جهت از هم دور می‌شدند */}
             {view !== "chat" && openCustomerId && (
-                <div className="flex-1 min-w-0 min-h-0">
+                <div className="w-[90%] mx-auto min-w-0 min-h-0">
                     <TransactionsTable key={openCustomerId} customerId={openCustomerId} onBack={closeTransactions}/>
                 </div>
             )}

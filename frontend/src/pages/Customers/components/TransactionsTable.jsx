@@ -22,9 +22,10 @@ const FILTER_ITEMS = [
 ];
 
 // برچسبِ وضعیت در فوترِ جدول پررنگ‌تر از ستونِ وضعیتِ جدول مشتریان است — اینجا
-// یک عدد است که باید به چشم بیاید، آنجا یکی از پنج ردیف
+// یک عدد است که باید به چشم بیاید، آنجا یکی از پنج ردیف.
+// بستانکار سبز است (همان سبزِ جدول مشتریان)، ولی بدهکار عمداً صورتی مانده.
 const STATUS_CLASSES = {
-    "1": "bg-var-color-50 text-var-color-00 dark:bg-var-color-17 dark:text-var-color-50",
+    "1": "bg-var-color-31 text-var-color-00 dark:bg-var-color-47 dark:text-var-color-31",
     "-1": "bg-var-color-55 text-var-color-00 dark:bg-var-color-56 dark:text-var-color-55",
     "0": "bg-var-color-53 text-var-color-00 dark:bg-var-color-54 dark:text-var-color-53",
 };
