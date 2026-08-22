@@ -20,6 +20,17 @@ import {notify} from "../../lib/notify.jsx";
 // detail برابر null یعنی «جستجو پاک شد».
 export const TRANSACTION_SEARCH_EVENT = "crm:transaction-search";
 
+// هر دو کادرِ جستجوی فوتر (مشتری و تاریخ تراکنش) یک ظاهر دارند. یک‌جا تعریف
+// می‌شود تا دوباره از هم واگرا نشوند.
+// `has-[:focus]` ظاهرِ هاور را با فوکوسِ ورودی خنثی می‌کند: بعد از کلیک، موس هنوز
+// روی کادر است و بدون این، رنگِ هاور تا پایانِ تایپ می‌ماند.
+const SEARCH_BOX_CLASS =
+    "relative w-52 xs:w-67 h-8.5 rounded-full transition-all duration-200 ease-in-out " +
+    "bg-var-color-00 dark:bg-var-color-37 border border-var-color-48 dark:border-var-color-38 " +
+    "hover:bg-transparent dark:hover:bg-var-color-40 hover:border-var-color-03 dark:hover:border-transparent " +
+    "has-[:focus]:bg-var-color-00! dark:has-[:focus]:bg-var-color-37! " +
+    "has-[:focus]:border-var-color-48! dark:has-[:focus]:border-var-color-38!";
+
 const Footer = () => {
     const {user, setUser} = useAuth();
     const navigate = useNavigate();
@@ -230,11 +241,7 @@ const Footer = () => {
 
                     {/* جستجوی تاریخ تراکنش — فقط در صفحهٔ تراکنش‌ها */}
                     {isTransactionsView ? (
-                        <div ref={dateSearchBoxRef} className={`relative w-52 xs:w-67 h-8.5 rounded-full border transition-all duration-200 ease-in-out ${
-                            isDateSearchOpen
-                                ? "bg-var-color-12 dark:bg-var-color-40 border-var-color-15"
-                                : "bg-var-color-00 dark:bg-var-color-37 border-var-color-48 dark:border-var-color-38 hover:border-var-color-03 dark:hover:border-transparent dark:hover:bg-var-color-40 has-[:focus]:bg-var-color-00! dark:has-[:focus]:bg-var-color-37! has-[:focus]:border-var-color-48! dark:has-[:focus]:border-var-color-38!"
-                        }`}>
+                        <div ref={dateSearchBoxRef} className={SEARCH_BOX_CLASS}>
                             <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-var-color-15 pointer-events-none"/>
                             {/* readOnly است چون خودش ورودی نمی‌گیرد؛ فقط پنل را باز می‌کند */}
                             <input
@@ -246,10 +253,8 @@ const Footer = () => {
                             />
                         </div>
                     ) : (
-                    /* جستجوی مشتری — با فوکوسِ ورودی، ظاهرِ هاور کنار می‌رود و کادر به
-                       حالتِ اولیه برمی‌گردد؛ وگرنه چون موس هنوز روی کادر است، رنگِ هاور
-                       تا وقتی تایپ می‌کنید می‌ماند */
-                    <div className="relative w-52 xs:w-67 h-8.5 rounded-full bg-var-color-00 dark:bg-var-color-37 border border-var-color-48 dark:border-var-color-38 hover:bg-transparent dark:hover:bg-var-color-40 hover:border-var-color-03 dark:hover:border-transparent has-[:focus]:bg-var-color-00! dark:has-[:focus]:bg-var-color-37! has-[:focus]:border-var-color-48! dark:has-[:focus]:border-var-color-38! transition-all duration-200 ease-in-out">
+                    /* جستجوی مشتری */
+                    <div className={SEARCH_BOX_CLASS}>
                         <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-var-color-15 pointer-events-none"/>
                         <input
                             type="text"
