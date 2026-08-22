@@ -23,10 +23,11 @@ const FILTER_ITEMS = [
     {id: "handshakeItem", key: "zero", icon: FaHandshakeSimple, text: "تسویه حساب کامل", button: "تسویه شده"},
 ];
 
-// شکلِ برچسبِ وضعیت — رنگ‌ها عمداً سبز/قرمز نیستند، همان پالتِ پروژهٔ اصلی است
+// شکلِ برچسبِ وضعیت — سبز برای بستانکار، قرمز برای بدهکار و کهربایی برای بی‌حساب،
+// یعنی همان معنایی که رنگ‌ها در حسابداری دارند
 const STATUS_CLASSES = {
-    "1": "text-var-color-50 bg-var-color-17 border-var-color-17",
-    "-1": "text-var-color-55 bg-var-color-56 border-var-color-56",
+    "1": "text-var-color-31 bg-var-color-47 border-var-color-47",
+    "-1": "text-var-color-28 bg-var-color-26 border-var-color-26",
     "0": "text-var-color-53 bg-var-color-54 border-var-color-54",
 };
 
@@ -260,7 +261,7 @@ const CustomersTable = () => {
                                                         data-tooltip={showCustomTooltip ? "تراکنش های مالی" : undefined}
                                                         onClick={() => setParam({customer: customer.id})}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
-                                                        className={`${actionBtn} hover:text-var-color-31 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
+                                                        className={`${actionBtn} hover:text-var-color-15 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
                                                     <HiOutlineArrowsRightLeft className="w-5 h-5"/>
                                                 </button>
                                                 <button type="button"

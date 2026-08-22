@@ -53,14 +53,12 @@ const ScrollContainer = ({
             },
         }}
         style={{
-            "--os-handle-bg": color,
-            "--os-handle-bg-hover": color,
-            "--os-handle-bg-active": color,
-            "--os-handle-opacity": opacity,
-            "--os-handle-hover-opacity": hoverOpacity,
+            "--scroll-handle-color": color,
+            "--scroll-handle-opacity": opacity,
+            "--scroll-handle-hover-opacity": hoverOpacity,
             // پدینگِ نوار ۳ پیکسل در هر طرف است، پس اندازهٔ کلِ نوار = ضخامتِ دسته + ۶
-            "--os-size": `${Number(width) + 6}px`,
-            "--os-handle-max-size": `${maxHeight}px`,
+            "--scroll-size": `${Number(width) + 6}px`,
+            "--scroll-handle-max": `${maxHeight}px`,
             ...style,
         }}
         options={{

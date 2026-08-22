@@ -76,6 +76,9 @@ const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemCla
             {createPortal(
                 <div
                     ref={menuRef}
+                    // نشانه‌ای برای شنوندهٔ «کلیک بیرون» در فوتر: این منو روی body
+                    // رندر می‌شود، پس بدون آن انتخابِ یک ماه کلِ پنل را می‌بست
+                    data-date-search-menu=""
                     // بسته که باشد نه کلیک می‌گیرد نه فوکوس؛ چون بیرونِ پنل (روی body)
                     // رندر می‌شود، inertِ خودِ پنل شاملش نمی‌شود
                     inert={!open}
@@ -175,8 +178,15 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                 <FiChevronUp className={`w-4.5 h-4.5 transition-transform duration-200 ease-in-out ${open ? "rotate-0" : "rotate-180"}`}/>
             </button>
 
-            {/* بدنهٔ کشو */}
-            {open && (
+            {/* بدنهٔ کشو — باز و بسته شدنش با ترنزیشن است.
+                ارتفاعِ محتوا متغیر است و `height: auto` ترنزیشن نمی‌گیرد، پس از
+                گریدِ تک‌ردیفه استفاده می‌شود: `0fr` تا `1fr` قابلِ ترنزیشن است و
+                ارتفاعِ واقعیِ محتوا را هم نگه می‌دارد (بدون max-height حدسی). */}
+            <div className={`grid transition-[grid-template-rows] duration-250 ease-in-out ${
+                open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+            }`}>
+                {/* بسته که باشد نه دیده می‌شود نه با Tab در دسترس است */}
+                <div className="overflow-hidden" inert={!open}>
                 <div className="flex flex-col justify-start items-center gap-2.5 px-4 py-3 bg-var-color-49 dark:bg-var-color-38 border-b border-var-color-57 dark:border-var-color-38">
                     {/* انتخابِ حالت */}
                     <div className="flex flex-row justify-center items-center gap-8">
@@ -283,7 +293,8 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                         </div>
                     )}
                 </div>
-            )}
+                </div>
+            </div>
         </section>
     );
 };

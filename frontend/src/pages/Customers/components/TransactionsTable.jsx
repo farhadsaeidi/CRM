@@ -166,11 +166,11 @@ const TransactionsTable = ({customerId, onBack}) => {
                                     }}
                                     onMouseEnter={() => showTooltip(backBtnRef, "بازگشت به جدول مشتریان")}
                                     onMouseLeave={hideTooltip}
-                                    className="rounded-full p-1 btn btn-greenish">
+                                    className="rounded-full p-1 btn btn-bluish">
                                 <HiOutlineArrowRight className="w-4.5 h-4.5"/>
                             </button>
                             <div className="flex justify-center items-center h-7 px-3 rounded-full cursor-default whitespace-nowrap
-                                            bg-var-color-31 dark:bg-var-color-29 text-var-color-00 dark:text-var-color-31
+                                            bg-var-color-15 dark:bg-var-color-12 text-var-color-00 dark:text-var-color-15
                                             font-IRANSansXFaNumLight dark:font-IRANSansXFaNumUltraLight">
                                 {customer?.fullname ?? "..."}
                             </div>
@@ -193,8 +193,8 @@ const TransactionsTable = ({customerId, onBack}) => {
                                 onMouseEnter={() => !isFilterMenuOpen && showTooltip(filterBtnRef, "فیلترها")}
                                 onMouseLeave={hideTooltip}
                                 // روی زمینهٔ سبز، متن و آیکونِ تیره خواناتر از سفید است
-                                className={`w-auto h-7 rounded-full btn justify-between! btn-greenish pl-1 pr-2 font-IRANSansXFaNumRegular ${
-                                    isFilterMenuOpen ? "bg-var-color-31! text-var-color-11! border-var-color-31!" : ""
+                                className={`w-auto h-7 rounded-full btn justify-between! btn-bluish pl-1 pr-2 font-IRANSansXFaNumRegular ${
+                                    isFilterMenuOpen ? "bg-var-color-15! text-var-color-11! border-var-color-15!" : ""
                                 }`}
                             >
                                 <FiFilter className="w-4.5 h-4.5"/>
@@ -211,7 +211,7 @@ const TransactionsTable = ({customerId, onBack}) => {
                                     }}
                                     onMouseEnter={() => showTooltip(refreshBtnRef, "بازنشانی جدول")}
                                     onMouseLeave={hideTooltip}
-                                    className="rounded-full btn btn-greenish">
+                                    className="rounded-full btn btn-bluish">
                                 <div className="w-7 h-7 flex justify-center items-center">
                                     <FiRefreshCw className="w-4 h-4"/>
                                 </div>
@@ -221,7 +221,7 @@ const TransactionsTable = ({customerId, onBack}) => {
                                     onClick={() => setModal({mode: "create", transaction: null})}
                                     onMouseEnter={() => showTooltip(addBtnRef, "ثبت تراکنش")}
                                     onMouseLeave={hideTooltip}
-                                    className="rounded-full btn btn-greenish">
+                                    className="rounded-full btn btn-bluish">
                                 <div className="w-7 h-7 flex justify-center items-center">
                                     <FiPlus className="w-5 h-5"/>
                                 </div>
@@ -233,10 +233,9 @@ const TransactionsTable = ({customerId, onBack}) => {
                 {/* بدنهٔ جدول — ارتفاعش به اندازهٔ پنج ردیف بسته است و بقیه اسکرول
                     می‌خورد؛ رنگِ اسکرول‌بار سبز است چون رنگِ این صفحه سبز است */}
                 <ScrollContainer className="flex-1 min-h-0 h-transactions-5"
-                                 // همان توکنِ سبزِ خودِ جدول (var-color-31)، نه یک سبزِ
-                                 // نزدیک به آن؛ شفافیت هم بالا نگه داشته می‌شود وگرنه
-                                 // کنارِ سبزِ توپُرِ جدول خاکستری‌زده دیده می‌شود
-                                 color="var(--color-var-color-31)" opacity={0.85} hoverOpacity={1}
+                                 // شفافیت بالا نگه داشته می‌شود وگرنه کنارِ آبیِ توپُرِ
+                                 // دکمه‌های جدول، خاکستری‌زده دیده می‌شود
+                                 opacity={0.85} hoverOpacity={1}
                                  width={4.3} maxHeight={110} autoHide="never">
                     <table className="w-full text-left border-collapse">
                         {/* سرستون داخل همان ناحیهٔ اسکرول است تا در نمای باریک از ستون‌ها جدا نیفتد */}

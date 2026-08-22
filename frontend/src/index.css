@@ -66,8 +66,9 @@
        سفید رویش «بالا» دیده شوند. */
     --color-var-color-49: #f4f6fa;
 
-    /* رنگ‌های جدول و وضعیت حساب — عیناً از پروژهٔ CustomerManagement منتقل شده‌اند
-       تا ظاهر جدول‌ها همان باشد. توجه: وضعیت‌ها عمداً سبز/قرمز نیستند. */
+    /* رنگ‌های جدول و وضعیت حساب — از پروژهٔ CustomerManagement منتقل شده‌اند.
+       در جدولِ مشتریان وضعیت‌ها سبز (بستانکار) و قرمز (بدهکار) شدند؛ فیروزه‌ای و
+       صورتیِ زیر هنوز در برچسبِ ماندهٔ فوترِ جدولِ تراکنش‌ها به کار می‌روند. */
     --color-var-color-50: rgba(6, 182, 212, 1);     /* بستانکار — متن */
     --color-var-color-51: #94A3B8;                  /* متن سرستون در دارک */
     --color-var-color-52: #172030;                  /* پس‌زمینهٔ سرستون در دارک */
@@ -101,8 +102,6 @@
     --shadow-var-shadow-06: 0 0 1px rgba(249, 47, 96, 1.0), 0 0 2px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0);
     /* هالهٔ کهربایی — فوکوسِ ورودی‌های مودالِ ویرایش */
     --shadow-var-shadow-07: 0 0 1px rgba(251, 191, 36, 1), 0 0 2px rgba(251, 191, 36, 1), 0 0 5px rgba(251, 191, 36, 1), 0 0 5px rgba(251, 191, 36, 1);
-    /* هالهٔ سبز — فوکوسِ ورودی‌های صفحهٔ تراکنش‌ها */
-    --shadow-var-shadow-08: 0 0 1px rgba(94, 175, 43, 1), 0 0 2px rgba(94, 175, 43, 1), 0 0 5px rgba(94, 175, 43, 1), 0 0 5px rgba(94, 175, 43, 1);
 
     /* Custom Border Radius */
     --radius-4xl: 2rem;
@@ -435,21 +434,6 @@
         -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-07) !important;
     }
 
-    /* سبز — رنگِ صفحهٔ تراکنش‌های مالی، همان‌طور که در CustomerManagement بود */
-    .input-greenish {
-        @apply hover:border-var-color-30 dark:hover:border-var-color-30 focus:shadow-var-shadow-08 focus:border-var-color-30 dark:focus:border-var-color-30;
-    }
-
-    /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیل */
-    .input-greenish:-webkit-autofill:focus {
-        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-08) !important;
-        box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-08) !important;
-    }
-
-    .dark .input-greenish:-webkit-autofill:focus {
-        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-08) !important;
-    }
-
     .input-error {
         @apply border-red-500! hover:border-red-500! dark:hover:border-red-500! shadow-var-shadow-06! focus:shadow-var-shadow-06! focus:border-red-500!;
     }
@@ -492,11 +476,6 @@
 
     .btn-yellowish {
         @apply border border-var-color-61 dark:border-var-color-61 hover:border-transparent bg-var-color-54 dark:bg-var-color-54 hover:bg-var-color-53 dark:text-var-color-53;
-    }
-
-    /* دکمه‌های صفحهٔ تراکنش‌ها — سبز، جدا از آبیِ صفحهٔ مشتریان */
-    .btn-greenish {
-        @apply border border-var-color-30 dark:border-var-color-30 hover:border-transparent bg-var-color-29 dark:bg-var-color-29 hover:bg-var-color-31 dark:text-var-color-31;
     }
 
     /* ارتفاعِ بدنهٔ جدول تراکنش‌ها = سرستون + پنج ردیف.
@@ -659,32 +638,41 @@
 /* ------------------------------------------------------------------------- */
 .os-theme-app {
     box-sizing: border-box;
-    --os-size: 12px;
+
+    /* «دستگیره‌های» خودِ پروژه — همین‌ها را ScrollContainer به‌صورت درون‌خطی عوض
+       می‌کند. جدا از متغیرهای کتابخانه نگه داشته می‌شوند تا اگر نام‌گذاری داخلیِ
+       کتابخانه عوض شد، فقط همین چند خطِ نگاشت به‌روز شود. */
+    --scroll-handle-color: var(--color-var-color-15);
+    --scroll-handle-opacity: 0.7;
+    --scroll-handle-hover-opacity: 1;
+    --scroll-size: 12px;
+    --scroll-handle-max: 120px;
+
+    /* نگاشت به متغیرهای OverlayScrollbars */
+    --os-size: var(--scroll-size);
+    --os-handle-max-size: var(--scroll-handle-max);
+    --os-handle-bg: var(--scroll-handle-color);
+    --os-handle-bg-hover: var(--scroll-handle-color);
+    --os-handle-bg-active: var(--scroll-handle-color);
     --os-padding-perpendicular: 3px;
     --os-padding-axis: 3px;
     --os-track-border-radius: 10px;
     --os-handle-border-radius: 10px;
     --os-handle-interactive-area-offset: 4px;
     --os-handle-min-size: 33px;
-    --os-handle-max-size: 120px;
-    --os-handle-bg: rgba(0, 188, 255, 0.85);
-    --os-handle-bg-hover: rgba(0, 188, 255, 0.85);
-    --os-handle-bg-active: rgba(0, 188, 255, 0.85);
-    --os-handle-opacity: 0.7;
-    --os-handle-hover-opacity: 1;
 }
 
 /* شفافیت جدا از رنگ نگه داشته می‌شود تا مثل پروژهٔ قدیمی، دسته در حالت عادی
    کم‌رنگ و زیر موس پررنگ شود بدون اینکه دو رنگ جدا تعریف شود */
 .os-theme-app .os-scrollbar .os-scrollbar-handle {
-    opacity: var(--os-handle-opacity);
+    opacity: var(--scroll-handle-opacity);
     transition: opacity 0.2s ease-in-out;
 }
 
 .os-theme-app .os-scrollbar:hover .os-scrollbar-handle,
 .os-theme-app .os-scrollbar .os-scrollbar-handle:hover,
 .os-theme-app .os-scrollbar .os-scrollbar-handle:active {
-    opacity: var(--os-handle-hover-opacity);
+    opacity: var(--scroll-handle-hover-opacity);
 }
 
 /* در RTL کتابخانه اسکرول‌بارِ عمودی را چپ می‌گذارد؛ با پراپ position جابه‌جا

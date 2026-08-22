@@ -9,7 +9,7 @@ import {DAY_OPTIONS, MONTH_OPTIONS, emptySearchState, searchStateToPayload} from
  * پنل جستجوی تاریخ تراکنش — بالای نوارِ فوتر باز می‌شود، همان‌جایی که در پروژهٔ
  * CustomerManagement بود. سه کشوی سال/ماه/روز دارد که با AND ترکیب می‌شوند.
  */
-const TransactionSearchPanel = ({open, onClose, onSearch}) => {
+const TransactionSearchPanel = ({open, onClose, onSearch, panelRef, right}) => {
     const [state, setState] = useState(emptySearchState);
     const [openDrawer, setOpenDrawer] = useState("year");
 
@@ -18,13 +18,17 @@ const TransactionSearchPanel = ({open, onClose, onSearch}) => {
 
     return (
         <section
+            ref={panelRef}
             // inert در بسته بودن، فوکوس و کلیک را از کلِ پنل می‌گیرد — با
             // aria-hidden تنها، دکمه‌های داخلش هنوز با Tab در دسترس بودند.
             inert={!open}
+            // فاصله از راست را فوتر می‌دهد تا لبهٔ پنل با لبهٔ کادرِ جستجو یک‌راستا
+            // شود؛ تا وقتی اندازه‌گیری نشده، پنل بسته است و دیده نمی‌شود
+            style={{right: right ?? 12}}
             // z زیرِ فوترِ (z-10) می‌ماند: پنل با translate به پایین می‌رود و اگر
             // بالاتر باشد در حالت بسته روی نوارِ فوتر دیده می‌شود — همان ایرادی که
             // برای منوهای دیگرِ فوتر هم اصلاح شد
-            className={`fixed z-[5] w-85 max-w-[calc(100vw-1.5rem)] right-3 bottom-[calc(var(--footer-height)+0.5rem)] flex flex-col rounded-xl overflow-hidden
+            className={`fixed z-[5] w-85 max-w-[calc(100vw-1.5rem)] bottom-[calc(var(--footer-height)+0.5rem)] flex flex-col rounded-xl overflow-hidden
                         bg-var-color-00 dark:bg-var-color-37 border border-var-color-02 dark:border-var-color-38 shadow-lg
                         transition-transform duration-250 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
                             open ? "translate-y-0" : "translate-y-[130%] pointer-events-none"

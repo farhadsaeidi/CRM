@@ -100,21 +100,22 @@ const Customers = () => {
     // می‌رساند. آنجا سایدبار ارتفاعِ محدود می‌گیرد و محتوا زیرش می‌آید.
     return (
         <section className="h-full min-h-0 flex flex-col md:flex-row gap-3 2xs:gap-4">
-            <Sidebar className="max-h-52 md:max-h-none">
-                {view === "chat" ? (
-                    <CustomersChatSidebar conversations={conversations} activeId={activeId}
-                                          onBack={() => setView("dashboard")} onNew={createConversation}
-                                          onSelect={setActiveId} onDelete={deleteConversation}/>
-                ) : (
-                    <CustomersNavSidebar view={view} onSelect={(v) => {
-                        if (v === "chat") return startChat();
-                        // «داشبورد» یعنی جدول مشتریان، پس اگر تراکنش‌های مشتری باز
-                        // است هم بسته می‌شود
-                        setView(v);
-                        closeTransactions();
-                    }}/>
-                )}
-            </Sidebar>
+            {/* صفحهٔ تراکنش‌ها سایدبار ندارد: راهِ خروجش دکمهٔ بازگشتِ خودِ جدول است
+                و کلِ عرض به دفترِ حساب می‌رسد */}
+            {!openCustomerId && (
+                <Sidebar className="max-h-52 md:max-h-none">
+                    {view === "chat" ? (
+                        <CustomersChatSidebar conversations={conversations} activeId={activeId}
+                                              onBack={() => setView("dashboard")} onNew={createConversation}
+                                              onSelect={setActiveId} onDelete={deleteConversation}/>
+                    ) : (
+                        <CustomersNavSidebar view={view} onSelect={(v) => {
+                            if (v === "chat") return startChat();
+                            setView(v);
+                        }}/>
+                    )}
+                </Sidebar>
+            )}
 
             {/* چت داخل کارت می‌نشیند؛ جدول کارتِ خودش را دارد و بدون پوسته رندر می‌شود
                 تا اسکرولِ تودرتو و کادرِ اضافه نسازد.

@@ -1,17 +1,16 @@
 // آیتمِ منو — همان الگوی پروژهٔ CustomerManagement. `toggle` تعیین می‌کند آیتم
 // متعلق به کدام منوست و رنگِ حالتِ فعال و هاور از همان می‌آید.
 export default function MenuItem({id, icon: Icon, text, active, toggle, onClick}) {
+    // فیلترِ مشتریان و فیلترِ دورهٔ تراکنش‌ها یک رنگ‌بندی دارند؛ تفاوتشان فقط
+    // فاصلهٔ عمودیِ آیتم‌هاست که پایین‌تر اعمال می‌شود
+    const isTableFilter = toggle === "customersFilter" || toggle === "transactionsFilter";
     const palette =
         // روی زمینهٔ فیروزه‌ای متن و آیکونِ تیره خوانا‌تر از سفید است
-        toggle === "customersFilter"
+        isTableFilter
             ? active
                 ? "bg-var-color-15 dark:bg-var-color-35 text-var-color-11 dark:text-var-color-15 border-var-color-15 dark:border-var-color-37"
                 : "text-var-color-08 dark:text-var-color-46 hover:bg-var-color-15 dark:hover:bg-var-color-35 hover:text-var-color-11 dark:hover:text-var-color-15 hover:border-var-color-15 dark:hover:border-var-color-37"
-            : toggle === "transactionsFilter"
-                ? active
-                    ? "bg-var-color-29 text-var-color-31 border-var-color-47"
-                    : "text-var-color-08 dark:text-var-color-46 hover:bg-var-color-29 hover:text-var-color-31 hover:border-var-color-47"
-                : active
+            : active
                     // var-color-40/41/46 فقط برای تم دارک‌اند؛ بدون پیشوند dark:
                     // در تم لایت هم اعمال می‌شدند و آیتم سرمه‌ای تیره می‌شد
                     ? "bg-var-color-17 dark:bg-var-color-40 text-var-color-19 dark:text-var-color-46 border-var-color-13 dark:border-var-color-41"

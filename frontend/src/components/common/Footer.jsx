@@ -36,6 +36,11 @@ const Footer = () => {
     // مقدارِ اولیه از یوآرال خوانده می‌شود تا رفرشِ صفحه جستجو را از دست ندهد
     const [searchValue, setSearchValue] = useState(() => searchParams.get("query") || "");
     const [isDateSearchOpen, setIsDateSearchOpen] = useState(false);
+    // پنل باید با لبهٔ راستِ همین کادرِ جستجو یک‌راستا باشد، نه با لبهٔ صفحه —
+    // کادر بعد از دکمهٔ حساب کاربری می‌آید، پس فاصله‌اش از راست ثابت نیست
+    const [dateSearchRight, setDateSearchRight] = useState(null);
+    const dateSearchBoxRef = useRef(null);
+    const dateSearchPanelRef = useRef(null);
 
     // با باز بودنِ صفحهٔ تراکنش‌ها (‎?customer=‎ در یوآرال) جستجوی نوارِ فوتر از
     // «نام مشتری» به «تاریخ تراکنش» عوض می‌شود — همان رفتار CustomerManagement
@@ -90,10 +95,34 @@ const Footer = () => {
                 dropdownMenuRef.current && !dropdownMenuRef.current.contains(e.target)) {
                 setIsDropdownMenuOpen(false);
             }
+            // پنلِ جستجوی تاریخ هم با کلیک بیرون بسته می‌شود. منوهای انتخابِ ماه و
+            // روز با پرتال بیرونِ پنل رندر می‌شوند، پس جدا استثنا می‌شوند وگرنه
+            // انتخابِ یک ماه، کلِ پنل را می‌بندد.
+            if (dateSearchBoxRef.current && !dateSearchBoxRef.current.contains(e.target) &&
+                dateSearchPanelRef.current && !dateSearchPanelRef.current.contains(e.target) &&
+                !e.target.closest?.("[data-date-search-menu]")) {
+                setIsDateSearchOpen(false);
+            }
         };
         document.addEventListener("click", onDocClick);
         return () => document.removeEventListener("click", onDocClick);
     }, []);
+
+    // موقعیتِ پنل نسبت به لبهٔ راستِ کادرِ جستجو
+    const positionDateSearch = useCallback(() => {
+        const rect = dateSearchBoxRef.current?.getBoundingClientRect();
+        if (rect) setDateSearchRight(window.innerWidth - rect.right);
+    }, []);
+
+    useEffect(() => {
+        if (!isTransactionsView) return;
+        const frame = requestAnimationFrame(positionDateSearch);
+        window.addEventListener("resize", positionDateSearch);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener("resize", positionDateSearch);
+        };
+    }, [isTransactionsView, isDateSearchOpen, positionDateSearch]);
 
     // منوی دراپ‌داون زیر وسطِ دکمه‌اش بنشیند — چون فوتر ثابت است و دکمه جای متغیری
     // نسبت به لبهٔ صفحه دارد، موقعیت باید هنگام باز شدن و هر ریسایز محاسبه شود
@@ -201,7 +230,7 @@ const Footer = () => {
 
                     {/* جستجوی تاریخ تراکنش — فقط در صفحهٔ تراکنش‌ها */}
                     {isTransactionsView ? (
-                        <div className={`relative w-52 xs:w-67 h-8.5 rounded-full border transition-all duration-200 ease-in-out ${
+                        <div ref={dateSearchBoxRef} className={`relative w-52 xs:w-67 h-8.5 rounded-full border transition-all duration-200 ease-in-out ${
                             isDateSearchOpen
                                 ? "bg-var-color-12 dark:bg-var-color-40 border-var-color-15"
                                 : "bg-var-color-00 dark:bg-var-color-37 border-var-color-48 dark:border-var-color-38 hover:border-var-color-03 dark:hover:border-transparent dark:hover:bg-var-color-40"
@@ -321,6 +350,8 @@ const Footer = () => {
                 تا state داخلی‌اش با هر بار برگشتن به آن صفحه از نو ساخته شود */}
             {isTransactionsView && (
                 <TransactionSearchPanel
+                    panelRef={dateSearchPanelRef}
+                    right={dateSearchRight}
                     open={isDateSearchOpen}
                     onClose={() => setIsDateSearchOpen(false)}
                     onSearch={(payload) => {
