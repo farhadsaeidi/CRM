@@ -233,7 +233,7 @@ const Footer = () => {
                         <div ref={dateSearchBoxRef} className={`relative w-52 xs:w-67 h-8.5 rounded-full border transition-all duration-200 ease-in-out ${
                             isDateSearchOpen
                                 ? "bg-var-color-12 dark:bg-var-color-40 border-var-color-15"
-                                : "bg-var-color-00 dark:bg-var-color-37 border-var-color-48 dark:border-var-color-38 hover:border-var-color-03 dark:hover:border-transparent dark:hover:bg-var-color-40"
+                                : "bg-var-color-00 dark:bg-var-color-37 border-var-color-48 dark:border-var-color-38 hover:border-var-color-03 dark:hover:border-transparent dark:hover:bg-var-color-40 has-[:focus]:bg-var-color-00! dark:has-[:focus]:bg-var-color-37! has-[:focus]:border-var-color-48! dark:has-[:focus]:border-var-color-38!"
                         }`}>
                             <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-var-color-15 pointer-events-none"/>
                             {/* readOnly است چون خودش ورودی نمی‌گیرد؛ فقط پنل را باز می‌کند */}
@@ -246,8 +246,10 @@ const Footer = () => {
                             />
                         </div>
                     ) : (
-                    /* جستجوی مشتری */
-                    <div className="relative w-52 xs:w-67 h-8.5 rounded-full bg-var-color-00 dark:bg-var-color-37 border border-var-color-48 dark:border-var-color-38 hover:bg-transparent dark:hover:bg-var-color-40 hover:border-var-color-03 dark:hover:border-transparent transition-all duration-200 ease-in-out">
+                    /* جستجوی مشتری — با فوکوسِ ورودی، ظاهرِ هاور کنار می‌رود و کادر به
+                       حالتِ اولیه برمی‌گردد؛ وگرنه چون موس هنوز روی کادر است، رنگِ هاور
+                       تا وقتی تایپ می‌کنید می‌ماند */
+                    <div className="relative w-52 xs:w-67 h-8.5 rounded-full bg-var-color-00 dark:bg-var-color-37 border border-var-color-48 dark:border-var-color-38 hover:bg-transparent dark:hover:bg-var-color-40 hover:border-var-color-03 dark:hover:border-transparent has-[:focus]:bg-var-color-00! dark:has-[:focus]:bg-var-color-37! has-[:focus]:border-var-color-48! dark:has-[:focus]:border-var-color-38! transition-all duration-200 ease-in-out">
                         <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-var-color-15 pointer-events-none"/>
                         <input
                             type="text"
@@ -306,7 +308,7 @@ const Footer = () => {
                 ref={dropdownMenuRef}
                 inert={!isDropdownMenuOpen}
                 style={{left: `${dropdownLeft}px`}}
-                className={`fixed z-[5] flex flex-col justify-center items-start min-w-56 p-2.5 bottom-16.25 dark:bottom-16.75 rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-250 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
+                className={`fixed z-[5] flex flex-col justify-center items-start min-w-56 p-2.5 bottom-[calc(var(--footer-height)+0.5rem)] rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-250 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
                     isDropdownMenuOpen ? "translate-y-0" : "translate-y-[110%]"
                 }`}
             >
@@ -320,7 +322,7 @@ const Footer = () => {
             <section
                 ref={startPanelRef}
                 inert={!isStartMenuOpen}
-                className={`fixed z-[5] flex flex-col justify-center items-start min-w-60 mr-3 bottom-16.25 dark:bottom-16.75 rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-150 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${isStartMenuOpen ? "translate-y-0" : "translate-y-[110%]"}`}
+                className={`fixed z-[5] flex flex-col justify-center items-start min-w-60 mr-3 bottom-[calc(var(--footer-height)+0.5rem)] rounded-xl bg-var-color-00 dark:bg-var-color-37 text-var-color-06 dark:text-var-color-46 border border-var-color-02 dark:border-var-color-38 shadow-[0_18px_50px_-18px_rgba(15,23,42,0.35)] dark:shadow-none transition-transform duration-150 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${isStartMenuOpen ? "translate-y-0" : "translate-y-[110%]"}`}
             >
                 <div className="w-full p-2.5">
                     {menuItems.map((item) => (

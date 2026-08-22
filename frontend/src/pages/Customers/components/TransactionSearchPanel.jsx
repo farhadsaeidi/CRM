@@ -11,7 +11,17 @@ import {DAY_OPTIONS, MONTH_OPTIONS, emptySearchState, searchStateToPayload} from
  */
 const TransactionSearchPanel = ({open, onClose, onSearch, panelRef, right}) => {
     const [state, setState] = useState(emptySearchState);
-    const [openDrawer, setOpenDrawer] = useState("year");
+    const [openDrawer, setOpenDrawer] = useState(null);
+
+    // با بسته شدنِ پنل همهٔ کشوها هم بسته می‌شوند. راه‌های بستن یکی نیست (✕، انصراف،
+    // کلیک بیرون که مستقیم در فوتر انجام می‌شود)، پس به‌جای اضافه کردن به هر کدام،
+    // از روی خودِ پراپِ open تشخیص داده می‌شود — الگوی «state مشتق از props» با
+    // مقایسه در حین رندر، نه افکت.
+    const [wasOpen, setWasOpen] = useState(open);
+    if (wasOpen !== open) {
+        setWasOpen(open);
+        if (!open) setOpenDrawer(null);
+    }
 
     const toggleDrawer = (key) => setOpenDrawer((current) => (current === key ? null : key));
     const patchField = (key) => (next) => setState((prev) => ({...prev, [key]: next}));
@@ -45,7 +55,7 @@ const TransactionSearchPanel = ({open, onClose, onSearch, panelRef, right}) => {
                     tabIndex={-1}
                     onClick={onClose}
                     aria-label="بستن"
-                    className="w-7.5 h-7.5 cursor-pointer text-var-color-08 dark:text-var-color-01 hover:text-var-color-28 transition-all duration-200 ease-in-out"
+                    className="w-5.5 h-5.5 cursor-pointer text-var-color-08 dark:text-var-color-01 hover:text-var-color-28 transition-all duration-200 ease-in-out"
                 >
                     <IoClose className="w-full h-full"/>
                 </button>
@@ -58,9 +68,12 @@ const TransactionSearchPanel = ({open, onClose, onSearch, panelRef, right}) => {
                 <DateSearchField label="ماه" open={openDrawer === "month"} onToggle={() => toggleDrawer("month")}
                                  value={state.month} onChange={patchField("month")} options={MONTH_OPTIONS}
                                  gridClass="grid-cols-4 gap-1.5" itemClass="px-3 py-1.5 text-sm whitespace-nowrap rounded-lg"/>
+                {/* تقویمِ روز رو به بالا باز می‌شود: پایین‌ترین کشوی پنل است و ۳۱
+                    گزینه دارد، پس رو به پایین از لبهٔ صفحه بیرون می‌زد */}
                 <DateSearchField label="روز" open={openDrawer === "day"} onToggle={() => toggleDrawer("day")}
                                  value={state.day} onChange={patchField("day")} options={DAY_OPTIONS}
-                                 gridClass="grid-cols-8 gap-x-1 gap-y-0.5" itemClass="w-7 h-7 text-sm rounded-full"/>
+                                 gridClass="grid-cols-8 gap-x-1 gap-y-0.5" itemClass="w-7 h-7 text-sm rounded-full"
+                                 menuPlacement="top"/>
             </ScrollContainer>
 
             {/* فوترِ پنل */}

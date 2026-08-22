@@ -27,16 +27,23 @@ const iconBtn =
  * بدنهٔ پنل اسکرول دارد و منوی absolute داخلش بریده می‌شد — همان راه‌حلی که برای
  * منوی فیلترِ جدول مشتریان هم به کار رفت.
  */
-const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemClass, disabled}) => {
+const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemClass, disabled, placement = "bottom"}) => {
     const [open, setOpen] = useState(false);
     const [pos, setPos] = useState(null);
     const btnRef = useRef(null);
     const menuRef = useRef(null);
 
+    const above = placement === "top";
     const place = useCallback(() => {
         const rect = btnRef.current?.getBoundingClientRect();
-        if (rect) setPos({top: rect.bottom + 6, right: window.innerWidth - rect.right});
-    }, []);
+        if (!rect) return;
+        // ارتفاعِ منو حتی در حالت بسته درست خوانده می‌شود: scale-y-0 ترنسفورم است
+        // و اندازهٔ چیدمانی را عوض نمی‌کند
+        const top = above
+            ? rect.top - (menuRef.current?.offsetHeight ?? 0) - 6
+            : rect.bottom + 6;
+        setPos({top, right: window.innerWidth - rect.right});
+    }, [above]);
 
     useEffect(() => {
         if (!open) return;
@@ -82,7 +89,8 @@ const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemCla
                     // بسته که باشد نه کلیک می‌گیرد نه فوکوس؛ چون بیرونِ پنل (روی body)
                     // رندر می‌شود، inertِ خودِ پنل شاملش نمی‌شود
                     inert={!open}
-                    className={`fixed p-2 rounded-xl bg-var-color-00 dark:bg-var-color-43 border border-var-color-02 dark:border-var-color-38 shadow-md dark:shadow-lg z-[60] origin-top transition duration-200 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
+                    // مبدأ باز شدن باید همان لبه‌ای باشد که به دکمه چسبیده
+                    className={`fixed p-2 rounded-xl bg-var-color-00 dark:bg-var-color-43 border border-var-color-02 dark:border-var-color-38 shadow-md dark:shadow-lg z-[60] ${above ? "origin-bottom" : "origin-top"} transition duration-200 ease-[cubic-bezier(0.68,-0.6,0.32,1.25)] ${
                         open ? "opacity-100 scale-y-100 pointer-events-auto" : "opacity-0 scale-y-0 pointer-events-none"
                     }`}
                     style={{top: pos?.top ?? -9999, right: pos?.right ?? 16}}
@@ -116,7 +124,7 @@ const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemCla
     );
 };
 
-const DateSearchField = ({label, open, onToggle, value, onChange, options, gridClass, itemClass, maxLength = 4, placeholder = "--انتخاب کنید--"}) => {
+const DateSearchField = ({label, open, onToggle, value, onChange, options, gridClass, itemClass, maxLength = 4, placeholder = "--انتخاب کنید--", menuPlacement = "bottom"}) => {
     const isPicker = Boolean(options);
     const filled = isFieldFilled(value);
 
@@ -154,6 +162,7 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                 placeholder={placeholder}
                 gridClass={gridClass}
                 itemClass={itemClass}
+                placement={menuPlacement}
             />
         </div>
     );
@@ -263,6 +272,7 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                                                 placeholder={placeholder}
                                                 gridClass={gridClass}
                                                 itemClass={itemClass}
+                                                placement={menuPlacement}
                                             />
                                         </div>
                                     ) : (
