@@ -1,3 +1,5 @@
+// باید اولین ایمپورت بماند — دلیلش داخلِ خودِ فایل
+import './lib/scrollTimelineGuard.js'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { OverlayScrollbars } from 'overlayscrollbars'
