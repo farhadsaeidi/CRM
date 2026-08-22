@@ -1,4 +1,5 @@
 import {FiArrowRight, FiGrid, FiMessageSquare, FiPlus, FiTrash2} from "react-icons/fi";
+import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
 const itemCls = (active) =>
     `w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] cursor-pointer text-right
@@ -7,18 +8,22 @@ const itemCls = (active) =>
         : "text-var-color-06 dark:text-var-color-01 hover:bg-var-color-01 dark:hover:bg-var-color-40"}`;
 
 // ── سایدبارِ اصلی: دو آیتمِ داشبورد و چت ──
+// کلاس‌های چیدمان روی div داخلی‌اند نه روی ScrollContainer: کتابخانه بین آن و
+// فرزندانش عنصرِ viewport می‌گذارد، پس flex/gap/padding روی میزبان به فرزندان نمی‌رسد.
 export const CustomersNavSidebar = ({view, onSelect}) => (
-    <nav className="flex-1 min-h-0 overflow-y-auto p-2.5 flex flex-col gap-1">
-        <p className="m-0 px-2 pt-1 pb-2 text-[10.5px] tracking-wide text-var-color-04 dark:text-var-color-39">
-            دفتر مشتریان
-        </p>
-        <button type="button" className={itemCls(view === "dashboard")} onClick={() => onSelect("dashboard")}>
-            <FiGrid className="w-4.5 h-4.5 shrink-0"/> داشبورد
-        </button>
-        <button type="button" className={itemCls(view === "chat")} onClick={() => onSelect("chat")}>
-            <FiMessageSquare className="w-4.5 h-4.5 shrink-0"/> چت
-        </button>
-    </nav>
+    <ScrollContainer className="flex-1 min-h-0" overflowX="hidden">
+        <nav className="p-2.5 flex flex-col gap-1">
+            <p className="m-0 px-2 pt-1 pb-2 text-[10.5px] tracking-wide text-var-color-04 dark:text-var-color-39">
+                دفتر مشتریان
+            </p>
+            <button type="button" className={itemCls(view === "dashboard")} onClick={() => onSelect("dashboard")}>
+                <FiGrid className="w-4.5 h-4.5 shrink-0"/> داشبورد
+            </button>
+            <button type="button" className={itemCls(view === "chat")} onClick={() => onSelect("chat")}>
+                <FiMessageSquare className="w-4.5 h-4.5 shrink-0"/> چت
+            </button>
+        </nav>
+    </ScrollContainer>
 );
 
 // ── سایدبارِ حالتِ چت: بازگشت، گفتگوی جدید، فهرست گفتگوها ──
@@ -44,7 +49,8 @@ export const CustomersChatSidebar = ({conversations, activeId, onBack, onNew, on
             </button>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto px-2.5 pb-2.5 flex flex-col gap-0.5">
+        <ScrollContainer className="flex-1 min-h-0" overflowX="hidden">
+        <div className="px-2.5 pb-2.5 flex flex-col gap-0.5">
             {conversations.length === 0 ? (
                 <p className="m-0 px-2 py-6 text-center text-[12px] text-var-color-04 dark:text-var-color-39">
                     هنوز گفتگویی نیست.
@@ -71,5 +77,6 @@ export const CustomersChatSidebar = ({conversations, activeId, onBack, onNew, on
                 </div>
             ))}
         </div>
+        </ScrollContainer>
     </div>
 );

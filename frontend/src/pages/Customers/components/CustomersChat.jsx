@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 import {FiArrowUp, FiCpu, FiMic, FiPlus} from "react-icons/fi";
 import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentReport} from "react-icons/hi";
+import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
 // پیشنهادهای شروع — متناسب با دامنهٔ همین سامانه (دفترِ حساب مشتریان)
 const SUGGESTIONS = [
@@ -63,7 +64,7 @@ const CustomersChat = ({conversation, onPushMessage}) => {
 
     return (
         <div className="h-full min-h-0 flex flex-col">
-            <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+            <ScrollContainer viewportRef={scrollRef} className="flex-1 min-h-0" overflowX="hidden">
                 {empty ? (
                     // ── حالت خالی: تیتر و کارت‌های پیشنهاد، با ورودِ پلکانی ──
                     <div className="h-full flex flex-col items-center justify-center px-5 py-10">
@@ -141,7 +142,7 @@ const CustomersChat = ({conversation, onPushMessage}) => {
                         )}
                     </div>
                 )}
-            </div>
+            </ScrollContainer>
 
             {/* ── کامپوزر ── */}
             <div className="shrink-0 px-4 pb-4 pt-2">

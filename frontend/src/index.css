@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* اسکرول‌بارِ سفارشیِ کلِ پروژه — همان کتابخانهٔ پروژهٔ CustomerManagement */
+@import "overlayscrollbars/overlayscrollbars.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -497,6 +499,16 @@
         @apply border border-var-color-30 dark:border-var-color-30 hover:border-transparent bg-var-color-29 dark:bg-var-color-29 hover:bg-var-color-31 dark:text-var-color-31;
     }
 
+    /* ارتفاعِ بدنهٔ جدول تراکنش‌ها = سرستون + پنج ردیف.
+       فهرست تراکنش‌ها عمداً صفحه‌بندی ندارد (مانده باید روی کلِ حساب باشد)، پس
+       به‌جای «پنج ردیف در هر صفحه»، ارتفاع به اندازهٔ پنج ردیف بسته می‌شود و
+       بقیه اسکرول می‌خورد — دقیقاً کاری که CustomerManagement با max-h می‌کرد.
+       ردیف: p-4 (۳۲px) + متنِ ۱۵px با ارتفاع خطِ ۱.۵ (۲۲.۵px) ≈ ۵۴.۵px
+       سرستون: py-3 (۲۴px) + متنِ ۱۴px با ارتفاع خطِ ۱.۵ (۲۱px) = ۴۵px */
+    .h-transactions-5 {
+        max-height: calc(2.8125rem + 5 * 3.40625rem);
+    }
+
     /* ستون‌بندی جدول‌های اصلی — نام و شماره تماس جا باز می‌کنند، ستون عملیات باریک می‌ماند */
     .grid-customer {
         @apply grid-cols-[minmax(12rem,1fr)_minmax(8rem,0.75fr)_minmax(8rem,0.75fr)_minmax(8rem,0.75fr)_minmax(6rem,0.2fr)];
@@ -634,4 +646,56 @@
             transform: translateY(0);
         }
     }
+}
+
+/* ------------------------------------------------------------------------- */
+/* تمِ اسکرول‌بارِ سفارشی (OverlayScrollbars)                                  */
+/*                                                                            */
+/* همهٔ ناحیه‌های اسکرول‌دارِ پروژه از این تم استفاده می‌کنند — چه از راه          */
+/* کامپوننت ScrollContainer و چه اسکرولِ خودِ صفحه که در main.jsx راه‌اندازی      */
+/* می‌شود. مقادیر زیر پیش‌فرض‌اند و هر نمونه می‌تواند با متغیرهای درون‌خطی        */
+/* عوضشان کند؛ در پروژهٔ قدیمی به‌جای این، هر نمونه یک تگ <style> کامل           */
+/* تولید می‌کرد.                                                              */
+/* ------------------------------------------------------------------------- */
+.os-theme-app {
+    box-sizing: border-box;
+    --os-size: 12px;
+    --os-padding-perpendicular: 3px;
+    --os-padding-axis: 3px;
+    --os-track-border-radius: 10px;
+    --os-handle-border-radius: 10px;
+    --os-handle-interactive-area-offset: 4px;
+    --os-handle-min-size: 33px;
+    --os-handle-max-size: 120px;
+    --os-handle-bg: rgba(0, 188, 255, 0.85);
+    --os-handle-bg-hover: rgba(0, 188, 255, 0.85);
+    --os-handle-bg-active: rgba(0, 188, 255, 0.85);
+    --os-handle-opacity: 0.7;
+    --os-handle-hover-opacity: 1;
+}
+
+/* شفافیت جدا از رنگ نگه داشته می‌شود تا مثل پروژهٔ قدیمی، دسته در حالت عادی
+   کم‌رنگ و زیر موس پررنگ شود بدون اینکه دو رنگ جدا تعریف شود */
+.os-theme-app .os-scrollbar .os-scrollbar-handle {
+    opacity: var(--os-handle-opacity);
+    transition: opacity 0.2s ease-in-out;
+}
+
+.os-theme-app .os-scrollbar:hover .os-scrollbar-handle,
+.os-theme-app .os-scrollbar .os-scrollbar-handle:hover,
+.os-theme-app .os-scrollbar .os-scrollbar-handle:active {
+    opacity: var(--os-handle-hover-opacity);
+}
+
+/* در RTL کتابخانه اسکرول‌بارِ عمودی را چپ می‌گذارد؛ با پراپ position جابه‌جا
+   می‌شود. گزینشگر از قاعدهٔ خودِ کتابخانه (‎.os-scrollbar-rtl.os-scrollbar-vertical‎)
+   ویژه‌تر است، پس !important لازم نیست. */
+.os-theme-app[data-scrollbar-position="right"] .os-scrollbar-vertical {
+    right: 0;
+    left: auto;
+}
+
+.os-theme-app[data-scrollbar-position="left"] .os-scrollbar-vertical {
+    left: 0;
+    right: auto;
 }

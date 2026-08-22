@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {HiOutlineSearch} from "react-icons/hi";
 import {IoClose} from "react-icons/io5";
+import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import DateSearchField from "./DateSearchField.jsx";
 import {DAY_OPTIONS, MONTH_OPTIONS, emptySearchState, searchStateToPayload} from "./dateSearch.js";
 
@@ -47,7 +48,7 @@ const TransactionSearchPanel = ({open, onClose, onSearch}) => {
             </header>
 
             {/* بدنه — سه کشو */}
-            <main className="w-full max-h-75 overflow-y-auto">
+            <ScrollContainer className="w-full max-h-75" overflowX="hidden" autoHideDelay={400}>
                 <DateSearchField label="سال" open={openDrawer === "year"} onToggle={() => toggleDrawer("year")}
                                  value={state.year} onChange={patchField("year")} maxLength={4}/>
                 <DateSearchField label="ماه" open={openDrawer === "month"} onToggle={() => toggleDrawer("month")}
@@ -56,7 +57,7 @@ const TransactionSearchPanel = ({open, onClose, onSearch}) => {
                 <DateSearchField label="روز" open={openDrawer === "day"} onToggle={() => toggleDrawer("day")}
                                  value={state.day} onChange={patchField("day")} options={DAY_OPTIONS}
                                  gridClass="grid-cols-8 gap-x-1 gap-y-0.5" itemClass="w-7 h-7 text-sm rounded-full"/>
-            </main>
+            </ScrollContainer>
 
             {/* فوترِ پنل */}
             <footer className="w-full flex flex-row justify-between items-center gap-2 p-2 bg-var-color-01 dark:bg-var-color-43">

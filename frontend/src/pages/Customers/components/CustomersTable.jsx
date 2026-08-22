@@ -11,6 +11,7 @@ import {NEW_CUSTOMER_EVENT} from "../../../components/common/Header.jsx";
 import CustomTooltip from "../../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../../components/common/MenuItem.jsx";
 import Pagination from "../../../components/common/Pagination.jsx";
+import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import CustomerModal from "./CustomerModal.jsx";
 import {notify} from "../../../lib/notify.jsx";
 
@@ -205,8 +206,9 @@ const CustomersTable = () => {
                     </div>
                 </header>
 
-                {/* بدنهٔ جدول */}
-                <main className="flex-1 min-h-0 overflow-auto">
+                {/* بدنهٔ جدول — در نمای باریک اسکرول افقی هم لازم است، پس هیچ
+                    محورش hidden نمی‌شود */}
+                <ScrollContainer className="flex-1 min-h-0" autoHide="never">
                     <table className="w-full text-left border-collapse">
                         <thead className="w-full">
                             <tr className="w-full grid grid-customer items-center bg-var-color-59 dark:bg-var-color-52 text-sm text-var-color-60 dark:text-var-color-51 border-b border-var-color-57 dark:border-var-color-38 font-IRANSansXFaNumLight px-4 py-3">
@@ -282,7 +284,7 @@ const CustomersTable = () => {
                             )}
                         </tbody>
                     </table>
-                </main>
+                </ScrollContainer>
 
                 {/* صفحه‌بندی */}
                 {!loading && data.results.length > 0 && (

@@ -7,6 +7,7 @@ import {transactionsApi} from "../../../api/transactions.js";
 import {TRANSACTION_SEARCH_EVENT} from "../../../components/common/Footer.jsx";
 import CustomTooltip from "../../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../../components/common/MenuItem.jsx";
+import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import TransactionModal from "./TransactionModal.jsx";
 import {formatPersianNumber} from "../../../lib/numbers.js";
 import {notify} from "../../../lib/notify.jsx";
@@ -229,8 +230,11 @@ const TransactionsTable = ({customerId, onBack}) => {
                     </div>
                 </header>
 
-                {/* بدنهٔ جدول */}
-                <main className="flex-1 min-h-0 overflow-auto">
+                {/* بدنهٔ جدول — ارتفاعش به اندازهٔ پنج ردیف بسته است و بقیه اسکرول
+                    می‌خورد؛ رنگِ اسکرول‌بار سبز است چون رنگِ این صفحه سبز است */}
+                <ScrollContainer className="flex-1 min-h-0 h-transactions-5"
+                                 color="rgba(94, 175, 43, 0.85)" width={4.3} maxHeight={110}
+                                 autoHide="never">
                     <table className="w-full text-left border-collapse">
                         {/* سرستون داخل همان ناحیهٔ اسکرول است تا در نمای باریک از ستون‌ها جدا نیفتد */}
                         <thead className="w-full sticky top-0 z-[1]">
@@ -292,7 +296,7 @@ const TransactionsTable = ({customerId, onBack}) => {
                             )}
                         </tbody>
                     </table>
-                </main>
+                </ScrollContainer>
 
                 {/* فوترِ جدول — مانده و وضعیت همیشه روی کلِ حساب‌اند، نه روی نتیجهٔ
                     فیلتر؛ وگرنه «مانده» با هر فیلتر عوض می‌شود و معنایش را از دست می‌دهد */}
