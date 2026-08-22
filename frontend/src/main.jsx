@@ -1,18 +1,8 @@
-// باید اولین ایمپورت بماند — دلیلش داخلِ خودِ فایل
-import './lib/scrollTimelineGuard.js'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { OverlayScrollbars } from 'overlayscrollbars'
 import './index.css'
 import App from './App.jsx'
-
-// ScrollTimeline در index.html و پیش از ارزیابیِ ماژول‌ها برداشته شد تا
-// overlayscrollbars مسیرِ CSSیِ سالم را بگیرد (دلیلِ کامل همان‌جا نوشته شده).
-// حالا که کتابخانه مقدارش را خوانده، برای بقیهٔ صفحه برمی‌گردانیمش.
-if (window.__ScrollTimeline) {
-    window.ScrollTimeline = window.__ScrollTimeline;
-    delete window.__ScrollTimeline;
-}
 
 // اسکرولِ خودِ صفحه هم همان اسکرول‌بارِ سفارشیِ بقیهٔ برنامه را می‌گیرد.
 // روی body سوار می‌شود نه html، چون OverlayScrollbars برای اسکرولِ سند همین را
