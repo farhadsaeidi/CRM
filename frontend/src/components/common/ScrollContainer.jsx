@@ -1,3 +1,4 @@
+import {useMemo} from "react";
 import {OverlayScrollbarsComponent} from "overlayscrollbars-react";
 
 /**
@@ -43,35 +44,54 @@ const ScrollContainer = ({
     viewportRef,
     style,
     ...restProps
-}) => (
-    <OverlayScrollbarsComponent
-        className={`${className}`}
-        data-scrollbar-position={position}
-        events={{
-            initialized: (instance) => {
-                if (viewportRef) viewportRef.current = instance.elements().viewport;
-            },
-            destroyed: () => {
-                if (viewportRef) viewportRef.current = null;
-            },
-        }}
-        style={{
-            "--scroll-handle-color": color,
-            "--scroll-handle-opacity": opacity,
-            "--scroll-handle-hover-opacity": hoverOpacity,
-            // پدینگِ نوار ۳ پیکسل در هر طرف است، پس اندازهٔ کلِ نوار = ضخامتِ دسته + ۶
-            "--scroll-size": `${Number(width) + 6}px`,
-            "--scroll-handle-max": `${maxHeight}px`,
-            ...style,
-        }}
-        options={{
-            scrollbars: {theme: "os-theme-app", autoHide, autoHideDelay, clickScroll: true},
-            overflow: {x: overflowX, y: overflowY},
-        }}
-        {...restProps}
-    >
-        {children}
-    </OverlayScrollbarsComponent>
-);
+}) => {
+    // ⚠️ options و events باید مرجعِ پایدار داشته باشند.
+    //
+    // ‏`overlayscrollbars-react` این دو را دقیقاً به‌عنوان وابستگیِ افکت می‌گیرد و با
+    // هر تغییرِ مرجع، `instance.options(o, true)` و `instance.on(t, true)` را صدا
+    // می‌زند — یعنی پیکربندیِ کاملِ نمونه از نو ساخته می‌شود. با آبجکتِ درجا (که هر
+    // رندر تازه است) این کار در هر رندرِ والد تکرار می‌شد.
+    //
+    // فقط کندی نبود: کتابخانه حرکتِ دستهٔ اسکرول را با یک انیمیشنِ ScrollTimeline
+    // اداره می‌کند و در بازسازی، انیمیشنِ قبلی را cancel می‌کند ولی چون کی‌فریم‌ها
+    // عوض نشده‌اند از ساختِ دوباره صرف‌نظر می‌کند. نتیجه: دسته روی translateY(0)
+    // قفل می‌شد و با اسکرول جابه‌جا نمی‌شد.
+    const options = useMemo(() => ({
+        scrollbars: {theme: "os-theme-app", autoHide, autoHideDelay, clickScroll: true},
+        overflow: {x: overflowX, y: overflowY},
+    }), [autoHide, autoHideDelay, overflowX, overflowY]);
+
+    const events = useMemo(() => ({
+        initialized: (instance) => {
+            if (viewportRef) viewportRef.current = instance.elements().viewport;
+        },
+        destroyed: () => {
+            if (viewportRef) viewportRef.current = null;
+        },
+    }), [viewportRef]);
+
+    const styles = useMemo(() => ({
+        "--scroll-handle-color": color,
+        "--scroll-handle-opacity": opacity,
+        "--scroll-handle-hover-opacity": hoverOpacity,
+        // پدینگِ نوار ۳ پیکسل در هر طرف است، پس اندازهٔ کلِ نوار = ضخامتِ دسته + ۶
+        "--scroll-size": `${Number(width) + 6}px`,
+        "--scroll-handle-max": `${maxHeight}px`,
+        ...style,
+    }), [color, opacity, hoverOpacity, width, maxHeight, style]);
+
+    return (
+        <OverlayScrollbarsComponent
+            className={className}
+            data-scrollbar-position={position}
+            events={events}
+            style={styles}
+            options={options}
+            {...restProps}
+        >
+            {children}
+        </OverlayScrollbarsComponent>
+    );
+};
 
 export default ScrollContainer;
