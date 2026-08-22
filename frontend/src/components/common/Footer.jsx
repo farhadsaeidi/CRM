@@ -31,6 +31,12 @@ const SEARCH_BOX_CLASS =
     "has-[:focus]:bg-var-color-00! dark:has-[:focus]:bg-var-color-37! " +
     "has-[:focus]:border-var-color-48! dark:has-[:focus]:border-var-color-38!";
 
+// ورودیِ داخلِ کادر — هالهٔ آبی روی فوکوس، برای هر دو کادر یکی
+const SEARCH_INPUT_CLASS =
+    "w-full h-full text-sm rounded-full bg-transparent text-var-color-06 dark:text-var-color-01 " +
+    "pr-8.25 focus:outline-none focus:ring-0 focus:border-var-color-15 focus:shadow-var-shadow-00 " +
+    "transition-all duration-200 ease-in-out input-placeholder";
+
 const Footer = () => {
     const {user, setUser} = useAuth();
     const navigate = useNavigate();
@@ -249,7 +255,7 @@ const Footer = () => {
                                 type="text"
                                 placeholder="جستجوی تاریخ تراکنش های مالی ..."
                                 onClick={() => setIsDateSearchOpen((v) => !v)}
-                                className="w-full h-full text-sm rounded-full bg-transparent text-var-color-06 dark:text-var-color-01 pr-8.25 pl-3 cursor-pointer caret-transparent focus:outline-none focus:ring-0 input-placeholder"
+                                className={`${SEARCH_INPUT_CLASS} pl-3 cursor-pointer caret-transparent`}
                             />
                         </div>
                     ) : (
@@ -265,7 +271,7 @@ const Footer = () => {
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") applySearch(searchValue);
                             }}
-                            className="w-full h-full text-sm rounded-full bg-transparent text-var-color-06 dark:text-var-color-01 pr-8.25 pl-8 caret-var-color-15 focus:outline-none focus:ring-0 focus:border-var-color-15 focus:shadow-var-shadow-00 transition-all duration-200 ease-in-out input-placeholder"
+                            className={`${SEARCH_INPUT_CLASS} pl-8 caret-var-color-15`}
                         />
                         <button
                             type="button"
