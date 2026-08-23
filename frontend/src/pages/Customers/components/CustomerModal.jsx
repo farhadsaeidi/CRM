@@ -3,8 +3,9 @@ import toast from "react-hot-toast";
 import {IoClose} from "react-icons/io5";
 import {FaRegUser} from "react-icons/fa6";
 import {GrPhone} from "react-icons/gr";
-import {HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
+import {HiOutlinePencilSquare} from "react-icons/hi2";
 import {FiPlus} from "react-icons/fi";
+import ModalActions from "../../../components/common/ModalActions.jsx";
 import {customersApi} from "../../../api/customers.js";
 import {notify, notifyLoading} from "../../../lib/notify.jsx";
 import {sanitizePhone} from "../../../lib/utils.js";
@@ -13,7 +14,7 @@ import {customerSchema} from "../../../validators/customer.js";
 // یک مودال برای هر سه کار — ساخت، ویرایش و حذف. سه کامپوننت جدا یعنی سه نسخهٔ
 // واگرا از همان فرم؛ در پروژهٔ قدیمی همین اتفاق افتاده بود.
 // چیدمان و رنگ‌بندی از همان پروژه می‌آید: نوارِ رنگیِ بالای کارت، نشانِ گردِ کنارِ
-// عنوان، و یک دکمهٔ اقدام در پایینِ سمت چپ (انصراف عمداً نیست — بستن با ✕ است).
+// عنوان، و نوارِ دکمه‌های پایین (ModalActions) که با پنلِ جستجو یکدست است.
 const MODES = {
     create: {
         title: "ثبت مشتری جدید",
@@ -23,7 +24,7 @@ const MODES = {
         badge: "text-var-color-01 dark:text-var-color-15 bg-var-color-15 dark:bg-var-color-12 border border-var-color-15 dark:border-var-color-42 rounded-full",
         badgeIcon: "w-8 h-8",
         button: "btn-bluish",
-        submitIcon: "w-7 h-7 ml-0.5",
+        submitIcon: "w-5 h-5 ml-1.5",
         input: "input-bluish",
         fieldIcon: "text-var-color-15",
     },
@@ -35,7 +36,7 @@ const MODES = {
         badge: "text-var-color-53",
         badgeIcon: "w-7 h-7",
         button: "btn-yellowish",
-        submitIcon: "w-4.5 h-4.5 mx-2",
+        submitIcon: "w-4.5 h-4.5 ml-1.5",
         // در حالت ویرایش هیچ آبی‌ای نباید دیده شود — بوردر فوکوس و آیکون‌های
         // فیلدها هم کهربایی‌اند تا با نوارِ بالای کارت و دکمه ست باشند
         input: "input-yellowish",
@@ -59,7 +60,6 @@ const CustomerModal = ({mode, customer, onClose, onDone}) => {
     const id = useId();
     const config = MODES[mode] ?? MODES.create;
     const BadgeIcon = config.icon;
-    const SubmitIcon = config.icon;
 
     // مقادیر مستقیم از پراپ‌ها مقداردهیِ اولیه می‌شوند و ریست‌شان با key در والد
     // انجام می‌گیرد، نه با افکت — ریست کردنِ state داخل افکت رندرِ آبشاری می‌سازد.
@@ -254,18 +254,8 @@ const CustomerModal = ({mode, customer, onClose, onDone}) => {
                     </main>
                 )}
 
-                <footer className={`flex flex-row justify-end items-center gap-1.5 ${mode === "delete" ? "mt-3.5" : ""}`}>
-                    <button
-                        type="button"
-                        tabIndex={-1}
-                        disabled={submitting}
-                        onClick={onSubmit}
-                        className={`py-1.5 pl-3 pr-1 rounded-xl btn ${config.button} disabled:opacity-60 disabled:cursor-not-allowed`}
-                    >
-                        {mode === "delete" ? <HiOutlineTrash className={config.submitIcon}/> : <SubmitIcon className={config.submitIcon}/>}
-                        <h2 className="m-0 text-[17px]">{submitting ? "در حال انجام ..." : config.submit}</h2>
-                    </button>
-                </footer>
+                <ModalActions mode={mode} config={config} submitting={submitting}
+                              onSubmit={onSubmit} onCancel={requestClose}/>
             </div>
         </section>
     );

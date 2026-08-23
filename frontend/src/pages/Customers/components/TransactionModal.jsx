@@ -3,7 +3,8 @@ import toast from "react-hot-toast";
 import {IoClose} from "react-icons/io5";
 import {FiPlus} from "react-icons/fi";
 import {GiPayMoney, GiReceiveMoney} from "react-icons/gi";
-import {HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
+import {HiOutlinePencilSquare} from "react-icons/hi2";
+import ModalActions from "../../../components/common/ModalActions.jsx";
 import {transactionsApi} from "../../../api/transactions.js";
 import {notify, notifyLoading} from "../../../lib/notify.jsx";
 import {formatPersianNumber, numberToPersianWords, sanitizeAmount} from "../../../lib/numbers.js";
@@ -21,7 +22,7 @@ const MODES = {
         badge: "text-var-color-01 dark:text-var-color-15 bg-var-color-15 dark:bg-var-color-12 border border-var-color-15 dark:border-var-color-42 rounded-full",
         badgeIcon: "w-8 h-8",
         button: "btn-bluish",
-        submitIcon: "w-7 h-7 ml-0.5",
+        submitIcon: "w-5 h-5 ml-1.5",
         input: "input-bluish",
         fieldIcon: "text-var-color-15",
     },
@@ -33,7 +34,7 @@ const MODES = {
         badge: "text-var-color-53",
         badgeIcon: "w-7 h-7",
         button: "btn-yellowish",
-        submitIcon: "w-4.5 h-4.5 mx-2",
+        submitIcon: "w-4.5 h-4.5 ml-1.5",
         input: "input-yellowish",
         fieldIcon: "text-var-color-53",
     },
@@ -55,7 +56,6 @@ const TransactionModal = ({mode, customerId, transaction, onClose, onDone}) => {
     const id = useId();
     const config = MODES[mode] ?? MODES.create;
     const BadgeIcon = config.icon;
-    const SubmitIcon = config.icon;
 
     // ریست با key در والد انجام می‌شود، نه با افکت.
     // صفر خالی نشان داده می‌شود: ورودیِ خالی هم صفر فرستاده می‌شود، پس دادهٔ تراکنش
@@ -251,18 +251,8 @@ const TransactionModal = ({mode, customerId, transaction, onClose, onDone}) => {
                     </main>
                 )}
 
-                <footer className={`flex flex-row justify-end items-center gap-1.5 ${mode === "delete" ? "mt-3.5" : ""}`}>
-                    <button
-                        type="button"
-                        tabIndex={-1}
-                        disabled={submitting}
-                        onClick={onSubmit}
-                        className={`py-1.5 pl-3 pr-1 rounded-xl btn ${config.button} disabled:opacity-60 disabled:cursor-not-allowed`}
-                    >
-                        {mode === "delete" ? <HiOutlineTrash className={config.submitIcon}/> : <SubmitIcon className={config.submitIcon}/>}
-                        <h2 className="m-0 text-[17px]">{submitting ? "در حال انجام ..." : config.submit}</h2>
-                    </button>
-                </footer>
+                <ModalActions mode={mode} config={config} submitting={submitting}
+                              onSubmit={onSubmit} onCancel={requestClose}/>
             </div>
         </section>
     );

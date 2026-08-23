@@ -1,6 +1,8 @@
 import {useId, useRef, useState} from "react";
 import toast from "react-hot-toast";
 import {IoIosClose} from "react-icons/io";
+// همان ✕ی که دکمهٔ انصرافِ بقیهٔ مودال‌ها دارد (IoIosClose مالِ دکمهٔ گوشهٔ هدر است)
+import {IoClose} from "react-icons/io5";
 import {FiLock} from "react-icons/fi";
 import {FaRegEye, FaRegEyeSlash} from "react-icons/fa6";
 import {authApi} from "../../api/auth.js";
@@ -127,10 +129,28 @@ const ChangePasswordModal = ({open, onClose}) => {
                     </div>
                 ))}
 
-                {/* دکمه تغییر رمز عبور — هم‌استایلِ دکمهٔ مودالِ ثبت درخواست */}
-                <button className="w-full h-10.5 rounded-[12px] btn btn-bluish cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed" type="submit" disabled={submitting}>
-                    {submitting ? "در حال تغییر ..." : "تغییر رمز عبور"}
-                </button>
+                {/* نوارِ دکمه‌ها — همان چیدمانِ بقیهٔ مودال‌ها و پنلِ جستجو: انصراف و
+                    اقدام کنار هم، هرکدام نصفِ عرض. اینجا از ModalActions استفاده
+                    نمی‌شود چون این یکی فرم است و دکمه‌اش باید type="submit" بماند. */}
+                <footer className="flex flex-row justify-between items-center gap-2 mt-1">
+                    <button
+                        type="button"
+                        disabled={submitting}
+                        onClick={resetAndClose}
+                        className="w-1/2 py-1 rounded-lg btn btn-redish disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        <IoClose className="w-5 h-5 ml-1"/>
+                        <span className="text-[15px]">انصراف</span>
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={submitting}
+                        className="w-1/2 py-1 rounded-lg btn btn-bluish disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        <FiLock className="w-4.5 h-4.5 ml-1.5"/>
+                        <span className="text-[15px]">{submitting ? "در حال تغییر ..." : "تغییر رمز عبور"}</span>
+                    </button>
+                </footer>
             </form>
         </div>
     );
