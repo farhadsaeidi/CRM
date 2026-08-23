@@ -184,8 +184,15 @@ const CustomersTable = () => {
                                 <FiChevronUp className={`inline-block w-4.5 h-4.5 transition-transform duration-200 ease-in-out ${isFilterMenuOpen ? "rotate-0" : "rotate-180"}`}/>
                             </button>
 
+                            {/* «بازنشانی» یعنی جدول به حالتِ اولیه برگردد، نه صرفاً واکشیِ
+                                دوباره — همان کاری که CustomerManagement می‌کند: جستجو،
+                                فیلتر و شمارهٔ صفحه پاک می‌شوند. کادرِ جستجوی فوتر هم خودش
+                                خالی می‌شود، چون از `?query=` در یوآرال می‌خواند. */}
                             <button type="button" ref={refreshBtnRef}
-                                    onClick={() => setRefreshKey((k) => k + 1)}
+                                    onClick={() => {
+                                        setParam({query: null, filter: null, page: null});
+                                        setRefreshKey((k) => k + 1);
+                                    }}
                                     onMouseEnter={() => showTooltip(refreshBtnRef, "بازنشانی جدول")}
                                     onMouseLeave={hideTooltip}
                                     className="rounded-full btn btn-bluish">

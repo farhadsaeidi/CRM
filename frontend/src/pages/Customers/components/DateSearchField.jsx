@@ -128,6 +128,24 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
     const isPicker = Boolean(options);
     const filled = isFieldFilled(value);
 
+    // ارتفاعِ محتوا برای ترنزیشنِ باز/بسته شدن.
+    //
+    // اندازه‌گیریِ اصلی در همان کلیکِ باز کردن انجام می‌شود، نه در ResizeObserver:
+    // خواندنِ DOM داخل هندلرِ رویداد آزاد است و به هیچ زمان‌بندی‌ای وابسته نیست.
+    // ‏ResizeObserver فقط برای تغییرهای بعدی است (عوض شدنِ حالت یا افزودنِ ردیف در
+    // «نامنظم») و اگر معلق شود، باز شدنِ کشو همچنان کار می‌کند.
+    const contentRef = useRef(null);
+    const [contentHeight, setContentHeight] = useState(0);
+    const measure = () => setContentHeight(contentRef.current?.scrollHeight ?? 0);
+
+    useEffect(() => {
+        const element = contentRef.current;
+        if (!element) return;
+        const observer = new ResizeObserver(() => setContentHeight(element.scrollHeight));
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, []);
+
     const patch = (changes) => onChange({...value, ...changes});
     // فقط رقمِ انگلیسی می‌ماند تا ورودیِ فارسی هم بدون دردسر به سرور برود
     const digits = (raw) => toEnglishDigits(raw).replace(/\D/g, "").slice(0, maxLength);
@@ -174,7 +192,12 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
             {/* سرِ کشو */}
             <button
                 type="button"
-                onClick={onToggle}
+                // ارتفاع را همین‌جا و پیش از باز شدن می‌گیریم تا ترنزیشن مقدارِ
+                // درست داشته باشد، حتی اگر ResizeObserver هنوز چیزی نگفته باشد
+                onClick={() => {
+                    measure();
+                    onToggle();
+                }}
                 className={`w-full flex flex-row justify-between items-center cursor-pointer p-3 pr-4 text-[15px] font-IRANSansXFaNumLight border-b border-var-color-57 dark:border-var-color-38 transition-all duration-200 ease-in-out ${
                     open ? "bg-var-color-59 dark:bg-var-color-52" : "bg-var-color-00 dark:bg-var-color-37"
                 } hover:bg-var-color-59 dark:hover:bg-var-color-52 text-var-color-06 dark:text-var-color-39`}
@@ -188,15 +211,20 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
             </button>
 
             {/* بدنهٔ کشو — باز و بسته شدنش با ترنزیشن است.
-                ارتفاعِ محتوا متغیر است و `height: auto` ترنزیشن نمی‌گیرد، پس از
-                گریدِ تک‌ردیفه استفاده می‌شود: `0fr` تا `1fr` قابلِ ترنزیشن است و
-                ارتفاعِ واقعیِ محتوا را هم نگه می‌دارد (بدون max-height حدسی). */}
-            <div className={`grid transition-[grid-template-rows] duration-250 ease-in-out ${
-                open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-            }`}>
-                {/* بسته که باشد نه دیده می‌شود نه با Tab در دسترس است */}
-                <div className="overflow-hidden" inert={!open}>
-                <div className="flex flex-col justify-start items-center gap-2.5 px-4 py-3 bg-var-color-49 dark:bg-var-color-38 border-b border-var-color-57 dark:border-var-color-38">
+                ⚠️ عمداً از ترفندِ `grid-template-rows: 0fr → 1fr` استفاده نمی‌شود.
+                میان‌یابیِ واحدِ `fr` قابلیتِ تازه‌ای است و در فایرفاکسِ قدیمی‌تر کار
+                نمی‌کند؛ آنجا کشو اصلاً باز نمی‌شد و کاربر فکر می‌کرد جستجو خراب است.
+                همان تله‌ای که سرِ اسکرول‌بار هم خوردیم.
+                به‌جایش ارتفاعِ واقعیِ محتوا اندازه گرفته می‌شود و `max-height` با
+                پیکسل ترنزیشن می‌خورد — این همه‌جا کار می‌کند. */}
+            <div
+                style={{maxHeight: open ? contentHeight : 0}}
+                className="overflow-hidden transition-[max-height] duration-250 ease-in-out"
+                // بسته که باشد نه دیده می‌شود نه با Tab در دسترس است
+                inert={!open}
+            >
+                <div ref={contentRef}
+                     className="flex flex-col justify-start items-center gap-2.5 px-4 py-3 bg-var-color-49 dark:bg-var-color-38 border-b border-var-color-57 dark:border-var-color-38">
                     {/* انتخابِ حالت */}
                     <div className="flex flex-row justify-center items-center gap-8">
                         {MODE_ITEMS.map((item) => {
@@ -302,7 +330,6 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                             ))}
                         </div>
                     )}
-                </div>
                 </div>
             </div>
         </section>

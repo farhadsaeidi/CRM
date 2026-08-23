@@ -170,14 +170,31 @@ const Footer = () => {
     }, [isDropdownMenuOpen, positionDropdown]);
 
     // یوآرال منبعِ حقیقتِ جستجوست؛ صفحهٔ مشتریان از همان می‌خواند
-    const applySearch = (value) => {
+    const applySearch = useCallback((value) => {
         const params = new URLSearchParams(location.search);
         if (value.trim()) params.set("query", value.trim());
         else params.delete("query");
         // با هر جستجوی تازه باید به صفحهٔ اول برگشت، وگرنه ممکن است صفحه‌ای خالی ببینیم
         params.delete("page");
         navigate({pathname: "/customers", search: params.toString()});
-    };
+    }, [location.search, navigate]);
+
+    // جستجوی مشتری **زنده** است، نه با Enter — همان رفتار CustomerManagement.
+    // با هر کلید درخواست نمی‌رود؛ نیم‌ثانیه بعد از آخرین کلید یک بار. خالی شدنِ
+    // کادر بلافاصله اعمال می‌شود تا فهرست بی‌معطلی برگردد.
+    //
+    // حلقه نمی‌سازد: نتیجهٔ navigate خودش `urlQuery` را عوض می‌کند و مقایسهٔ
+    // حین رندرِ بالا `searchValue` را با آن هم‌راست می‌کند، پس دفعهٔ بعد این افکت
+    // در همان شرطِ اول برمی‌گردد.
+    useEffect(() => {
+        if (searchValue.trim() === urlQuery) return;
+        if (searchValue === "") {
+            applySearch("");
+            return;
+        }
+        const timer = setTimeout(() => applySearch(searchValue), 500);
+        return () => clearTimeout(timer);
+    }, [searchValue, urlQuery, applySearch]);
 
     const cleanSearchInput = () => {
         setSearchValue("");
