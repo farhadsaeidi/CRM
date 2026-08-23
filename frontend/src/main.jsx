@@ -19,7 +19,7 @@ if (window.__ScrollTimeline) {
 // بومی خودش شناور است (موبایل و مک) جای خالی نمی‌گیرد و نیازی به جایگزینی نیست.
 OverlayScrollbars(
     {target: document.body, cancel: {nativeScrollbarsOverlaid: true}},
-    {scrollbars: {theme: 'os-theme-app', autoHide: 'move', autoHideDelay: 500, clickScroll: true}},
+    {scrollbars: {theme: 'os-theme-app', autoHide: 'move', autoHideDelay: 800, clickScroll: true}},
     // موقعیتِ دسته را خودمان می‌نویسیم — دلیلش در lib/scrollSync.js
     {initialized: syncScrollHandles, scroll: syncScrollHandles, updated: syncScrollHandles},
 )
