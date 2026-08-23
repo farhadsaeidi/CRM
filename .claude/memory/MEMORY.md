@@ -9,5 +9,5 @@
 - [CRM WSL environment](crm-wsl-env.md) — live copy is in WSL; venv is `venv/` not `.venv/`; calling wsl from Git Bash needs `MSYS_NO_PATHCONV=1`
 - [PyCharm + WSL + Tailwind](pycharm-wsl-tailwind.md) — Windows PyCharm over the WSL bridge can't auto-find the v4 CSS entry; set `experimental.configFile` or get false cssConflict warnings
 
-- [User working style](user-working-style.md) — fix clear bugs autonomously without asking; explain root causes, Persian comments about *why*
+- [User working style](user-working-style.md) — fix clear bugs autonomously; never start/stop his dev servers and never use the browser tool (each call costs him a confirmation); verify with eslint + build
 - [Commit every change](commit-every-change.md) — commit **and push** each finished change yourself, straight to main; `env -i` without `HOME` makes git hang forever on credentials
