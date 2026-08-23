@@ -173,7 +173,15 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
 
     // افزودن ردیف: هم دکمهٔ + و هم Enter همین را صدا می‌زنند.
     // فوکوس داخل rAF داده می‌شود نه مستقیم — ردیفِ تازه هنوز در DOM نیست.
-    const canAddRow = (index) => Boolean(String(value.custom[index] ?? "").trim()) && index === value.custom.length - 1;
+    // + (و Enter) فقط از آخرین ردیف و وقتی مقدارش «کامل» باشد.
+    // در ماه و روز مقدار از فهرست انتخاب می‌شود، پس پر بودن یعنی کامل بودن؛ ولی
+    // سال را کاربر رقم‌به‌رقم می‌نویسد و «۱۴۰» هم عددِ درستی به نظر می‌رسد، پس
+    // آنجا هر چهار رقم لازم است.
+    const canAddRow = (index) => {
+        if (index !== value.custom.length - 1) return false;
+        const current = String(value.custom[index] ?? "").trim();
+        return isPicker ? current !== "" : current.length === maxLength;
+    };
     const addRow = () => {
         const nextIndex = value.custom.length;
         patch({custom: [...value.custom, ""]});
