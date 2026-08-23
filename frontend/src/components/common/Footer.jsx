@@ -105,6 +105,11 @@ const Footer = () => {
     // بستنِ منوها با کلیک بیرون
     useEffect(() => {
         const onDocClick = (e) => {
+            // ⚠️ اگر خودِ عنصرِ کلیک‌شده حین اجرای هندلرش از DOM برداشته شده باشد،
+            // دیگر `contains` جوابِ درست نمی‌دهد و کلیک «بیرونی» حساب می‌شود.
+            // نمونه‌اش دکمهٔ ✕ِ کنارِ ردیف‌های «نامنظم»: ردیف را حذف می‌کرد، ری‌اکت
+            // همان‌جا رندر می‌کرد، و بعد این شنونده کلِ پنل را می‌بست.
+            if (!e.target.isConnected) return;
             if (startBtnRef.current && !startBtnRef.current.contains(e.target) &&
                 startPanelRef.current && !startPanelRef.current.contains(e.target)) {
                 setIsStartMenuOpen(false);

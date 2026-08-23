@@ -27,7 +27,7 @@ const iconBtn =
  * بدنهٔ پنل اسکرول دارد و منوی absolute داخلش بریده می‌شد — همان راه‌حلی که برای
  * منوی فیلترِ جدول مشتریان هم به کار رفت.
  */
-const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemClass, disabled, placement = "bottom"}) => {
+const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemClass, disabled, placement = "bottom", buttonRef}) => {
     const [open, setOpen] = useState(false);
     const [pos, setPos] = useState(null);
     const btnRef = useRef(null);
@@ -69,7 +69,12 @@ const OptionPicker = ({options, value, onSelect, placeholder, gridClass, itemCla
         <>
             <button
                 type="button"
-                ref={btnRef}
+                // هم ref داخلیِ خودِ پیکر (برای موقعیتِ منو) و هم ref بیرونی
+                // (برای فوکوس دادن از سمتِ والد) روی یک عنصر می‌نشینند
+                ref={(element) => {
+                    btnRef.current = element;
+                    if (typeof buttonRef === "function") buttonRef(element);
+                }}
                 disabled={disabled}
                 onClick={() => setOpen((v) => !v)}
                 className={`w-full h-7 flex flex-row justify-between items-center gap-1 px-2 rounded-md text-sm cursor-pointer input input-bluish ${
@@ -160,6 +165,21 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
         patch({custom});
     };
 
+    // ردیف‌های حالتِ «نامنظم» برای فوکوس دادن به ردیفِ تازه نگه داشته می‌شوند
+    const customRefs = useRef([]);
+    const setCustomRef = (index) => (element) => {
+        customRefs.current[index] = element;
+    };
+
+    // افزودن ردیف: هم دکمهٔ + و هم Enter همین را صدا می‌زنند.
+    // فوکوس داخل rAF داده می‌شود نه مستقیم — ردیفِ تازه هنوز در DOM نیست.
+    const canAddRow = (index) => Boolean(String(value.custom[index] ?? "").trim()) && index === value.custom.length - 1;
+    const addRow = () => {
+        const nextIndex = value.custom.length;
+        patch({custom: [...value.custom, ""]});
+        requestAnimationFrame(() => customRefs.current[nextIndex]?.focus());
+    };
+
     const renderTextInput = (key, extraClass = "") => (
         <input
             type="text"
@@ -202,10 +222,11 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                     open ? "bg-var-color-59 dark:bg-var-color-52" : "bg-var-color-00 dark:bg-var-color-37"
                 } hover:bg-var-color-59 dark:hover:bg-var-color-52 text-var-color-06 dark:text-var-color-39`}
             >
+                {/* نشانهٔ پر بودن سمتِ راستِ عنوان می‌نشیند: در RTL اولین فرزند
+                    راست‌ترین است، پس نقطه پیش از برچسب می‌آید */}
                 <span className="flex flex-row items-center gap-2">
+                    {filled && <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-var-color-15"/>}
                     {label}
-                    {/* نشانهٔ پر بودن — با بسته بودن کشو هم معلوم است این جزء در جستجو نقش دارد */}
-                    {filled && <span className="w-1.5 h-1.5 rounded-full bg-var-color-15"/>}
                 </span>
                 <FiChevronUp className={`w-4.5 h-4.5 transition-transform duration-200 ease-in-out ${open ? "rotate-0" : "rotate-180"}`}/>
             </button>
@@ -285,8 +306,8 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                                 <div key={index} className="w-full flex flex-row justify-center items-center gap-0.75">
                                     {/* افزودن فقط از ردیفی که پر شده باشد — وگرنه ردیف‌های خالی روی هم می‌مانند */}
                                     <button type="button" tabIndex={-1} aria-label="افزودن"
-                                            disabled={!String(item).trim() || index !== value.custom.length - 1}
-                                            onClick={() => patch({custom: [...value.custom, ""]})}
+                                            disabled={!canAddRow(index)}
+                                            onClick={addRow}
                                             className={`${iconBtn} text-var-color-15`}>
                                         <FiPlus className="w-full h-full"/>
                                     </button>
@@ -301,6 +322,7 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                                                 gridClass={gridClass}
                                                 itemClass={itemClass}
                                                 placement={menuPlacement}
+                                                buttonRef={setCustomRef(index)}
                                             />
                                         </div>
                                     ) : (
@@ -309,7 +331,15 @@ const DateSearchField = ({label, open, onToggle, value, onChange, options, gridC
                                             inputMode="numeric"
                                             autoComplete="off"
                                             value={item}
+                                            ref={setCustomRef(index)}
                                             onChange={(e) => setCustomAt(index, digits(e.target.value))}
+                                            // Enter همان کارِ دکمهٔ + را می‌کند تا برای وارد کردنِ
+                                            // چند مقدار دست از کیبورد برداشته نشود
+                                            onKeyDown={(e) => {
+                                                if (e.key !== "Enter") return;
+                                                e.preventDefault();
+                                                if (canAddRow(index)) addRow();
+                                            }}
                                             className={`${smallInput} w-30`}
                                         />
                                     )}

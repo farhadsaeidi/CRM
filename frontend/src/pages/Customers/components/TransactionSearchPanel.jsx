@@ -13,14 +13,18 @@ const TransactionSearchPanel = ({open, onClose, onSearch, panelRef, right}) => {
     const [state, setState] = useState(emptySearchState);
     const [openDrawer, setOpenDrawer] = useState(null);
 
-    // با بسته شدنِ پنل همهٔ کشوها هم بسته می‌شوند. راه‌های بستن یکی نیست (✕، انصراف،
-    // کلیک بیرون که مستقیم در فوتر انجام می‌شود)، پس به‌جای اضافه کردن به هر کدام،
-    // از روی خودِ پراپِ open تشخیص داده می‌شود — الگوی «state مشتق از props» با
-    // مقایسه در حین رندر، نه افکت.
+    // با بسته شدنِ پنل، هم کشوها بسته می‌شوند و هم مقادیر پاک — یعنی دفعهٔ بعد
+    // منو کاملاً از نو باز می‌شود. راه‌های بستن یکی نیست (✕، انصراف، کلیک بیرون که
+    // مستقیم در فوتر انجام می‌شود)، پس به‌جای اضافه کردن به هر کدام، از روی خودِ
+    // پراپِ open تشخیص داده می‌شود — الگوی «state مشتق از props» با مقایسه در حین
+    // رندر، نه افکت.
     const [wasOpen, setWasOpen] = useState(open);
     if (wasOpen !== open) {
         setWasOpen(open);
-        if (!open) setOpenDrawer(null);
+        if (!open) {
+            setOpenDrawer(null);
+            setState(emptySearchState());
+        }
     }
 
     const toggleDrawer = (key) => setOpenDrawer((current) => (current === key ? null : key));
