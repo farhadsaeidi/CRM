@@ -8,6 +8,7 @@ import {TRANSACTION_SEARCH_EVENT} from "../../../components/common/Footer.jsx";
 import CustomTooltip from "../../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../../components/common/MenuItem.jsx";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
+import RowSelectMark from "../../../components/common/RowSelectMark.jsx";
 import TransactionModal from "./TransactionModal.jsx";
 import {formatPersianNumber} from "../../../lib/numbers.js";
 import {notify} from "../../../lib/notify.jsx";
@@ -55,6 +56,9 @@ const TransactionsTable = ({customerId, onBack}) => {
     const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
     const [filterMenuPos, setFilterMenuPos] = useState(null);
     const [showCustomTooltip, setShowCustomTooltip] = useState(true);
+    // ردیفِ انتخاب‌شده — تک‌انتخابی، و کلیک دوباره روی همان ردیف انتخاب را برمی‌دارد
+    const [selectedId, setSelectedId] = useState(null);
+    const toggleSelected = (id) => setSelectedId((current) => (current === id ? null : id));
 
     const backBtnRef = useRef(null);
     const filterBtnRef = useRef(null);
@@ -239,6 +243,8 @@ const TransactionsTable = ({customerId, onBack}) => {
                         {/* سرستون داخل همان ناحیهٔ اسکرول است تا در نمای باریک از ستون‌ها جدا نیفتد */}
                         <thead className="w-full sticky top-0 z-[1]">
                             <tr className="w-full grid grid-transaction items-center bg-var-color-59 dark:bg-var-color-52 text-sm text-var-color-60 dark:text-var-color-51 border-b border-var-color-57 dark:border-var-color-38 font-IRANSansXFaNumLight px-4 py-3">
+                                {/* ستونِ نشانهٔ انتخاب — سرستون ندارد */}
+                                <th/>
                                 <th className="px-2 text-center">مبلغ نسیه (تومان)</th>
                                 <th className="px-2 text-center">مبلغ پرداختی (تومان)</th>
                                 <th className="px-2 text-center">تاریخ تراکنش</th>
@@ -266,25 +272,30 @@ const TransactionsTable = ({customerId, onBack}) => {
                                         <tr
                                             key={transaction.id}
                                             tabIndex={-1}
+                                            aria-selected={selectedId === transaction.id}
+                                            onClick={() => toggleSelected(transaction.id)}
                                             onDoubleClick={() => setModal({mode: "edit", transaction})}
-                                            className={`w-full grid grid-transaction items-center hover:bg-var-color-59 dark:hover:bg-var-color-52 p-4 ${
+                                            className={`w-full grid grid-transaction items-center cursor-pointer hover:bg-var-color-59 dark:hover:bg-var-color-52 p-4 ${
                                                 !isLastItem ? "border-b border-var-color-57 dark:border-var-color-38" : ""
                                             }`}
                                         >
+                                            <th className="flex items-center justify-center">
+                                                <RowSelectMark selected={selectedId === transaction.id}/>
+                                            </th>
                                             <th className="px-2 text-center whitespace-nowrap font-IRANSansXFaNumUltraLight">{formatPersianNumber(transaction.debt)}</th>
                                             <th className="px-2 text-center whitespace-nowrap font-IRANSansXFaNumUltraLight">{formatPersianNumber(transaction.paid)}</th>
                                             <th className="px-2 text-center whitespace-nowrap font-IRANSansXFaNumUltraLight">{formatShamsi(transaction)}</th>
                                             <th className="px-2 flex justify-center items-center gap-3">
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "ویرایش" : undefined}
-                                                        onClick={() => setModal({mode: "edit", transaction})}
+                                                        onClick={(e) => { e.stopPropagation(); setModal({mode: "edit", transaction}); }}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-53 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
                                                     <HiOutlinePencilSquare className="w-5 h-5"/>
                                                 </button>
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "حذف" : undefined}
-                                                        onClick={() => setModal({mode: "delete", transaction})}
+                                                        onClick={(e) => { e.stopPropagation(); setModal({mode: "delete", transaction}); }}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-28 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
                                                     <HiOutlineTrash className="w-5 h-5"/>

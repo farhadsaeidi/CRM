@@ -12,6 +12,7 @@ import CustomTooltip from "../../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../../components/common/MenuItem.jsx";
 import Pagination from "../../../components/common/Pagination.jsx";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
+import RowSelectMark from "../../../components/common/RowSelectMark.jsx";
 import CustomerModal from "./CustomerModal.jsx";
 import {notify} from "../../../lib/notify.jsx";
 
@@ -50,6 +51,10 @@ const CustomersTable = () => {
     const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
     const [filterMenuPos, setFilterMenuPos] = useState(null);
     const [showCustomTooltip, setShowCustomTooltip] = useState(true);
+    // ردیفِ انتخاب‌شده. تک‌انتخابی است: کلیک روی ردیفِ دیگر انتخاب را جابه‌جا
+    // می‌کند و کلیک دوباره روی همان ردیف، انتخاب را برمی‌دارد.
+    const [selectedId, setSelectedId] = useState(null);
+    const toggleSelected = (id) => setSelectedId((current) => (current === id ? null : id));
 
     const filterBtnRef = useRef(null);
     const filterMenuRef = useRef(null);
@@ -220,6 +225,8 @@ const CustomersTable = () => {
                     <table className="w-full text-left border-collapse">
                         <thead className="w-full">
                             <tr className="w-full grid grid-customer items-center bg-var-color-59 dark:bg-var-color-52 text-sm text-var-color-60 dark:text-var-color-51 border-b border-var-color-57 dark:border-var-color-38 font-IRANSansXFaNumLight px-4 py-3">
+                                {/* ستونِ نشانهٔ انتخاب — سرستون ندارد */}
+                                <th/>
                                 <th className="px-2 text-right">نام و نام خانوادگی</th>
                                 <th className="px-2 text-center">شماره تماس</th>
                                 <th className="px-2 text-center">تاریخ ایجاد</th>
@@ -248,11 +255,16 @@ const CustomersTable = () => {
                                         <tr
                                             key={customer.id}
                                             tabIndex={-1}
+                                            aria-selected={selectedId === customer.id}
+                                            onClick={() => toggleSelected(customer.id)}
                                             onDoubleClick={() => setModal({mode: "edit", customer})}
-                                            className={`w-full grid grid-customer items-center hover:bg-var-color-59 dark:hover:bg-var-color-52 p-4 ${
+                                            className={`w-full grid grid-customer items-center cursor-pointer hover:bg-var-color-59 dark:hover:bg-var-color-52 p-4 ${
                                                 !isLastItem ? "border-b border-var-color-57 dark:border-var-color-38" : ""
                                             }`}
                                         >
+                                            <th className="flex items-center justify-center">
+                                                <RowSelectMark selected={selectedId === customer.id}/>
+                                            </th>
                                             <th className="px-2 text-right whitespace-nowrap overflow-hidden text-ellipsis">{customer.fullname}</th>
                                             <th className="px-2 text-center whitespace-nowrap font-IRANSansXFaNumUltraLight">{customer.phone}</th>
                                             <th className="px-2 text-center whitespace-nowrap font-IRANSansXFaNumUltraLight">{formatCreatedDate(customer.created)}</th>
@@ -266,21 +278,21 @@ const CustomersTable = () => {
                                                     یکدست دیده شوند؛ ضخامت و گردیِ خطوطشان یکی است. */}
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "تراکنش های مالی" : undefined}
-                                                        onClick={() => setParam({customer: customer.id})}
+                                                        onClick={(e) => { e.stopPropagation(); setParam({customer: customer.id}); }}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-15 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
                                                     <HiOutlineArrowsRightLeft className="w-5 h-5"/>
                                                 </button>
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "ویرایش" : undefined}
-                                                        onClick={() => setModal({mode: "edit", customer})}
+                                                        onClick={(e) => { e.stopPropagation(); setModal({mode: "edit", customer}); }}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-53 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
                                                     <HiOutlinePencilSquare className="w-5 h-5"/>
                                                 </button>
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "حذف" : undefined}
-                                                        onClick={() => setModal({mode: "delete", customer})}
+                                                        onClick={(e) => { e.stopPropagation(); setModal({mode: "delete", customer}); }}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-28 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
                                                     <HiOutlineTrash className="w-5 h-5"/>
