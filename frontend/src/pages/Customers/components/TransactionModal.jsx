@@ -5,6 +5,7 @@ import {FiPlus} from "react-icons/fi";
 import {GiPayMoney, GiReceiveMoney} from "react-icons/gi";
 import {HiOutlinePencilSquare} from "react-icons/hi2";
 import ModalActions from "../../../components/common/ModalActions.jsx";
+import ModalCloseButton from "../../../components/common/ModalCloseButton.jsx";
 import {transactionsApi} from "../../../api/transactions.js";
 import {notify, notifyLoading} from "../../../lib/notify.jsx";
 import {formatPersianNumber, numberToPersianWords, sanitizeAmount} from "../../../lib/numbers.js";
@@ -217,15 +218,7 @@ const TransactionModal = ({mode, customerId, transaction, onClose, onDone}) => {
                         </div>
                         <h2 className="text-var-color-08 dark:text-var-color-01 text-lg text-center">{config.title}</h2>
                     </div>
-                    <button
-                        type="button"
-                        tabIndex={-1}
-                        onClick={requestClose}
-                        aria-label="بستن"
-                        className="w-7.5 h-7.5 cursor-pointer text-var-color-08 dark:text-var-color-01 hover:text-var-color-28 transition-all duration-200 ease-in-out"
-                    >
-                        <IoClose className="w-full h-full"/>
-                    </button>
+                    <ModalCloseButton onClick={requestClose}/>
                 </header>
 
                 {mode === "delete" ? (

@@ -17,6 +17,10 @@ const ModalActions = ({mode, config, submitting, onSubmit, onCancel}) => {
     const isDelete = mode === "delete";
     const SubmitIcon = isDelete ? HiOutlineTrash : config.icon;
 
+    // ارتفاعِ همهٔ دکمه‌های فوتر یکی است — همان ارتفاعی که دکمهٔ مودالِ حذف داشت.
+    // با ارتفاعِ صریح، به اندازهٔ متن و آیکونِ هر حالت گره نمی‌خورد.
+    const buttonBase = "h-10 rounded-xl btn disabled:opacity-60 disabled:cursor-not-allowed";
+
     return (
         <footer className={`flex flex-row items-center gap-2 ${isDelete ? "justify-end mt-3.5" : "justify-between mt-1"}`}>
             {!isDelete && (
@@ -25,7 +29,7 @@ const ModalActions = ({mode, config, submitting, onSubmit, onCancel}) => {
                     tabIndex={-1}
                     disabled={submitting}
                     onClick={onCancel}
-                    className="w-1/2 py-1 rounded-lg btn btn-redish disabled:opacity-60 disabled:cursor-not-allowed"
+                    className={`w-1/2 ${buttonBase} btn-redish`}
                 >
                     <IoClose className="w-5 h-5 ml-1"/>
                     <span className="text-[15px]">انصراف</span>
@@ -37,12 +41,10 @@ const ModalActions = ({mode, config, submitting, onSubmit, onCancel}) => {
                 tabIndex={-1}
                 disabled={submitting}
                 onClick={onSubmit}
-                className={`${isDelete ? "py-1.5 pl-3 pr-1 rounded-xl" : "w-1/2 py-1 rounded-lg"} btn ${config.button} disabled:opacity-60 disabled:cursor-not-allowed`}
+                className={`${isDelete ? "px-4" : "w-1/2"} ${buttonBase} ${config.button}`}
             >
                 <SubmitIcon className={config.submitIcon}/>
-                <span className={isDelete ? "text-[17px]" : "text-[15px]"}>
-                    {submitting ? "در حال انجام ..." : config.submit}
-                </span>
+                <span className="text-[15px]">{submitting ? "در حال انجام ..." : config.submit}</span>
             </button>
         </footer>
     );

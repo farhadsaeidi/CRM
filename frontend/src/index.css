@@ -578,8 +578,11 @@
 
 /* ایجاد کلاس های سفارشی برای ظاهر شدن فرم مدال */
 @layer utilities {
+    /* ورودِ مودال فقط محو شدن است، بدون حرکت. قبلاً از scale(0.05) با ایزینگِ
+       فنری (cubic-bezier با ۱.۵۶) می‌آمد که کارت را موقعِ ظاهر شدن تکان می‌داد.
+       خروج همان جمع‌شدن قبلی مانده — آنجا حرکت به بسته شدن معنا می‌دهد. */
     .animate-modal-in {
-        animation: modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        animation: modal-in 0.18s ease-out forwards;
     }
 
     .animate-modal-out {
@@ -588,11 +591,9 @@
 
     @keyframes modal-in {
         from {
-            transform: scale(0.05);
             opacity: 0;
         }
         to {
-            transform: scale(1);
             opacity: 1;
         }
     }
