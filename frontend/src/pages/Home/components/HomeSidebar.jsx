@@ -1,12 +1,13 @@
 import {NavLink} from "react-router";
-import {FiGrid, FiMessageSquare, FiUsers} from "react-icons/fi";
+import {FiMessageSquare, FiUsers} from "react-icons/fi";
+import {FaHome} from "react-icons/fa";
 import {HiOutlineArrowsRightLeft} from "react-icons/hi2";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
 // چهار بخشِ اصلیِ برنامه. هر کدام مسیرِ خودش را دارد، پس با NavLink ساخته می‌شوند
 // نه با state: آدرس منبعِ حقیقت است و رفرش و دکمهٔ back درست کار می‌کنند.
 const ITEMS = [
-    {to: "/home", icon: FiGrid, label: "داشبورد", end: true},
+    {to: "/home", icon: FaHome, label: "داشبورد", end: true},
     {to: "/customers", icon: FiUsers, label: "مشتریان"},
     {to: "/all-transactions", icon: HiOutlineArrowsRightLeft, label: "تراکنش ها"},
     {to: "/chat", icon: FiMessageSquare, label: "گفتگو"},
