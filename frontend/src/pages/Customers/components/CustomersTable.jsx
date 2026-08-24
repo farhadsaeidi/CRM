@@ -1,8 +1,8 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {useSearchParams} from "react-router";
+import {useNavigate, useSearchParams} from "react-router";
 import {FiChevronUp, FiFilter, FiPlus, FiRefreshCw} from "react-icons/fi";
 import {HiOutlineUsers} from "react-icons/hi";
-import {HiOutlineArrowsRightLeft, HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
+import {HiOutlineArrowRight, HiOutlineArrowsRightLeft, HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
 import {TbMoodNeutral} from "react-icons/tb";
 import {FaHandshakeSimple} from "react-icons/fa6";
 import {BsGraphDownArrow, BsGraphUpArrow} from "react-icons/bs";
@@ -38,6 +38,7 @@ const formatCreatedDate = (iso) =>
 const CustomersTable = () => {
     // یوآرال منبعِ حقیقت است: رفرش و دکمهٔ back درست کار می‌کنند و جستجوی فوتر
     // هم از همین راه اثر می‌گذارد
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get("query") || "";
     const filter = searchParams.get("filter") || "all";
@@ -59,6 +60,7 @@ const CustomersTable = () => {
     const filterMenuRef = useRef(null);
     const refreshBtnRef = useRef(null);
     const addBtnRef = useRef(null);
+    const backBtnRef = useRef(null);
 
     // تولتیپِ دکمه‌های نوارِ بالای جدول شناور است، نه شبه‌عنصر — کارت
     // overflow-hidden دارد و بخشِ بیرون‌زدهٔ تولتیپِ معمولی را می‌بُرد
@@ -168,8 +170,21 @@ const CustomersTable = () => {
             <section className="w-full rounded-xl border border-var-color-57 dark:border-var-color-38 overflow-hidden flex flex-col max-h-full">
                 {/* هدر جدول */}
                 <header className="shrink-0 w-full bg-var-color-00 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
-                    <div className="relative flex flex-row justify-between items-center py-2 pl-3.5 pr-28.5">
-                        <div/>
+                    <div className="relative flex flex-row justify-between items-center py-2 px-3.5">
+                        {/* بازگشت به داشبورد — این صفحه سایدبار ندارد، پس راهِ
+                            برگشتش همین دکمه است */}
+                        <button type="button" ref={backBtnRef}
+                                onClick={() => {
+                                    hideTooltip();
+                                    navigate("/home");
+                                }}
+                                onMouseEnter={() => showTooltip(backBtnRef, "بازگشت به داشبورد")}
+                                onMouseLeave={hideTooltip}
+                                className="rounded-full btn btn-bluish">
+                            <div className="w-7 h-7 flex justify-center items-center">
+                                <HiOutlineArrowRight className="w-4.5 h-4.5"/>
+                            </div>
+                        </button>
                         {/* عنوان جدول */}
                         <div className="absolute left-1/2 -translate-x-1/2 text-ellipsis font-MorabbaMedium dark:font-MorabbaLight text-[25px] text-var-color-08 dark:text-var-color-02 tracking-wide whitespace-nowrap">
                             جدول مشتریان

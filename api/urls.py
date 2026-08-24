@@ -30,6 +30,7 @@ ledger_patterns = [
          home_views.TransactionDetailView.as_view(), name="transaction_detail"),
     # همهٔ تراکنش‌های مالک، بدونِ قیدِ مشتری — صفحه‌بندی‌شده برای اسکرولِ بی‌نهایت
     path("transactions/", home_views.AllTransactionsView.as_view(), name="all_transactions"),
+    path("transactions/search/", home_views.AllTransactionsSearchView.as_view(), name="all_transactions_search"),
 ]
 
 # عمومی

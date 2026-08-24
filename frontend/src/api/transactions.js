@@ -24,4 +24,7 @@ export const allTransactionsApi = {
         if (filter && filter !== "all") params.set("filter", filter);
         return api.get(`/transactions/?${params.toString()}`);
     },
+    // جستجوی تاریخ شمسی — بدنه POST است ولی شمارهٔ صفحه در query می‌ماند تا همان
+    // اسکرولِ بی‌نهایت بتواند تغذیه‌اش کند
+    search: ({page = 1, payload}) => api.post(`/transactions/search/?page=${page}`, payload ?? {}),
 };

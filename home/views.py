@@ -139,6 +139,34 @@ class AllTransactionsView(OwnerScopedMixin, generics.ListAPIView):
         return queryset
 
 
+class AllTransactionsSearchView(OwnerScopedMixin, APIView):
+    """جستجوی تاریخ شمسی روی همهٔ تراکنش‌های مالک.
+
+    قرینهٔ `TransactionSearchView` ولی بدونِ قیدِ مشتری، و صفحه‌بندی‌شده تا همان
+    اسکرولِ بی‌نهایتِ صفحهٔ تراکنش‌ها را تغذیه کند. POST است چون ساختارِ تودرتوی
+    سال/ماه/روز در query string خوانا نمی‌شود؛ شمارهٔ صفحه ولی در query می‌ماند.
+    """
+
+    def post(self, request):
+        try:
+            data = request.data if isinstance(request.data, dict) else {}
+        except ParseError:
+            return Response({"message": "فرمت داده‌ها نامعتبر است."}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = (Transaction.objects
+                    .filter(owner=request.user)
+                    .select_related("customer")
+                    .order_by("-created", "-id"))
+
+        date_query = build_date_search_query(data.get("year"), data.get("month"), data.get("day"))
+        if date_query is not None:
+            queryset = queryset.filter(date_query)
+
+        paginator = AllTransactionsPagination()
+        page = paginator.paginate_queryset(queryset, request, view=self)
+        return paginator.get_paginated_response(AllTransactionsSerializer(page, many=True).data)
+
+
 class TransactionListCreateView(OwnerScopedMixin, generics.ListCreateAPIView):
     """تراکنش‌های یک مشتری + مانده و وضعیت حساب.
 

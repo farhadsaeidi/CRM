@@ -40,6 +40,10 @@ const ScrollContainer = ({
     autoHideDelay = 800,
     overflowX = "scroll",
     overflowY = "scroll",
+    // اسکرول‌بار را کاملاً پنهان می‌کند ولی خودِ اسکرول سرِ جایش می‌ماند —
+    // جایی به کار می‌آید که نشانهٔ ادامهٔ محتوا چیزِ دیگری است (مثل مه‌آلودیِ پایینِ
+    // جدولِ تراکنش‌ها)
+    hideScrollbars = false,
     // عنصرِ واقعیِ اسکرول‌دار درونِ کتابخانه است نه خودِ این عنصر؛ هر جا کد لازم
     // دارد دستی اسکرول کند (مثل «برو به آخرِ گفتگو») این ref را بگیرد.
     viewportRef,
@@ -58,9 +62,13 @@ const ScrollContainer = ({
     // عوض نشده‌اند از ساختِ دوباره صرف‌نظر می‌کند. نتیجه: دسته روی translateY(0)
     // قفل می‌شد و با اسکرول جابه‌جا نمی‌شد.
     const options = useMemo(() => ({
-        scrollbars: {theme: "os-theme-app", autoHide, autoHideDelay, clickScroll: true},
+        scrollbars: {
+            theme: "os-theme-app",
+            autoHide, autoHideDelay, clickScroll: true,
+            visibility: hideScrollbars ? "hidden" : "auto",
+        },
         overflow: {x: overflowX, y: overflowY},
-    }), [autoHide, autoHideDelay, overflowX, overflowY]);
+    }), [autoHide, autoHideDelay, overflowX, overflowY, hideScrollbars]);
 
     const events = useMemo(() => ({
         initialized: (instance) => {

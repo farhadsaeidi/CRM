@@ -60,9 +60,15 @@ const Footer = () => {
     const dateSearchPanelRef = useRef(null);
     const dateSearchInputRef = useRef(null);
 
-    // با باز بودنِ صفحهٔ تراکنش‌ها (‎?customer=‎ در یوآرال) جستجوی نوارِ فوتر از
-    // «نام مشتری» به «تاریخ تراکنش» عوض می‌شود — همان رفتار CustomerManagement
-    const isTransactionsView = Boolean(searchParams.get("customer"));
+    // با باز بودنِ صفحهٔ تراکنش‌ها جستجوی نوارِ فوتر از «نام مشتری» به «تاریخ
+    // تراکنش» عوض می‌شود — همان رفتار CustomerManagement. دو جا این‌طور است:
+    // دفترِ یک مشتری (‎?customer=‎ در یوآرال) و جدولِ همهٔ تراکنش‌ها.
+    const isTransactionsView =
+        Boolean(searchParams.get("customer")) || location.pathname === "/transactions";
+
+    // داشبورد جستجو ندارد: نه فهرستی روی صفحه هست که محدود شود و نه تاریخی که
+    // جستجو شود؛ کادرِ بی‌اثر فقط کاربر را گمراه می‌کند.
+    const showSearchBox = location.pathname !== "/home";
 
     const startBtnRef = useRef(null);
     const startPanelRef = useRef(null);
@@ -279,7 +285,7 @@ const Footer = () => {
                     </button>
 
                     {/* جستجوی تاریخ تراکنش — فقط در صفحهٔ تراکنش‌ها */}
-                    {isTransactionsView ? (
+                    {!showSearchBox ? null : isTransactionsView ? (
                         <div ref={dateSearchBoxRef} className={SEARCH_BOX_CLASS}>
                             <HiOutlineSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-var-color-15 pointer-events-none"/>
                             {/* readOnly است چون خودش ورودی نمی‌گیرد؛ فقط پنل را باز می‌کند */}
