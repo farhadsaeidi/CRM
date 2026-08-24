@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from core.permissions import IsOwner
 
 from .models import Customer, CustomerOwner, Transaction
-from .serializers import CustomerSerializer, TransactionSerializer
+from .serializers import AllTransactionsSerializer, CustomerSerializer, TransactionSerializer
 from .services import (
     FILTER_CODES,
     build_date_search_query,
@@ -99,6 +99,45 @@ class CustomerDetailView(OwnerScopedMixin, generics.RetrieveUpdateDestroyAPIView
 
 
 # --------------------------------------------------------------- تراکنش‌ها
+
+class AllTransactionsPagination(PageNumberPagination):
+    """صفحه‌بندی برای اسکرولِ بی‌نهایتِ جدولِ همهٔ تراکنش‌ها.
+
+    اینجا برخلافِ فهرستِ تراکنش‌های یک مشتری صفحه‌بندی لازم است: تعدادِ کل می‌تواند
+    خیلی زیاد باشد و مانده‌ای هم کنارش نمایش داده نمی‌شود که ناقص شود.
+    """
+    page_size = 25
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
+class AllTransactionsView(OwnerScopedMixin, generics.ListAPIView):
+    """همهٔ تراکنش‌های مالکِ درخواست، از همهٔ مشتری‌هایش.
+
+    `select_related("customer")` لازم است: سریالایزر نامِ مشتری را می‌خواهد و
+    بدون آن به‌ازای هر ردیف یک کوئریِ اضافه می‌خورد (N+1).
+    """
+    serializer_class = AllTransactionsSerializer
+    pagination_class = AllTransactionsPagination
+
+    def get_queryset(self):
+        queryset = (Transaction.objects
+                    .filter(owner=self.request.user)
+                    .select_related("customer")
+                    .order_by("-created", "-id"))
+
+        filter_type = self.request.query_params.get("filter", "all")
+        if filter_type != "all":
+            queryset = queryset.filter(build_period_query(filter_type))
+
+        # جستجو روی نام یا شمارهٔ مشتری — تا در فهرستِ بلند بتوان محدود کرد
+        query = (self.request.query_params.get("query") or "").strip()
+        if query:
+            queryset = queryset.filter(
+                Q(customer__fullname__icontains=query) | Q(customer__phone__icontains=query)
+            )
+        return queryset
+
 
 class TransactionListCreateView(OwnerScopedMixin, generics.ListCreateAPIView):
     """تراکنش‌های یک مشتری + مانده و وضعیت حساب.

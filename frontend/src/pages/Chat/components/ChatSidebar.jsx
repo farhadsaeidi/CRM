@@ -1,33 +1,9 @@
-import {FiArrowRight, FiGrid, FiMessageSquare, FiPlus, FiTrash2} from "react-icons/fi";
+import {FiArrowRight, FiPlus, FiTrash2} from "react-icons/fi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
-const itemCls = (active) =>
-    `w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] cursor-pointer text-right
-     transition-colors duration-200 ${active
-        ? "bg-var-color-12 dark:bg-var-color-44 text-var-color-19 dark:text-var-color-15 font-IRANSansXFaNumMedium"
-        : "text-var-color-06 dark:text-var-color-01 hover:bg-var-color-01 dark:hover:bg-var-color-40"}`;
-
-// ── سایدبارِ اصلی: دو آیتمِ داشبورد و چت ──
-// کلاس‌های چیدمان روی div داخلی‌اند نه روی ScrollContainer: کتابخانه بین آن و
-// فرزندانش عنصرِ viewport می‌گذارد، پس flex/gap/padding روی میزبان به فرزندان نمی‌رسد.
-export const CustomersNavSidebar = ({view, onSelect}) => (
-    <ScrollContainer className="flex-1 min-h-0" overflowX="hidden">
-        <nav className="p-2.5 flex flex-col gap-1">
-            <p className="m-0 px-2 pt-1 pb-2 text-[10.5px] tracking-wide text-var-color-04 dark:text-var-color-39">
-                دفتر مشتریان
-            </p>
-            <button type="button" className={itemCls(view === "dashboard")} onClick={() => onSelect("dashboard")}>
-                <FiGrid className="w-4.5 h-4.5 shrink-0"/> داشبورد
-            </button>
-            <button type="button" className={itemCls(view === "chat")} onClick={() => onSelect("chat")}>
-                <FiMessageSquare className="w-4.5 h-4.5 shrink-0"/> چت
-            </button>
-        </nav>
-    </ScrollContainer>
-);
 
 // ── سایدبارِ حالتِ چت: بازگشت، گفتگوی جدید، فهرست گفتگوها ──
-export const CustomersChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete}) => (
+const ChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete}) => (
     <div className="flex-1 min-h-0 flex flex-col">
         {/* نوار بالا: دکمهٔ بازگشت سمت راست (شروعِ خط در RTL) */}
         <div className="shrink-0 px-2.5 pt-2.5 pb-2 flex items-center gap-2">
@@ -80,3 +56,5 @@ export const CustomersChatSidebar = ({conversations, activeId, onBack, onNew, on
         </ScrollContainer>
     </div>
 );
+
+export default ChatSidebar;

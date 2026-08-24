@@ -6,7 +6,10 @@ import PublicOnlyRoute from "./components/routing/PublicOnlyRoute.jsx";
 import RegLog from "./pages/Auth/RegLog/RegLog.jsx";
 import Otp from "./pages/Auth/OTP/Otp.jsx";
 import ForgetPassword from "./pages/Auth/ForgetPassword/ForgetPassword.jsx";
+import Home from "./pages/Home/Home.jsx";
 import Customers from "./pages/Customers/Customers.jsx";
+import Transactions from "./pages/Transactions/Transactions.jsx";
+import Chat from "./pages/Chat/Chat.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
 
 const router = createBrowserRouter([
@@ -35,7 +38,12 @@ const router = createBrowserRouter([
             {
                 element: <ProtectedRoute/>,
                 children: [
+                    // صفحهٔ خانه تنها جایی است که سایدبارِ ناوبری دارد؛ بقیه از
+                    // همان‌جا باز می‌شوند و خودشان تمام‌عرض‌اند
+                    {path: "home", element: <Home/>, handle: {title: "داشبورد"}},
                     {path: "customers", element: <Customers/>, handle: {title: "مشتریان"}},
+                    {path: "transactions", element: <Transactions/>, handle: {title: "تراکنش ها"}},
+                    {path: "chat", element: <Chat/>, handle: {title: "گفتگو"}},
                 ],
             },
 

@@ -54,6 +54,22 @@ class CustomerSerializer(serializers.ModelSerializer):
         return value
 
 
+class AllTransactionsSerializer(serializers.ModelSerializer):
+    """تراکنش به‌همراه نامِ مشتری — برای جدولِ «همهٔ تراکنش‌ها».
+
+    آنجا ردیف‌ها از مشتری‌های مختلف می‌آیند، پس نام باید کنارِ خودِ ردیف باشد.
+    با `select_related` در ویو، این دو فیلد کوئریِ اضافه نمی‌زنند.
+    """
+    customer_id = serializers.IntegerField(source="customer.id", read_only=True)
+    customer_fullname = serializers.CharField(source="customer.fullname", read_only=True)
+
+    class Meta:
+        model = Transaction
+        fields = ["id", "debt", "paid", "created", "year", "month", "day",
+                  "customer_id", "customer_fullname"]
+        read_only_fields = fields
+
+
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction

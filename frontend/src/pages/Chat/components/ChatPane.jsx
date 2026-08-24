@@ -19,7 +19,7 @@ const SUGGESTIONS = [
 // فعلاً عمداً پاسخِ ساختگی تولید نمی‌کند تا با دستیارِ واقعی اشتباه گرفته نشود.
 const NOT_WIRED = "این بخش هنوز به موتور پاسخ‌گویی متصل نشده است. ساختار گفتگو آماده است و در فاز بعدی به داده‌های دفترِ مشتریان وصل می‌شود.";
 
-const CustomersChat = ({conversation, onPushMessage}) => {
+const ChatPane = ({conversation, onPushMessage}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
@@ -195,4 +195,4 @@ const CustomersChat = ({conversation, onPushMessage}) => {
     );
 };
 
-export default CustomersChat;
+export default ChatPane;

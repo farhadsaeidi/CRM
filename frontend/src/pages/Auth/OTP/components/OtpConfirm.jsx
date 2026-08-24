@@ -146,7 +146,7 @@ const OtpConfirm = ({active = false}) => {
             toast.dismiss(loadingId);
             notify(res.message, "success", 2000);
             setUser(res.userData);
-            navigate("/customers", {replace: true});
+            navigate("/home", {replace: true});
         } catch (err) {
             toast.dismiss(loadingId);
             const data = err?.data || {};

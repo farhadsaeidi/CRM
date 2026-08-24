@@ -7,7 +7,6 @@ import {TbMoodNeutral} from "react-icons/tb";
 import {FaHandshakeSimple} from "react-icons/fa6";
 import {BsGraphDownArrow, BsGraphUpArrow} from "react-icons/bs";
 import {customersApi} from "../../../api/customers.js";
-import {NEW_CUSTOMER_EVENT} from "../../../components/common/Header.jsx";
 import CustomTooltip from "../../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../../components/common/MenuItem.jsx";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -107,14 +106,22 @@ const CustomersTable = () => {
         });
     }, [setSearchParams]);
 
-    // دکمهٔ «ثبت مشتری جدید» در هدر است و با رویدادِ سراسری خبر می‌دهد.
-    // این کامپوننت در نمای چت هم mount می‌ماند (فقط hidden می‌شود)، پس شنونده
-    // زنده است و رویداد گم نمی‌شود؛ پوستهٔ صفحه هم‌زمان نما را به داشبورد برمی‌گرداند.
-    useEffect(() => {
-        const onNew = () => setModal({mode: "create", customer: null});
-        window.addEventListener(NEW_CUSTOMER_EVENT, onNew);
-        return () => window.removeEventListener(NEW_CUSTOMER_EVENT, onNew);
-    }, []);
+    // دکمهٔ «ثبت مشتری جدید» هدر با ‎?new=1‎ خبر می‌دهد، نه با رویدادِ سراسری:
+    // هدر در RootLayout است و از هر صفحه‌ای زده می‌شود، پس باید اول ما را به این
+    // صفحه برساند و بعد مودال را باز کند.
+    // با مقایسه در حین رندر انجام می‌شود نه با افکت (قاعدهٔ set-state-in-effect)؛
+    // خودِ پارامتر هنگام بسته شدنِ مودال پاک می‌شود.
+    const wantsNew = searchParams.get("new") === "1";
+    const [lastWantsNew, setLastWantsNew] = useState(wantsNew);
+    if (wantsNew !== lastWantsNew) {
+        setLastWantsNew(wantsNew);
+        if (wantsNew) setModal({mode: "create", customer: null});
+    }
+
+    const closeModal = () => {
+        setModal(null);
+        if (wantsNew) setParam({new: null});
+    };
 
     // بستنِ منوی فیلتر با کلیک بیرون
     useEffect(() => {
@@ -146,7 +153,7 @@ const CustomersTable = () => {
     }, [isFilterMenuOpen, positionFilterMenu]);
 
     const onModalDone = (mode) => {
-        setModal(null);
+        closeModal();
         // بعد از حذفِ تنها ردیفِ یک صفحه، آن صفحه دیگر وجود ندارد
         if (mode === "delete" && data.results.length === 1 && page > 1) setParam({page: page - 1});
         else setRefreshKey((k) => k + 1);
@@ -347,7 +354,7 @@ const CustomersTable = () => {
                     key={`${modal.mode}-${modal.customer?.id ?? "new"}`}
                     mode={modal.mode}
                     customer={modal.customer}
-                    onClose={() => setModal(null)}
+                    onClose={closeModal}
                     onDone={onModalDone}
                 />
             )}

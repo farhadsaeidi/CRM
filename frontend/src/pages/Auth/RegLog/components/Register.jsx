@@ -57,7 +57,7 @@ const Register = ({active = false}) => {
             notify(res.message, "success", 2000);
             // سرور بعد از ثبت‌نام خودش کاربر را وارد می‌کند، پس ورود دوباره لازم نیست
             setUser(res.userData);
-            navigate("/customers", {replace: true});
+            navigate("/home", {replace: true});
         } catch (err) {
             toast.dismiss(loadingId);
             const data = err?.data || {};

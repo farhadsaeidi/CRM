@@ -181,8 +181,11 @@ const Footer = () => {
         else params.delete("query");
         // با هر جستجوی تازه باید به صفحهٔ اول برگشت، وگرنه ممکن است صفحه‌ای خالی ببینیم
         params.delete("page");
-        navigate({pathname: "/customers", search: params.toString()});
-    }, [location.search, navigate]);
+        // در جدولِ همهٔ تراکنش‌ها همان‌جا می‌مانیم و فقط ‎?query=‎ را عوض می‌کنیم؛
+        // پرتاب کردن کاربر به صفحهٔ مشتریان با تایپ در نوارِ جستجو غافلگیرکننده است
+        const target = location.pathname === "/transactions" ? "/transactions" : "/customers";
+        navigate({pathname: target, search: params.toString()});
+    }, [location.pathname, location.search, navigate]);
 
     // جستجوی مشتری **زنده** است، نه با Enter — همان رفتار CustomerManagement.
     // با هر کلید درخواست نمی‌رود؛ نیم‌ثانیه بعد از آخرین کلید یک بار. خالی شدنِ

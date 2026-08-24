@@ -14,3 +14,14 @@ export const transactionsApi = {
     update: (customerId, id, data) => api.patch(`/customers/${customerId}/transactions/${id}/`, data),
     remove: (customerId, id) => api.delete(`/customers/${customerId}/transactions/${id}/`),
 };
+
+// همهٔ تراکنش‌های مالک (از همهٔ مشتری‌ها) — صفحه‌بندی‌شده برای اسکرولِ بی‌نهایت.
+// {count, next, previous, results: [{…, customer_id, customer_fullname}]}
+export const allTransactionsApi = {
+    list: ({page = 1, query = "", filter = "all"} = {}) => {
+        const params = new URLSearchParams({page: String(page)});
+        if (query.trim()) params.set("query", query.trim());
+        if (filter && filter !== "all") params.set("filter", filter);
+        return api.get(`/transactions/?${params.toString()}`);
+    },
+};

@@ -6,7 +6,7 @@ const PublicOnlyRoute = () => {
     const {user, loading} = useAuth();
 
     if (loading) return null;
-    if (user) return <Navigate to="/customers" replace/>;
+    if (user) return <Navigate to="/home" replace/>;
     return <Outlet/>;
 };
 
