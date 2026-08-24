@@ -42,7 +42,7 @@ const formatShamsi = ({year, month, day}) =>
         ? toFaDigits(`${year}/${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}`)
         : "—";
 
-const TransactionsTable = ({customerId, onBack, onCustomerLoaded}) => {
+const TransactionsTable = ({customerId, onBack}) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const filter = searchParams.get("tfilter") || "all";
 
@@ -100,11 +100,6 @@ const TransactionsTable = ({customerId, onBack, onCustomerLoaded}) => {
                     transactions: res.transactions ?? [],
                     remainder: res.remainder ?? 0,
                 });
-                // نامِ مشتری را والد هم برای نوارِ مسیر لازم دارد. اینجا داخلِ
-                // callbackِ پرامیس صدا زده می‌شود نه در بدنهٔ افکت، پس قاعدهٔ
-                // set-state-in-effect نمی‌شکند. خودِ setter پایدار است و حلقه
-                // نمی‌سازد.
-                onCustomerLoaded?.(res.customer ?? null);
                 setLoading(false);
             })
             .catch((err) => {
@@ -115,7 +110,7 @@ const TransactionsTable = ({customerId, onBack, onCustomerLoaded}) => {
         return () => {
             ignore = true;
         };
-    }, [customerId, filter, searchPayload, refreshKey, onCustomerLoaded]);
+    }, [customerId, filter, searchPayload, refreshKey]);
 
     // جستجوی تاریخ از نوارِ فوتر می‌آید. رویدادِ سراسری همان الگویی است که برای
     // دکمهٔ «ثبت مشتری جدید» هدر به کار رفت: فوتر بیرونِ درختِ صفحه است.

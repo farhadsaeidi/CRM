@@ -1,10 +1,11 @@
 import {Link} from "react-router";
-import {FiChevronLeft, FiGrid} from "react-icons/fi";
+import {FiChevronLeft} from "react-icons/fi";
+import {FaHome} from "react-icons/fa";
 import {HOME_PATH} from "../../lib/paths.js";
 
-// داشبورد ریشهٔ همهٔ مسیرهاست، پس خودِ کامپوننت آن را می‌گذارد و صفحه‌ها فقط
-// ادامهٔ مسیر را می‌دهند. آیکونش همان آیکونِ «داشبورد» در سایدبار است.
-const HOME_CRUMB = {label: "داشبورد", to: HOME_PATH, icon: FiGrid};
+// صفحهٔ اصلی ریشهٔ همهٔ مسیرهاست، پس خودِ کامپوننت آن را می‌گذارد و صفحه‌ها فقط
+// ادامهٔ مسیر را می‌دهند.
+const HOME_CRUMB = {label: "صفحه اصلی", to: HOME_PATH, icon: FaHome};
 
 // ظاهرِ حبه‌ها یکی است و فقط رنگ فرق می‌کند؛ یک‌جا نوشته می‌شود تا لینک و
 // حبهٔ فعال از هم واگرا نشوند.
