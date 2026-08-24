@@ -31,10 +31,39 @@ const formatShamsi = ({year, month, day}) =>
         ? toFaDigits(`${year}/${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}`)
         : "—";
 
-// چقدر مانده به انتهای فهرست، صفحهٔ بعد را بیاوریم
-const LOAD_AHEAD_PX = 240;
+// ── اندازهٔ دسته‌ها ──────────────────────────────────────────────────────────
+// تخمینِ ارتفاعِ یک ردیف و سرستون به پیکسل: p-4 (۱۶+۱۶) + یک خطِ ۱۵ پیکسلی
+// (~۲۳) + بوردر ۱، و برای سرستون py-3 (۱۲+۱۲) + خطِ ۱۴ پیکسلی (~۲۱) + بوردر ۱.
+// دقتِ این دو حیاتی نیست: اگر کم برآورد شوند، همان حلقهٔ «تا وقتی محتوا کوتاه‌تر
+// از کادر است ادامه بده» خودش جبران می‌کند.
+const ROW_HEIGHT_PX = 56;
+const HEADER_HEIGHT_PX = 46;
+// چند ردیف بیشتر از گنجایشِ کادر بگیریم. صفر یعنی محتوا دقیقاً قدِ کادر است و
+// اصلاً اسکرولی وجود ندارد که ادامه را تریگر کند — پس فهرست همان‌جا می‌ماند.
+const PAGE_BUFFER_ROWS = 3;
+// از چند ردیف مانده به ته، دستهٔ بعدی را بیاوریم. باید کمتر از PAGE_BUFFER_ROWS
+// باشد وگرنه بلافاصله بعد از دستهٔ اول، دستهٔ دوم هم گرفته می‌شود.
+const PREFETCH_ROWS = 2;
+const LOAD_AHEAD_PX = PREFETCH_ROWS * ROW_HEIGHT_PX;
+const MIN_PAGE_SIZE = 8;
+const MAX_PAGE_SIZE = 100;   // سقفِ AllTransactionsPagination در سرور
+
 // از چند پیکسل مانده به ته، دیگر مه‌آلودی لازم نیست — «ادامه‌ای» در کار نیست
 const FOG_HIDE_PX = 24;
+
+/**
+ * چند ردیف در کادر جا می‌شود؟ همان‌قدر (به‌علاوهٔ چند ردیفِ ذخیره) از سرور
+ * خواسته می‌شود، نه یک عددِ ثابتِ بزرگ.
+ *
+ * فلسفهٔ اسکرولِ بی‌نهایت همین است: با ده‌هزار تراکنش هم بارِ اول فقط به اندازهٔ
+ * چیزی که دیده می‌شود از دیتابیس خوانده و روی صفحه ساخته می‌شود.
+ */
+const computePageSize = (viewport) => {
+    const height = viewport?.clientHeight ?? 0;
+    if (!height) return MIN_PAGE_SIZE;
+    const fits = Math.ceil((height - HEADER_HEIGHT_PX) / ROW_HEIGHT_PX) + PAGE_BUFFER_ROWS;
+    return Math.min(MAX_PAGE_SIZE, Math.max(MIN_PAGE_SIZE, fits));
+};
 // تاخیرِ پلکانیِ ورودِ ردیف‌های تازه. سقف دارد وگرنه ردیفِ بیست‌وپنجمِ هر صفحه
 // یک ثانیه بعد از اولی پیدا می‌شد.
 const ROW_STAGGER_MS = 45;
@@ -69,7 +98,12 @@ const Transactions = () => {
     // و نیازی به نوشتن در ref حین رندر نباشد (قاعدهٔ react-hooks/refs).
     // `freshFrom` اندیسِ اولین ردیفِ آخرین صفحه است — فقط همان‌ها انیمیشنِ ورود
     // می‌گیرند، وگرنه با هر صفحهٔ تازه کلِ جدول دوباره ظاهر می‌شد.
-    const [feed, setFeed] = useState({rows: [], nextPage: 1, end: false, total: 0, freshFrom: 0, key: paramsKey});
+    // `pageSize` بعد از اولین دسته قفل می‌شود: شماره‌صفحه با اندازهٔ متغیر معنا
+    // ندارد (صفحهٔ ۲ با اندازهٔ دیگر، چند ردیف را جا می‌اندازد)، پس تغییرِ اندازهٔ
+    // پنجره وسطِ کار روی همان فهرست اثر نمی‌گذارد.
+    const [feed, setFeed] = useState({
+        rows: [], nextPage: 1, end: false, total: 0, freshFrom: 0, pageSize: null, key: paramsKey,
+    });
     const [loading, setLoading] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
     // آیا هنوز محتوایی زیرِ لبهٔ پایینِ ناحیه هست؟ مه‌آلودی از همین می‌آید.
@@ -106,12 +140,15 @@ const Transactions = () => {
         setLoading(true);
         const page = feed.nextPage;
         const key = feed.key;
+        // اندازهٔ دسته یک‌بار در ابتدای هر فهرست از روی گنجایشِ واقعیِ کادر حساب
+        // می‌شود و تا ریستِ بعدی همان می‌ماند
+        const pageSize = feed.pageSize ?? computePageSize(viewportRef.current);
         try {
             // با جستجوی تاریخ، endpoint عوض می‌شود ولی شکلِ پاسخ (count/next/results)
             // یکی است، پس بقیهٔ منطقِ اسکرول دست نمی‌خورد
             const res = searchPayload
-                ? await allTransactionsApi.search({page, payload: searchPayload})
-                : await allTransactionsApi.list({page, query, filter});
+                ? await allTransactionsApi.search({page, pageSize, payload: searchPayload})
+                : await allTransactionsApi.list({page, pageSize, query, filter});
             // اگر بینِ درخواست و پاسخ فیلتر یا جستجو عوض شده، این پاسخ مالِ فهرستِ
             // دیگری است و باید دور ریخته شود — با updater فرمی، وضعیتِ همان لحظه دیده می‌شود
             setFeed((prev) => (prev.key !== key ? prev : {
@@ -121,6 +158,7 @@ const Transactions = () => {
                 end: !res.next,
                 total: res.count ?? 0,
                 freshFrom: prev.rows.length,
+                pageSize,
             }));
         } catch {
             notify("دریافت تراکنش‌ها ناموفق بود.", "error");
@@ -130,13 +168,13 @@ const Transactions = () => {
             inFlight.current = false;
             setLoading(false);
         }
-    }, [feed.end, feed.nextPage, feed.key, query, filter, searchPayload]);
+    }, [feed.end, feed.nextPage, feed.key, feed.pageSize, query, filter, searchPayload]);
 
     // با عوض شدنِ جستجو یا فیلتر، فهرست از صفر شروع می‌شود.
     // این «state مشتق از یوآرال» است، پس با مقایسه در حین رندر انجام می‌شود نه
     // با افکت — قاعدهٔ set-state-in-effect. همان الگویی که فوتر هم دارد.
     if (feed.key !== paramsKey) {
-        setFeed({rows: [], nextPage: 1, end: false, total: 0, freshFrom: 0, key: paramsKey});
+        setFeed({rows: [], nextPage: 1, end: false, total: 0, freshFrom: 0, pageSize: null, key: paramsKey});
         setSelectedId(null);
     }
 
@@ -376,7 +414,7 @@ const Transactions = () => {
                             و با رسیدن به ته فهرست محو می‌شود */}
                         <div
                             aria-hidden="true"
-                            className={`pointer-events-none absolute inset-x-0 bottom-0 h-32 transition-opacity duration-300 ease-out bg-[linear-gradient(to_top,var(--color-var-color-58),transparent)] dark:bg-[linear-gradient(to_top,var(--color-var-color-37),transparent)] ${
+                            className={`pointer-events-none absolute inset-x-0 bottom-0 h-40 transition-opacity duration-300 ease-out bg-[linear-gradient(to_top,var(--color-var-color-58)_0%,var(--color-var-color-58)_14%,transparent_100%)] dark:bg-[linear-gradient(to_top,var(--color-var-color-37)_0%,var(--color-var-color-37)_14%,transparent_100%)] ${
                                 hasMoreBelow && rows.length > 0 ? "opacity-100" : "opacity-0"
                             }`}
                         />

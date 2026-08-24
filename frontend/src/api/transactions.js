@@ -17,14 +17,21 @@ export const transactionsApi = {
 
 // همهٔ تراکنش‌های مالک (از همهٔ مشتری‌ها) — صفحه‌بندی‌شده برای اسکرولِ بی‌نهایت.
 // {count, next, previous, results: [{…, customer_id, customer_fullname}]}
+// `pageSize` را خودِ صفحه از روی گنجایشِ کادر حساب می‌کند و می‌فرستد — سرور
+// `page_size` را تا سقفِ ۱۰۰ می‌پذیرد (AllTransactionsPagination).
 export const allTransactionsApi = {
-    list: ({page = 1, query = "", filter = "all"} = {}) => {
+    list: ({page = 1, pageSize, query = "", filter = "all"} = {}) => {
         const params = new URLSearchParams({page: String(page)});
+        if (pageSize) params.set("page_size", String(pageSize));
         if (query.trim()) params.set("query", query.trim());
         if (filter && filter !== "all") params.set("filter", filter);
         return api.get(`/transactions/?${params.toString()}`);
     },
-    // جستجوی تاریخ شمسی — بدنه POST است ولی شمارهٔ صفحه در query می‌ماند تا همان
+    // جستجوی تاریخ شمسی — بدنه POST است ولی صفحه‌بندی در query می‌ماند تا همان
     // اسکرولِ بی‌نهایت بتواند تغذیه‌اش کند
-    search: ({page = 1, payload}) => api.post(`/transactions/search/?page=${page}`, payload ?? {}),
+    search: ({page = 1, pageSize, payload}) => {
+        const params = new URLSearchParams({page: String(page)});
+        if (pageSize) params.set("page_size", String(pageSize));
+        return api.post(`/transactions/search/?${params.toString()}`, payload ?? {});
+    },
 };
