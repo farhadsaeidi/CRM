@@ -62,8 +62,10 @@ const ChatPane = ({conversation, onPushMessage}) => {
 
     const empty = messages.length === 0;
 
+    // ریشه `flex-1` است و نه `h-full`: نوارِ مسیر هم بالای همین ستون نشسته، پس
+    // ارتفاعِ ثابتِ ۱۰۰٪ به اندازهٔ آن سرریز می‌کرد
     return (
-        <div className="h-full min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col">
             <ScrollContainer viewportRef={scrollRef} className="flex-1 min-h-0" overflowX="hidden">
                 {empty ? (
                     // ── حالت خالی: تیتر و کارت‌های پیشنهاد، با ورودِ پلکانی ──

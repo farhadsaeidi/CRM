@@ -57,9 +57,7 @@ const Chat = () => {
     };
 
     return (
-        <section className="h-full min-h-0 flex flex-col">
-            <Breadcrumb items={[{label: "گفتگو", to: CHAT_PATH, icon: FiMessageSquare}]}/>
-            <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-3 2xs:gap-4">
+        <section className="h-full min-h-0 flex flex-col md:flex-row gap-3 2xs:gap-4">
             <Sidebar className="max-h-52 md:max-h-none">
                 <ChatSidebar conversations={conversations} activeId={active?.id ?? null}
                              onBack={goBack} onNew={createConversation}
@@ -69,8 +67,14 @@ const Chat = () => {
             <div className="flex-1 min-w-0 flex flex-col rounded-[18px] overflow-hidden
                             bg-var-color-00 dark:bg-var-color-36
                             border border-var-color-02 dark:border-var-color-38">
+                {/* نوارِ مسیر داخلِ ستونِ اصلی و بیرونِ ناحیهٔ اسکرول است، پس با
+                    بلند شدنِ گفتگو بالا سرِ جایش می‌ماند. اینجاست و نه داخلِ
+                    ChatPane، چون آن با هر تعویضِ گفتگو `key` عوض می‌کند و
+                    remount می‌شود — نوار هم هر بار دوباره انیمیشنِ ورود می‌گرفت. */}
+                <div className="shrink-0 px-3 pt-3">
+                    <Breadcrumb items={[{label: "گفتگو", to: CHAT_PATH, icon: FiMessageSquare}]}/>
+                </div>
                 <ChatPane key={active?.id} conversation={active} onPushMessage={pushMessage}/>
-            </div>
             </div>
         </section>
     );

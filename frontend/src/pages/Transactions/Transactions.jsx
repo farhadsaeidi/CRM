@@ -222,7 +222,7 @@ const Transactions = () => {
         <section className="h-full min-h-0 flex flex-col">
             <div className="w-[90%] mx-auto min-w-0 min-h-0 flex flex-col max-h-full">
                 <Breadcrumb items={[
-                    {label: "تراکنش ها", to: ALL_TRANSACTIONS_PATH, icon: HiOutlineArrowsRightLeft},
+                    {label: "همه تراکنش ها", to: ALL_TRANSACTIONS_PATH, icon: HiOutlineArrowsRightLeft},
                 ]}/>
                 <section className="w-full rounded-xl border border-var-color-57 dark:border-var-color-38 overflow-hidden flex flex-col max-h-full">
                     {/* هدر جدول */}
