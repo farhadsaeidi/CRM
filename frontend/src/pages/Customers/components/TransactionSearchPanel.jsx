@@ -2,6 +2,7 @@ import {useState} from "react";
 import {HiOutlineSearch} from "react-icons/hi";
 import {IoClose} from "react-icons/io5";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
+import ModalCloseButton from "../../../components/common/ModalCloseButton.jsx";
 import DateSearchField from "./DateSearchField.jsx";
 import {DAY_OPTIONS, MONTH_OPTIONS, emptySearchState, searchStateToPayload} from "./dateSearch.js";
 
@@ -49,20 +50,15 @@ const TransactionSearchPanel = ({open, onClose, onSearch, panelRef, right}) => {
                         }`}
         >
             {/* هدرِ پنل */}
-            <header className="w-full flex flex-row justify-between items-center py-2 pr-3 pl-1.5 bg-var-color-01 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
+            <header className="w-full flex flex-row justify-between items-center py-1.5 pr-3 pl-2 bg-var-color-01 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
                 <div className="flex flex-row justify-start items-center gap-2">
                     <HiOutlineSearch className="w-4.5 h-4.5 text-var-color-15"/>
                     <h2 className="text-sm text-var-color-08 dark:text-var-color-01">جستجوی تاریخ تراکنش</h2>
                 </div>
-                <button
-                    type="button"
-                    tabIndex={-1}
-                    onClick={onClose}
-                    aria-label="بستن"
-                    className="w-5.5 h-5.5 cursor-pointer text-var-color-08 dark:text-var-color-01 hover:text-var-color-28 transition-all duration-200 ease-in-out"
-                >
-                    <IoClose className="w-full h-full"/>
-                </button>
+                {/* همان دکمهٔ ✕ مودال‌ها — این پنل هم یک کارتِ روی صفحه است و
+                    دلیلی ندارد راهِ بستنش شکلِ دیگری داشته باشد. اندازهٔ sm،
+                    چون هدرِ پنل از هدرِ مودال‌ها کوتاه‌تر است. */}
+                <ModalCloseButton size="sm" onClick={onClose}/>
             </header>
 
             {/* بدنه — سه کشو */}
