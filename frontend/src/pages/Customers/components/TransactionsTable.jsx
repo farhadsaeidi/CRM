@@ -42,7 +42,7 @@ const formatShamsi = ({year, month, day}) =>
         ? toFaDigits(`${year}/${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}`)
         : "—";
 
-const TransactionsTable = ({customerId, onBack}) => {
+const TransactionsTable = ({customerId, onBack, onCustomerLoaded}) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const filter = searchParams.get("tfilter") || "all";
 
@@ -100,6 +100,11 @@ const TransactionsTable = ({customerId, onBack}) => {
                     transactions: res.transactions ?? [],
                     remainder: res.remainder ?? 0,
                 });
+                // نامِ مشتری را والد هم برای نوارِ مسیر لازم دارد. اینجا داخلِ
+                // callbackِ پرامیس صدا زده می‌شود نه در بدنهٔ افکت، پس قاعدهٔ
+                // set-state-in-effect نمی‌شکند. خودِ setter پایدار است و حلقه
+                // نمی‌سازد.
+                onCustomerLoaded?.(res.customer ?? null);
                 setLoading(false);
             })
             .catch((err) => {
@@ -110,7 +115,7 @@ const TransactionsTable = ({customerId, onBack}) => {
         return () => {
             ignore = true;
         };
-    }, [customerId, filter, searchPayload, refreshKey]);
+    }, [customerId, filter, searchPayload, refreshKey, onCustomerLoaded]);
 
     // جستجوی تاریخ از نوارِ فوتر می‌آید. رویدادِ سراسری همان الگویی است که برای
     // دکمهٔ «ثبت مشتری جدید» هدر به کار رفت: فوتر بیرونِ درختِ صفحه است.
@@ -169,10 +174,12 @@ const TransactionsTable = ({customerId, onBack}) => {
                                         hideTooltip();
                                         onBack();
                                     }}
-                                    onMouseEnter={() => showTooltip(backBtnRef, "بازگشت به جدول مشتریان")}
+                                    onMouseEnter={() => showTooltip(backBtnRef, "بازگشت")}
                                     onMouseLeave={hideTooltip}
-                                    className="rounded-full p-1 btn btn-bluish">
-                                <HiOutlineArrowRight className="w-4.5 h-4.5"/>
+                                    className="rounded-full btn btn-bluish">
+                                <div className="w-7 h-7 flex justify-center items-center">
+                                    <HiOutlineArrowRight className="w-4.5 h-4.5"/>
+                                </div>
                             </button>
                             <div className="flex justify-center items-center h-7 px-3 rounded-full cursor-default whitespace-nowrap
                                             bg-var-color-15 dark:bg-var-color-12 text-var-color-00 dark:text-var-color-15

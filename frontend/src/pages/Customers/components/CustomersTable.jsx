@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {useSearchParams} from "react-router";
+import {useNavigate, useSearchParams} from "react-router";
 import {FiChevronUp, FiFilter, FiPlus, FiRefreshCw} from "react-icons/fi";
 import {HiOutlineUsers} from "react-icons/hi";
 import {HiOutlineArrowRight, HiOutlineArrowsRightLeft, HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
@@ -14,6 +14,7 @@ import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import RowSelectMark from "../../../components/common/RowSelectMark.jsx";
 import CustomerModal from "./CustomerModal.jsx";
 import {notify} from "../../../lib/notify.jsx";
+import {customerLedgerPath} from "../../../lib/paths.js";
 import {useGoBack} from "../../../lib/useGoBack.js";
 
 // آیتم‌های منوی فیلتر — همان چهار گزینهٔ پروژهٔ CustomerManagement
@@ -37,6 +38,7 @@ const formatCreatedDate = (iso) =>
         .format(new Date(iso)) : "—";
 
 const CustomersTable = () => {
+    const navigate = useNavigate();
     const goBack = useGoBack();
     // یوآرال منبعِ حقیقت است: رفرش و دکمهٔ back درست کار می‌کنند و جستجوی فوتر
     // هم از همین راه اثر می‌گذارد
@@ -301,7 +303,7 @@ const CustomersTable = () => {
                                                     یکدست دیده شوند؛ ضخامت و گردیِ خطوطشان یکی است. */}
                                                 <button type="button"
                                                         data-tooltip={showCustomTooltip ? "تراکنش های مالی" : undefined}
-                                                        onClick={(e) => { e.stopPropagation(); setParam({customer: customer.id}); }}
+                                                        onClick={(e) => { e.stopPropagation(); navigate(customerLedgerPath(customer.id)); }}
                                                         onMouseLeave={() => setShowCustomTooltip(true)}
                                                         className={`${actionBtn} hover:text-var-color-15 ${showCustomTooltip ? "custom-tooltip" : ""}`}>
                                                     <HiOutlineArrowsRightLeft className="w-5 h-5"/>

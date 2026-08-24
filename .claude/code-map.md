@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-22 00:02 · کامیت `6ed62cc`
+آخرین تولید: 2026-08-24 10:38 · کامیت `9af8806`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 27 | 1590 |
-| فرانت‌اند | 40 | 3375 |
+| بک‌اند | 27 | 1676 |
+| فرانت‌اند | 62 | 5851 |
 
 اپ‌های جنگو: account api home
 
@@ -28,6 +28,8 @@
 | `/api/auth/change-password/` | ChangePasswordView | account/views.py:325 | _(پیش‌فرض DRF)_ |
 | `/api/customers/` | CustomerListCreateView | home/views.py:49 | _(پیش‌فرض DRF)_ |
 | `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:85 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/` | AllTransactionsView | home/views.py:114 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:142 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -95,11 +97,12 @@
     - `Customer` :17
     - `CustomerOwner` :55
     - `Transaction` :71
-- **./home/serializers.py** (72 خط، 9 نماد)
+- **./home/serializers.py** (88 خط، 11 نماد)
     - `normalize_phone_number` :12
     - `PhoneField` :18
     - `CustomerSerializer` :29
-    - `TransactionSerializer` :57
+    - `AllTransactionsSerializer` :57
+    - `TransactionSerializer` :73
 - **./home/services.py** (144 خط، 7 نماد)
     - `account_code_from_remainder` :16
     - `calculate_remainder` :24
@@ -108,37 +111,61 @@
     - `_to_int` :85
     - `_field_query` :95
     - `build_date_search_query` :133
-- **./home/views.py** (213 خط، 22 نماد)
+- **./home/views.py** (280 خط، 27 نماد)
     - `CustomerPagination` :23
     - `OwnerScopedMixin` :32
     - `CustomerListCreateView` :49
     - `CustomerDetailView` :85
-    - `TransactionListCreateView` :103
-    - `TransactionDetailView` :157
-    - `TransactionSearchView` :186
+    - `AllTransactionsPagination` :103
+    - `AllTransactionsView` :114
+    - `AllTransactionsSearchView` :142
+    - `TransactionListCreateView` :170
+    - `TransactionDetailView` :224
+    - `TransactionSearchView` :253
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
 ## فرانت‌اند
 
 ### صفحه‌ها
-- **frontend/src/pages/Customers/Customers.jsx** (111 خط)
-    - CustomersChat
-    - CustomersSidebar
-    - CustomersTable
-    - Header
+- **frontend/src/pages/Chat/Chat.jsx** (79 خط)
+    - Breadcrumb
+    - ChatPane
+    - ChatSidebar
     - Sidebar
-- **frontend/src/pages/NotFound/NotFound.jsx** (21 خط)
+- **frontend/src/pages/Customers/CustomerLedger.jsx** (40 خط)
+    - Breadcrumb
+    - TransactionsTable
+- **frontend/src/pages/Customers/Customers.jsx** (23 خط)
+    - Breadcrumb
+    - CustomersTable
+- **frontend/src/pages/Home/Home.jsx** (25 خط)
+    - HomeSidebar
+    - Sidebar
+- **frontend/src/pages/NotFound/NotFound.jsx** (23 خط)
+- **frontend/src/pages/Transactions/Transactions.jsx** (417 خط)
+    - Breadcrumb
+    - CustomTooltip
+    - Footer
+    - MenuItem
+    - RowSelectMark
+    - ScrollContainer
+    - notify
 
 ### کامپوننت‌های مشترک
-- `ChangePasswordModal` — 139 خط
+- `Breadcrumb` — 71 خط
+- `ChangePasswordModal` — 180 خط
 - `CustomTooltip` — 54 خط
-- `Footer` — 288 خط
+- `Footer` — 425 خط
 - `Header` — 45 خط
 - `LogoIcon` — 28 خط
-- `MenuItem` — 32 خط
+- `MenuItem` — 34 خط
+- `ModalActions` — 53 خط
+- `ModalCloseButton` — 30 خط
 - `Pagination` — 77 خط
 - `ProgressToast` — 119 خط
+- `RowSelectMark` — 33 خط
+- `ScrollContainer` — 111 خط
 - `Sidebar` — 76 خط
 - `ThemeSwitcher` — 87 خط
 - `WindowsIcon` — 37 خط
@@ -149,4 +176,6 @@
 - **client.js**: get post put patch delete
 
 - **customers.js**: list create update remove
+
+- **transactions.js**: list search create update remove list search
 

@@ -1,7 +1,10 @@
 import {useState} from "react";
+import {FiMessageSquare} from "react-icons/fi";
+import Breadcrumb from "../../components/common/Breadcrumb.jsx";
 import Sidebar from "../../components/common/Sidebar.jsx";
 import ChatSidebar from "./components/ChatSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
+import {CHAT_PATH} from "../../lib/paths.js";
 import {useGoBack} from "../../lib/useGoBack.js";
 
 // عنوانِ گفتگو از اولین پیامِ کاربر ساخته می‌شود (مثل چت مدل‌های زبانی)
@@ -54,7 +57,9 @@ const Chat = () => {
     };
 
     return (
-        <section className="h-full min-h-0 flex flex-col md:flex-row gap-3 2xs:gap-4">
+        <section className="h-full min-h-0 flex flex-col">
+            <Breadcrumb items={[{label: "گفتگو", to: CHAT_PATH, icon: FiMessageSquare}]}/>
+            <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-3 2xs:gap-4">
             <Sidebar className="max-h-52 md:max-h-none">
                 <ChatSidebar conversations={conversations} activeId={active?.id ?? null}
                              onBack={goBack} onNew={createConversation}
@@ -65,6 +70,7 @@ const Chat = () => {
                             bg-var-color-00 dark:bg-var-color-36
                             border border-var-color-02 dark:border-var-color-38">
                 <ChatPane key={active?.id} conversation={active} onPushMessage={pushMessage}/>
+            </div>
             </div>
         </section>
     );

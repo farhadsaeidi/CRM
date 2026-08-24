@@ -8,6 +8,7 @@ import Otp from "./pages/Auth/OTP/Otp.jsx";
 import ForgetPassword from "./pages/Auth/ForgetPassword/ForgetPassword.jsx";
 import Home from "./pages/Home/Home.jsx";
 import Customers from "./pages/Customers/Customers.jsx";
+import CustomerLedger from "./pages/Customers/CustomerLedger.jsx";
 import Transactions from "./pages/Transactions/Transactions.jsx";
 import Chat from "./pages/Chat/Chat.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
@@ -42,7 +43,15 @@ const router = createBrowserRouter([
                     // همان‌جا باز می‌شوند و خودشان تمام‌عرض‌اند
                     {path: "home", element: <Home/>, handle: {title: "داشبورد"}},
                     {path: "customers", element: <Customers/>, handle: {title: "مشتریان"}},
-                    {path: "transactions", element: <Transactions/>, handle: {title: "تراکنش ها"}},
+                    // دفترِ یک مشتری مسیرِ خودش را دارد، نه ‎?customer=‎ روی صفحهٔ
+                    // مشتریان: شناسه بخشی از هویتِ صفحه است نه یک حالتِ اختیاری،
+                    // و در یوآرال هم باید همان‌طور دیده شود
+                    {
+                        path: "customers/:customerId/transactions",
+                        element: <CustomerLedger/>,
+                        handle: {title: "دفتر حساب مشتری"},
+                    },
+                    {path: "all-transactions", element: <Transactions/>, handle: {title: "تراکنش ها"}},
                     {path: "chat", element: <Chat/>, handle: {title: "گفتگو"}},
                 ],
             },

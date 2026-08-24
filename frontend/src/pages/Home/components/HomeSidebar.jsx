@@ -8,7 +8,7 @@ import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 const ITEMS = [
     {to: "/home", icon: FiGrid, label: "داشبورد", end: true},
     {to: "/customers", icon: FiUsers, label: "مشتریان"},
-    {to: "/transactions", icon: HiOutlineArrowsRightLeft, label: "تراکنش ها"},
+    {to: "/all-transactions", icon: HiOutlineArrowsRightLeft, label: "تراکنش ها"},
     {to: "/chat", icon: FiMessageSquare, label: "گفتگو"},
 ];
 

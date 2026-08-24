@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {useLocation, useNavigate, useSearchParams} from "react-router";
+import {useLocation, useMatch, useNavigate, useSearchParams} from "react-router";
 import {HiOutlineSearch} from "react-icons/hi";
 import {IoIosClose} from "react-icons/io";
 import {FaPowerOff, FaRegUser} from "react-icons/fa6";
@@ -13,6 +13,7 @@ import personImage from "/images/person2.png";
 import {useAuth} from "../../context/AuthContext.js";
 import {authApi} from "../../api/auth.js";
 import {notify} from "../../lib/notify.jsx";
+import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH} from "../../lib/paths.js";
 
 // جستجوی تاریخِ تراکنش از همین نوار اجرا می‌شود ولی نتیجه‌اش را جدولِ تراکنش‌ها
 // نشان می‌دهد؛ فوتر در RootLayout است و جدول فرزندِ Outlet، پس رویدادِ سراسری
@@ -62,13 +63,14 @@ const Footer = () => {
 
     // با باز بودنِ صفحهٔ تراکنش‌ها جستجوی نوارِ فوتر از «نام مشتری» به «تاریخ
     // تراکنش» عوض می‌شود — همان رفتار CustomerManagement. دو جا این‌طور است:
-    // دفترِ یک مشتری (‎?customer=‎ در یوآرال) و جدولِ همهٔ تراکنش‌ها.
-    const isTransactionsView =
-        Boolean(searchParams.get("customer")) || location.pathname === "/transactions";
+    // دفترِ یک مشتری و جدولِ همهٔ تراکنش‌ها.
+    // تشخیص با `useMatch` است نه مقایسهٔ رشته‌ای، چون مسیرِ دفتر پارامتر دارد.
+    const isCustomerLedger = Boolean(useMatch(CUSTOMER_LEDGER_PATTERN));
+    const isTransactionsView = isCustomerLedger || location.pathname === ALL_TRANSACTIONS_PATH;
 
     // داشبورد جستجو ندارد: نه فهرستی روی صفحه هست که محدود شود و نه تاریخی که
     // جستجو شود؛ کادرِ بی‌اثر فقط کاربر را گمراه می‌کند.
-    const showSearchBox = location.pathname !== "/home";
+    const showSearchBox = location.pathname !== HOME_PATH;
 
     const startBtnRef = useRef(null);
     const startPanelRef = useRef(null);
@@ -189,7 +191,7 @@ const Footer = () => {
         params.delete("page");
         // در جدولِ همهٔ تراکنش‌ها همان‌جا می‌مانیم و فقط ‎?query=‎ را عوض می‌کنیم؛
         // پرتاب کردن کاربر به صفحهٔ مشتریان با تایپ در نوارِ جستجو غافلگیرکننده است
-        const target = location.pathname === "/transactions" ? "/transactions" : "/customers";
+        const target = location.pathname === ALL_TRANSACTIONS_PATH ? ALL_TRANSACTIONS_PATH : CUSTOMERS_PATH;
         navigate({pathname: target, search: params.toString()});
     }, [location.pathname, location.search, navigate]);
 

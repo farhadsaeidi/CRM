@@ -5,12 +5,14 @@ import {HiOutlineArrowRight, HiOutlineArrowsRightLeft} from "react-icons/hi2";
 import {TbMoodNeutral} from "react-icons/tb";
 import {allTransactionsApi} from "../../api/transactions.js";
 import {TRANSACTION_SEARCH_EVENT} from "../../components/common/Footer.jsx";
+import Breadcrumb from "../../components/common/Breadcrumb.jsx";
 import CustomTooltip from "../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../components/common/MenuItem.jsx";
 import RowSelectMark from "../../components/common/RowSelectMark.jsx";
 import ScrollContainer from "../../components/common/ScrollContainer.jsx";
 import {formatPersianNumber} from "../../lib/numbers.js";
 import {notify} from "../../lib/notify.jsx";
+import {ALL_TRANSACTIONS_PATH, customerLedgerPath} from "../../lib/paths.js";
 import {useGoBack} from "../../lib/useGoBack.js";
 
 // همان پنج گزینهٔ فیلترِ دورهٔ جدولِ تراکنش‌های یک مشتری
@@ -219,6 +221,9 @@ const Transactions = () => {
     return (
         <section className="h-full min-h-0 flex flex-col">
             <div className="w-[90%] mx-auto min-w-0 min-h-0 flex flex-col max-h-full">
+                <Breadcrumb items={[
+                    {label: "تراکنش ها", to: ALL_TRANSACTIONS_PATH, icon: HiOutlineArrowsRightLeft},
+                ]}/>
                 <section className="w-full rounded-xl border border-var-color-57 dark:border-var-color-38 overflow-hidden flex flex-col max-h-full">
                     {/* هدر جدول */}
                     <header className="shrink-0 w-full bg-var-color-00 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
@@ -331,7 +336,7 @@ const Transactions = () => {
                                                                 data-tooltip="دفتر حساب مشتری"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    navigate(`/customers?customer=${row.customer_id}`);
+                                                                    navigate(customerLedgerPath(row.customer_id));
                                                                 }}
                                                                 className="cursor-pointer transition-all duration-200 ease-in-out hover:text-var-color-15 custom-tooltip">
                                                             <HiOutlineArrowsRightLeft className="w-5 h-5"/>
