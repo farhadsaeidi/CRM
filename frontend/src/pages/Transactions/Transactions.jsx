@@ -11,6 +11,7 @@ import RowSelectMark from "../../components/common/RowSelectMark.jsx";
 import ScrollContainer from "../../components/common/ScrollContainer.jsx";
 import {formatPersianNumber} from "../../lib/numbers.js";
 import {notify} from "../../lib/notify.jsx";
+import {useGoBack} from "../../lib/useGoBack.js";
 
 // همان پنج گزینهٔ فیلترِ دورهٔ جدولِ تراکنش‌های یک مشتری
 const FILTER_ITEMS = [
@@ -49,6 +50,7 @@ const ROW_STAGGER_MAX = 10;
  */
 const Transactions = () => {
     const navigate = useNavigate();
+    const goBack = useGoBack();
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get("query") || "";
     const filter = searchParams.get("tfilter") || "all";
@@ -221,14 +223,14 @@ const Transactions = () => {
                     {/* هدر جدول */}
                     <header className="shrink-0 w-full bg-var-color-00 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
                         <div className="relative flex flex-row justify-between items-center py-2 px-3.5">
-                            {/* بازگشت به داشبورد — این صفحه سایدبار ندارد، پس راهِ
+                            {/* بازگشت به صفحهٔ قبل — این صفحه سایدبار ندارد، پس راهِ
                                 برگشتش همین دکمه است */}
                             <button type="button" ref={backBtnRef}
                                     onClick={() => {
                                         hideTooltip();
-                                        navigate("/home");
+                                        goBack();
                                     }}
-                                    onMouseEnter={() => showTooltip(backBtnRef, "بازگشت به داشبورد")}
+                                    onMouseEnter={() => showTooltip(backBtnRef, "بازگشت")}
                                     onMouseLeave={hideTooltip}
                                     className="rounded-full btn btn-bluish">
                                 <div className="w-7 h-7 flex justify-center items-center">
@@ -369,7 +371,7 @@ const Transactions = () => {
                             و با رسیدن به ته فهرست محو می‌شود */}
                         <div
                             aria-hidden="true"
-                            className={`pointer-events-none absolute inset-x-0 bottom-0 h-16 transition-opacity duration-300 ease-out bg-[linear-gradient(to_top,var(--color-var-color-58),transparent)] dark:bg-[linear-gradient(to_top,var(--color-var-color-37),transparent)] ${
+                            className={`pointer-events-none absolute inset-x-0 bottom-0 h-32 transition-opacity duration-300 ease-out bg-[linear-gradient(to_top,var(--color-var-color-58),transparent)] dark:bg-[linear-gradient(to_top,var(--color-var-color-37),transparent)] ${
                                 hasMoreBelow && rows.length > 0 ? "opacity-100" : "opacity-0"
                             }`}
                         />

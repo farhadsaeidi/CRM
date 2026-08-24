@@ -47,8 +47,11 @@ const router = createBrowserRouter([
                 ],
             },
 
-            // آدرس‌های ناشناخته → صفحه ۴۰۴
-            {path: "*", element: <NotFound/>, handle: {title: "404"}},
+            // آدرس‌های ناشناخته → صفحه ۴۰۴.
+            // chrome: false یعنی هدر و فوتر ندارد: در آدرسی که وجود ندارد نه
+            // جستجویی معنا دارد نه دکمهٔ «ثبت مشتری جدید»، و تنها کارِ این صفحه
+            // برگرداندنِ کاربر است.
+            {path: "*", element: <NotFound/>, handle: {title: "404", chrome: false}},
         ],
     },
 ]);

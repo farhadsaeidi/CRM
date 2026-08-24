@@ -1,13 +1,33 @@
+import {useRef, useState} from "react";
 import {FiArrowRight, FiPlus, FiTrash2} from "react-icons/fi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
+import CustomTooltip from "../../../components/common/CustomTooltip.jsx";
 
 
 // ── سایدبارِ حالتِ چت: بازگشت، گفتگوی جدید، فهرست گفتگوها ──
-const ChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete}) => (
+const ChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete}) => {
+    // تولتیپِ شناور و نه کلاسِ `custom-tooltip`: خودِ سایدبار overflow-hidden دارد
+    // (برای گردیِ گوشه‌ها) و این دکمه در بالاترین نقطه‌اش است، پس تولتیپِ
+    // شبه‌عنصری که رو به بالا باز می‌شود بریده می‌شد.
+    const backBtnRef = useRef(null);
+    const [tooltip, setTooltip] = useState({pos: null, visible: false});
+    const showTooltip = () => {
+        const rect = backBtnRef.current?.getBoundingClientRect();
+        if (rect) setTooltip({pos: {top: rect.top, left: rect.left + rect.width / 2}, visible: true});
+    };
+    const hideTooltip = () => setTooltip((t) => ({...t, visible: false}));
+
+    return (
     <div className="flex-1 min-h-0 flex flex-col">
         {/* نوار بالا: دکمهٔ بازگشت سمت راست (شروعِ خط در RTL) */}
         <div className="shrink-0 px-2.5 pt-2.5 pb-2 flex items-center gap-2">
-            <button type="button" onClick={onBack} aria-label="بازگشت به منوی اصلی"
+            <button type="button" ref={backBtnRef} aria-label="بازگشت"
+                    onClick={() => {
+                        hideTooltip();
+                        onBack();
+                    }}
+                    onMouseEnter={showTooltip}
+                    onMouseLeave={hideTooltip}
                     className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer
                                text-var-color-05 dark:text-var-color-39
                                hover:bg-var-color-01 dark:hover:bg-var-color-40 transition-colors duration-200">
@@ -15,6 +35,8 @@ const ChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete
             </button>
             <span className="text-[13px] font-IRANSansXFaNumMedium text-var-color-06 dark:text-var-color-01">گفتگوها</span>
         </div>
+
+        <CustomTooltip text="بازگشت" pos={tooltip.pos} visible={tooltip.visible}/>
 
         <div className="shrink-0 px-2.5 pb-2">
             <button type="button" onClick={onNew}
@@ -55,6 +77,7 @@ const ChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete
         </div>
         </ScrollContainer>
     </div>
-);
+    );
+};
 
 export default ChatSidebar;

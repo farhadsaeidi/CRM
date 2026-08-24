@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {useNavigate, useSearchParams} from "react-router";
+import {useSearchParams} from "react-router";
 import {FiChevronUp, FiFilter, FiPlus, FiRefreshCw} from "react-icons/fi";
 import {HiOutlineUsers} from "react-icons/hi";
 import {HiOutlineArrowRight, HiOutlineArrowsRightLeft, HiOutlinePencilSquare, HiOutlineTrash} from "react-icons/hi2";
@@ -14,6 +14,7 @@ import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import RowSelectMark from "../../../components/common/RowSelectMark.jsx";
 import CustomerModal from "./CustomerModal.jsx";
 import {notify} from "../../../lib/notify.jsx";
+import {useGoBack} from "../../../lib/useGoBack.js";
 
 // آیتم‌های منوی فیلتر — همان چهار گزینهٔ پروژهٔ CustomerManagement
 const FILTER_ITEMS = [
@@ -36,9 +37,9 @@ const formatCreatedDate = (iso) =>
         .format(new Date(iso)) : "—";
 
 const CustomersTable = () => {
+    const goBack = useGoBack();
     // یوآرال منبعِ حقیقت است: رفرش و دکمهٔ back درست کار می‌کنند و جستجوی فوتر
     // هم از همین راه اثر می‌گذارد
-    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get("query") || "";
     const filter = searchParams.get("filter") || "all";
@@ -171,14 +172,14 @@ const CustomersTable = () => {
                 {/* هدر جدول */}
                 <header className="shrink-0 w-full bg-var-color-00 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
                     <div className="relative flex flex-row justify-between items-center py-2 px-3.5">
-                        {/* بازگشت به داشبورد — این صفحه سایدبار ندارد، پس راهِ
+                        {/* بازگشت به صفحهٔ قبل — این صفحه سایدبار ندارد، پس راهِ
                             برگشتش همین دکمه است */}
                         <button type="button" ref={backBtnRef}
                                 onClick={() => {
                                     hideTooltip();
-                                    navigate("/home");
+                                    goBack();
                                 }}
-                                onMouseEnter={() => showTooltip(backBtnRef, "بازگشت به داشبورد")}
+                                onMouseEnter={() => showTooltip(backBtnRef, "بازگشت")}
                                 onMouseLeave={hideTooltip}
                                 className="rounded-full btn btn-bluish">
                             <div className="w-7 h-7 flex justify-center items-center">

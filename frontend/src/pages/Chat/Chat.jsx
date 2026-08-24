@@ -1,8 +1,8 @@
 import {useState} from "react";
-import {useNavigate} from "react-router";
 import Sidebar from "../../components/common/Sidebar.jsx";
 import ChatSidebar from "./components/ChatSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
+import {useGoBack} from "../../lib/useGoBack.js";
 
 // عنوانِ گفتگو از اولین پیامِ کاربر ساخته می‌شود (مثل چت مدل‌های زبانی)
 const titleFrom = (body) => {
@@ -14,13 +14,13 @@ const newConversation = () => ({id: `c-${Date.now()}`, title: "گفتگوی جد
 
 /**
  * صفحهٔ گفتگو. سایدبارش فهرستِ گفتگوهاست، نه ناوبریِ برنامه — ناوبری فقط در
- * صفحهٔ خانه است و دکمهٔ بازگشتِ همین سایدبار به آنجا برمی‌گردد.
+ * صفحهٔ خانه است و دکمهٔ بازگشتِ همین سایدبار به صفحهٔ قبل برمی‌گردد.
  *
  * گفتگوها فعلاً فقط در حافظهٔ همین صفحه‌اند. نقطهٔ اتصال به سرور همین‌جاست:
  * state را با دادهٔ سرور جایگزین کنید و pushMessage را به فراخوانیِ واقعی وصل کنید.
  */
 const Chat = () => {
-    const navigate = useNavigate();
+    const goBack = useGoBack();
     const [conversations, setConversations] = useState(() => [newConversation()]);
     const [activeId, setActiveId] = useState(() => null);
 
@@ -57,7 +57,7 @@ const Chat = () => {
         <section className="h-full min-h-0 flex flex-col md:flex-row gap-3 2xs:gap-4">
             <Sidebar className="max-h-52 md:max-h-none">
                 <ChatSidebar conversations={conversations} activeId={active?.id ?? null}
-                             onBack={() => navigate("/home")} onNew={createConversation}
+                             onBack={goBack} onNew={createConversation}
                              onSelect={setActiveId} onDelete={deleteConversation}/>
             </Sidebar>
 
