@@ -5,14 +5,13 @@ import {faNumber, toFaDigits} from "../../../lib/chart.js";
 import {CUSTOMERS_PATH} from "../../../lib/paths.js";
 
 /**
- * کارتِ تیرهٔ اقدام — «چند مشتری بدهکارند و چقدر».
+ * کارتِ اقدام — «چند مشتری بدهکارند و چقدر»، با دکمه‌ای که فهرستِ مشتریان را با
+ * فیلترِ بدهکار باز می‌کند.
  *
- * تنها کاشیِ تیرهٔ داشبورد و عمداً همین‌طور: در هر دو داشبوردِ مرجع یک کارتِ سیاه
- * وجود دارد که کارِ باقی‌مانده را فریاد می‌زند. اینجا هم همان نقش را دارد و
- * مستقیم فهرستِ مشتریان را با فیلترِ بدهکار باز می‌کند.
- *
- * در تمِ دارک زمینه‌اش را روشن‌تر از پس‌زمینهٔ صفحه می‌گیرد، وگرنه سیاهِ روی سیاه
- * می‌شد و کارت اصلاً دیده نمی‌شد.
+ * در نمونه‌های مرجع این کارت سیاه بود، ولی آنجا کلِ داشبورد تمِ روشنِ ثابت دارد.
+ * اینجا هر دو تم وجود دارد و کارتِ سیاه در تمِ لایت تنها چیزِ تیرهٔ صفحه می‌شد و
+ * وصله به نظر می‌رسید. پس سطحش مثل بقیهٔ کاشی‌هاست و تاکیدش از رنگِ صورتیِ بدهی
+ * و دکمهٔ توپُر می‌آید، نه از پس‌زمینهٔ تیره.
  */
 const DebtorsCta = ({count, amount, delay = 0}) => {
     const navigate = useNavigate();
@@ -21,27 +20,29 @@ const DebtorsCta = ({count, amount, delay = 0}) => {
         <section
             style={{animationDelay: `${delay}ms`}}
             className="animate-fade-up group relative min-w-0 overflow-hidden flex flex-col justify-between gap-4
-                       rounded-[18px] p-5 bg-var-color-11 dark:bg-var-color-40
-                       border border-var-color-11 dark:border-var-color-41"
+                       rounded-[18px] p-4 bg-var-color-00 dark:bg-var-color-36
+                       border border-var-color-02 dark:border-var-color-38
+                       transition-colors duration-300 hover:border-var-color-14 dark:hover:border-var-color-16"
         >
             <span aria-hidden="true"
                   className="pointer-events-none absolute -top-12 -right-12 w-36 h-36 rounded-full
-                             bg-var-color-55 opacity-20 blur-3xl
+                             bg-var-color-55 opacity-[0.07] blur-3xl
                              transition-transform duration-500 group-hover:scale-125"/>
 
             <div className="relative flex flex-row items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="m-0 text-[12px] text-var-color-03">مشتریانِ بدهکار</p>
+                    <p className="m-0 text-[12px] text-var-color-04 dark:text-var-color-39">مشتریانِ بدهکار</p>
                     <p className="m-0 mt-2 flex flex-row items-baseline gap-1.5">
                         <strong className="text-[28px] leading-none font-IRANSansXFaNumDemiBold
-                                           tracking-tight text-var-color-00">
+                                           tracking-tight text-var-color-08 dark:text-var-color-01">
                             {toFaDigits(count)}
                         </strong>
-                        <span className="text-[12px] text-var-color-03">نفر</span>
+                        <span className="text-[12px] text-var-color-04 dark:text-var-color-39">نفر</span>
                     </p>
-                    <p className="m-0 mt-2 text-[13px] text-var-color-14">
+                    <p className="m-0 mt-2 text-[13px] font-IRANSansXFaNumMedium text-var-color-55">
                         {faNumber(amount)}
-                        <span className="mr-1 text-[11px] text-var-color-03">تومان طلب</span>
+                        <span className="mr-1 text-[11px] font-IRANSansXFaNumLight
+                                         text-var-color-04 dark:text-var-color-39">تومان طلب</span>
                     </p>
                 </div>
                 <span className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center
@@ -50,6 +51,8 @@ const DebtorsCta = ({count, amount, delay = 0}) => {
                 </span>
             </div>
 
+            {/* روی زمینهٔ فیروزه‌ای، متنِ تیره کنتراستِ بیشتری از سفید دارد — همان
+                قاعده‌ای که برای دکمهٔ فیلتر و شمارهٔ صفحهٔ فعال هم به کار رفت */}
             <button
                 type="button"
                 onClick={() => navigate(`${CUSTOMERS_PATH}?filter=debt`)}
