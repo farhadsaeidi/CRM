@@ -22,6 +22,7 @@ auth_patterns = [
 ledger_patterns = [
     path("dashboard/", home_views.DashboardView.as_view(), name="dashboard"),
     path("customers/", home_views.CustomerListCreateView.as_view(), name="customers"),
+    path("customers/stats/", home_views.CustomerStatsView.as_view(), name="customer_stats"),
     path("customers/<int:pk>/", home_views.CustomerDetailView.as_view(), name="customer_detail"),
     path("customers/<int:customer_id>/transactions/",
          home_views.TransactionListCreateView.as_view(), name="transactions"),

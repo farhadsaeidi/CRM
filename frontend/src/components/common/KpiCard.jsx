@@ -1,6 +1,6 @@
 import {FiArrowDownLeft, FiArrowUpLeft} from "react-icons/fi";
-import {faNumber, faPercent} from "../../../lib/chart.js";
-import {useCountUp} from "../../../lib/useCountUp.js";
+import {faNumber, faPercent} from "../../lib/chart.js";
+import {useCountUp} from "../../lib/useCountUp.js";
 
 /**
  * کارتِ KPI — عددِ درشت با شمارشِ انیمیشنی، و دلتای دورهٔ قبل.
@@ -22,7 +22,9 @@ const KpiCard = ({
     title, value, suffix, suffixClass = "", icon: Icon, delay = 0,
     delta, previousLabel, tone = "good", accent = "var(--color-var-color-15)",
     // نمایشِ دلخواه به‌جای عددِ خام (مثلاً درصد یا «طلبکار/بدهکار»)
-    format = faNumber, hint,
+    format = faNumber, hint, hintClass,
+    // کارتِ کلیک‌پذیر (مثلاً میان‌برِ فیلترِ جدول) و حالتِ «فیلترش فعال است»
+    onClick, active = false,
 }) => {
     const animated = useCountUp(Number(value) || 0);
     const hasDelta = delta !== null && delta !== undefined;
@@ -30,13 +32,32 @@ const KpiCard = ({
     const deltaClass = hasDelta ? TONE[tone][up ? "up" : "down"] : "";
     const DeltaIcon = up ? FiArrowUpLeft : FiArrowDownLeft;
 
+    // ⚠️ کارت داخلِ <button> گذاشته نمی‌شود: بدنه‌اش <p> و <strong> دارد و
+    // دکمه فقط محتوای عبارتی می‌پذیرد. پس خودِ کارت نقشِ دکمه می‌گیرد و
+    // کیبورد را هم دستی پشتیبانی می‌کند.
+    const clickable = typeof onClick === "function";
+    const interactive = clickable ? {
+        role: "button",
+        tabIndex: 0,
+        onClick,
+        onKeyDown: (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onClick(event);
+            }
+        },
+    } : {};
+
     return (
         <section
-            style={{animationDelay: `${delay}ms`}}
-            className="animate-fade-up group relative min-w-0 overflow-hidden flex flex-col justify-between gap-3
-                       rounded-[18px] p-4 bg-var-color-00 dark:bg-var-color-36
-                       border border-var-color-02 dark:border-var-color-38
-                       transition-colors duration-300 hover:border-var-color-14 dark:hover:border-var-color-16"
+            {...interactive}
+            style={{animationDelay: `${delay}ms`, ...(active ? {borderColor: accent} : {})}}
+            className={`animate-fade-up group relative min-w-0 overflow-hidden flex flex-col justify-between gap-3
+                        rounded-[18px] p-4 bg-var-color-00 dark:bg-var-color-36
+                        border transition-colors duration-300
+                        ${active ? "" : "border-var-color-02 dark:border-var-color-38"}
+                        ${clickable ? "cursor-pointer" : ""}
+                        hover:border-var-color-14 dark:hover:border-var-color-16`}
         >
             {/* هالهٔ رنگیِ گوشه — همان لهجهٔ بصریِ کارت‌های مرجع. در RTL گوشهٔ
                 شروعِ خط سمت راست است، پس هاله همان‌جا می‌نشیند. */}
@@ -83,7 +104,7 @@ const KpiCard = ({
                         </span>
                     </>
                 ) : (
-                    <span className="text-var-color-04 dark:text-var-color-39 truncate">
+                    <span className={`truncate ${hintClass || "text-var-color-04 dark:text-var-color-39"}`}>
                         {hint ?? "بدونِ دادهٔ دورهٔ قبل برای مقایسه"}
                     </span>
                 )}

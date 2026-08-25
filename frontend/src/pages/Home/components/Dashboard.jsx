@@ -12,7 +12,7 @@ import {CUSTOMERS_PATH} from "../../../lib/paths.js";
 import {notify} from "../../../lib/notify.jsx";
 import DashboardToolbar from "./DashboardToolbar.jsx";
 import DashboardTile from "./DashboardTile.jsx";
-import KpiCard from "./KpiCard.jsx";
+import KpiCard from "../../../components/common/KpiCard.jsx";
 import TrendChart from "./TrendChart.jsx";
 import CustomerMixChart from "./CustomerMixChart.jsx";
 import AgingChart from "./AgingChart.jsx";

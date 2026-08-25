@@ -15,6 +15,9 @@ const toQuery = (params = {}) => {
 export const customersApi = {
     // {count, next, previous, results: [{id, fullname, phone, status, code, created}]}
     list: (params) => api.get(`/customers/${toQuery(params)}`),
+    // شاخص‌های بالای جدول — به صفحه، جستجو و فیلتر وابسته نیستند، پس جدا از فهرست
+    // گرفته می‌شوند و فقط بعد از کراد دوباره خوانده می‌شوند
+    stats: () => api.get("/customers/stats/"),
     create: (data) => api.post("/customers/", data),
     update: (id, data) => api.patch(`/customers/${id}/`, data),
     remove: (id) => api.delete(`/customers/${id}/`),

@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from core.permissions import IsOwner
 
-from .dashboard import DEFAULT_PERIOD, build_dashboard
+from .dashboard import DEFAULT_PERIOD, build_customer_stats, build_dashboard
 from .models import Customer, CustomerOwner, Transaction
 from .serializers import AllTransactionsSerializer, CustomerSerializer, TransactionSerializer
 from .services import (
@@ -81,6 +81,18 @@ class CustomerListCreateView(OwnerScopedMixin, generics.ListCreateAPIView):
             {"message": "مشتری جدید با موفقیت ثبت شد.", "customer": self.get_serializer(customer).data},
             status=status.HTTP_201_CREATED,
         )
+
+
+# noinspection PyMethodMayBeStatic
+class CustomerStatsView(OwnerScopedMixin, APIView):
+    """شاخص‌های بالای جدولِ مشتریان.
+
+    endpointِ جدا و نه افزودن به پاسخِ فهرست: این اعداد به صفحه، جستجو و فیلترِ
+    جدول وابسته نیستند، پس با هر ورقِ صفحه دوباره فرستادنشان کارِ بی‌مورد است.
+    """
+
+    def get(self, request):
+        return Response(build_customer_stats(request.user))
 
 
 class CustomerDetailView(OwnerScopedMixin, generics.RetrieveUpdateDestroyAPIView):

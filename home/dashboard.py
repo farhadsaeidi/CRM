@@ -9,6 +9,8 @@
 وضعیتِ حساب اینجا از روی تراکنش‌های همین مالک حساب می‌شود و نه از ستونِ کش‌شدهٔ
 `Customer.code` — آن ستون یکی است برای همهٔ مالکان.
 """
+from datetime import datetime, time
+
 import jdatetime
 from django.db.models import Count, Max, Q, Sum
 from django.db.models.functions import Coalesce
@@ -317,6 +319,86 @@ def _recent(user, transactions):
     } for c in Customer.objects.filter(id__in=owned).order_by("-created")[:LIST_SIZE]]
 
     return recent_tx, recent_customers
+
+
+# ------------------------------------------- شاخص‌های بالای صفحهٔ مشتریان
+
+def _jalali_month_bounds(year, month):
+    """ابتدا و انتهای یک ماهِ شمسی، به‌صورت datetimeِ آگاه از منطقهٔ زمانی.
+
+    `Customer.created` یک datetimeِ میلادی است و ستونِ شمسی ندارد (برخلافِ
+    تراکنش‌ها)، پس برای شمردنِ «ثبت‌نامِ این ماه» باید مرزها را تبدیل کرد نه
+    اینکه هر ردیف در پایتون تبدیل شود.
+
+    ⚠️ مرزها باید آگاه از منطقهٔ زمانی باشند: با تاریخِ خام، جنگو نیمه‌شبِ UTC را
+    مرز می‌گیرد و مشتریِ ثبت‌شده در ساعت‌های اولِ اولِ ماهِ شمسی به ماهِ قبل نسبت
+    داده می‌شود (تهران +۳:۳۰ است).
+    """
+    def bound(jalali_date):
+        naive = datetime.combine(jalali_date.togregorian(), time.min)
+        return timezone.make_aware(naive)
+
+    next_year, next_month = _shift_month(year, month, 1)
+    return bound(jdatetime.date(year, month, 1)), bound(jdatetime.date(next_year, next_month, 1))
+
+
+def build_customer_stats(user):
+    """شاخص‌های مشتری‌محورِ بالای جدولِ مشتریان.
+
+    عمداً به جستجو و فیلترِ جدول وابسته نیست: این اعداد وضعیتِ کلِ دفتر را
+    می‌گویند و اگر با تایپ در کادرِ جستجو تکان بخورند، دیگر «شاخص» نیستند.
+    خودِ جدول تعدادِ نتیجهٔ فیلترشده را در نوارِ پایینش نشان می‌دهد.
+    """
+    now = timezone.now()
+    rows = list(_customer_rows(user))
+
+    counts = {"debt": 0, "credit": 0, "settled": 0, "untouched": 0}
+    owed = credited = 0
+    dormant = 0
+
+    for row in rows:
+        balance = row.total_paid - row.total_debt
+        days = _days_since(row.last_tx, now)
+
+        if row.tx_count == 0:
+            counts["untouched"] += 1
+        elif balance < 0:
+            counts["debt"] += 1
+            owed += -balance
+        elif balance > 0:
+            counts["credit"] += 1
+            credited += balance
+        else:
+            counts["settled"] += 1
+
+        if row.tx_count == 0 or (days is not None and days >= DORMANT_AFTER_DAYS):
+            dormant += 1
+
+    today = _today_jalali()
+    this_start, this_end = _jalali_month_bounds(today.year, today.month)
+    prev_year, prev_month = _shift_month(today.year, today.month, -1)
+    prev_start, prev_end = _jalali_month_bounds(prev_year, prev_month)
+
+    owned = CustomerOwner.objects.filter(owner=user).values("customer_id")
+    registered = Customer.objects.filter(id__in=owned)
+    new_this = registered.filter(created__gte=this_start, created__lt=this_end).count()
+    new_prev = registered.filter(created__gte=prev_start, created__lt=prev_end).count()
+
+    return {
+        "total": len(rows),
+        "debtors": {"count": counts["debt"], "amount": owed},
+        "creditors": {"count": counts["credit"], "amount": credited},
+        "settled": counts["settled"],
+        "untouched": counts["untouched"],
+        "dormant": dormant,
+        "dormant_after_days": DORMANT_AFTER_DAYS,
+        "net_balance": credited - owed,
+        "new": {
+            "count": new_this, "previous": new_prev,
+            "delta": _delta_percent(new_this, new_prev),
+            "month_label": JALALI_MONTHS[today.month - 1],
+        },
+    }
 
 
 # --------------------------------------------------------------- نقطهٔ ورود

@@ -37,7 +37,7 @@ const formatCreatedDate = (iso) =>
     iso ? new Intl.DateTimeFormat("fa-IR", {year: "numeric", month: "2-digit", day: "2-digit"})
         .format(new Date(iso)) : "—";
 
-const CustomersTable = () => {
+const CustomersTable = ({onChanged}) => {
     const navigate = useNavigate();
     const goBack = useGoBack();
     // یوآرال منبعِ حقیقت است: رفرش و دکمهٔ back درست کار می‌کنند و جستجوی فوتر
@@ -162,6 +162,8 @@ const CustomersTable = () => {
         // بعد از حذفِ تنها ردیفِ یک صفحه، آن صفحه دیگر وجود ندارد
         if (mode === "delete" && data.results.length === 1 && page > 1) setParam({page: page - 1});
         else setRefreshKey((k) => k + 1);
+        // شاخص‌های بالای جدول بیرونِ این کامپوننت‌اند و خودشان خبر ندارند
+        onChanged?.();
     };
 
     const actionBtn = "cursor-pointer transition-all duration-200 ease-in-out";

@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-25 12:28 · کامیت `e635d69`
+آخرین تولید: 2026-08-25 13:46 · کامیت `126172f`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 31 | 2211 |
-| فرانت‌اند | 78 | 7208 |
+| بک‌اند | 31 | 2306 |
+| فرانت‌اند | 79 | 7373 |
 
 اپ‌های جنگو: account api home
 
@@ -26,11 +26,12 @@
 | `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:229 | [AllowAny] |
 | `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:290 | [AllowAny] |
 | `/api/auth/change-password/` | ChangePasswordView | account/views.py:325 | _(پیش‌فرض DRF)_ |
-| `/api/dashboard/` | DashboardView | home/views.py:105 | _(پیش‌فرض DRF)_ |
+| `/api/dashboard/` | DashboardView | home/views.py:117 | _(پیش‌فرض DRF)_ |
 | `/api/customers/` | CustomerListCreateView | home/views.py:50 | _(پیش‌فرض DRF)_ |
-| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:86 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/` | AllTransactionsView | home/views.py:130 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:158 | _(پیش‌فرض DRF)_ |
+| `/api/customers/stats/` | CustomerStatsView | home/views.py:87 | _(پیش‌فرض DRF)_ |
+| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:98 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/` | AllTransactionsView | home/views.py:142 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:170 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -93,21 +94,21 @@
     - `TransactionAdmin` :22
 - **./home/apps.py** (5 خط، 1 نماد)
     - `HomeConfig` :4
-- **./home/dashboard.py** (344 خط، 16 نماد)
-    - `_today_jalali` :49
-    - `_shift_month` :53
-    - `_period_queries` :59
-    - `_delta_percent` :95
-    - `_sums` :102
-    - `_collection_rate` :108
-    - `_kpis` :117
-    - `_trend` :144
-    - `_customer_rows` :179
-    - `_days_since` :198
-    - `_customer_tiles` :202
-    - `_aging` :273
-    - `_concentration` :290
-    - `_recent` :307
+- **./home/dashboard.py** (426 خط، 19 نماد)
+    - `_today_jalali` :51
+    - `_shift_month` :55
+    - `_period_queries` :61
+    - `_delta_percent` :97
+    - `_sums` :104
+    - `_collection_rate` :110
+    - `_kpis` :119
+    - `_trend` :146
+    - `_customer_rows` :181
+    - `_days_since` :200
+    - `_customer_tiles` :204
+    - `_aging` :275
+    - `_concentration` :292
+    - `_recent` :309
 - **./home/management/commands/seed_demo.py** (174 خط، 7 نماد)
     - `Command` :50
 - **./home/models.py** (110 خط، 12 نماد)
@@ -129,18 +130,19 @@
     - `_to_int` :85
     - `_field_query` :95
     - `build_date_search_query` :133
-- **./home/views.py** (296 خط، 29 نماد)
+- **./home/views.py** (308 خط، 31 نماد)
     - `CustomerPagination` :24
     - `OwnerScopedMixin` :33
     - `CustomerListCreateView` :50
-    - `CustomerDetailView` :86
-    - `DashboardView` :105
-    - `AllTransactionsPagination` :119
-    - `AllTransactionsView` :130
-    - `AllTransactionsSearchView` :158
-    - `TransactionListCreateView` :186
-    - `TransactionDetailView` :240
-    - `TransactionSearchView` :269
+    - `CustomerStatsView` :87
+    - `CustomerDetailView` :98
+    - `DashboardView` :117
+    - `AllTransactionsPagination` :131
+    - `AllTransactionsView` :142
+    - `AllTransactionsSearchView` :170
+    - `TransactionListCreateView` :198
+    - `TransactionDetailView` :252
+    - `TransactionSearchView` :281
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
@@ -155,8 +157,9 @@
 - **frontend/src/pages/Customers/CustomerLedger.jsx** (34 خط)
     - Breadcrumb
     - TransactionsTable
-- **frontend/src/pages/Customers/Customers.jsx** (23 خط)
+- **frontend/src/pages/Customers/Customers.jsx** (32 خط)
     - Breadcrumb
+    - CustomerKpis
     - CustomersTable
 - **frontend/src/pages/Home/Home.jsx** (43 خط)
     - HomeSidebar
@@ -177,6 +180,7 @@
 - `CustomTooltip` — 54 خط
 - `Footer` — 425 خط
 - `Header` — 45 خط
+- `KpiCard` — 116 خط
 - `LogoIcon` — 28 خط
 - `MenuItem` — 34 خط
 - `ModalActions` — 53 خط
@@ -184,7 +188,7 @@
 - `Pagination` — 77 خط
 - `ProgressToast` — 119 خط
 - `RowSelectMark` — 33 خط
-- `ScrollContainer` — 111 خط
+- `ScrollContainer` — 115 خط
 - `Sidebar` — 76 خط
 - `ThemeSwitcher` — 87 خط
 - `WindowsIcon` — 37 خط
@@ -194,7 +198,7 @@
 
 - **client.js**: get post put patch delete
 
-- **customers.js**: list create update remove
+- **customers.js**: list stats create update remove
 
 - **dashboard.js**: get
 
