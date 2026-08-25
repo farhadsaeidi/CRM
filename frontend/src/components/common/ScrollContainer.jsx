@@ -33,6 +33,9 @@ const ScrollContainer = ({
     hoverOpacity = 1,
     width = 3,          // ضخامتِ دستهٔ اسکرول‌بار به پیکسل
     maxHeight = 400,    // بیشینهٔ درازای دسته — عملاً یعنی بی‌سقف
+    // فاصلهٔ دو سرِ ریل از لبهٔ ناحیه. هر جا محتوا گوشهٔ گرد دارد باید به اندازهٔ
+    // همان شعاع باشد، وگرنه ریل تا کنارِ انحنا بالا می‌رود و کنارش می‌زند.
+    trackPadding = 3,
     // "move": با تکان خوردنِ موس داخلِ ناحیه ظاهر می‌شود و اگر موس بی‌حرکت بماند
     // بعد از autoHideDelay محو می‌شود؛ تکانِ دوباره برش می‌گرداند. ("leave" فقط با
     // بیرون رفتنِ موس پنهان می‌کرد و تا وقتی نشانگر روی ناحیه بود می‌ماند.)
@@ -88,11 +91,12 @@ const ScrollContainer = ({
         "--scroll-handle-color": color,
         "--scroll-handle-opacity": opacity,
         "--scroll-handle-hover-opacity": hoverOpacity,
-        // پدینگِ نوار ۳ پیکسل در هر طرف است، پس اندازهٔ کلِ نوار = ضخامتِ دسته + ۶
+        // پدینگِ عرضیِ نوار ۳ پیکسل در هر طرف است، پس اندازهٔ کلِ نوار = ضخامتِ دسته + ۶
         "--scroll-size": `${Number(width) + 6}px`,
         "--scroll-handle-max": `${maxHeight}px`,
+        "--scroll-padding-axis": `${trackPadding}px`,
         ...style,
-    }), [color, opacity, hoverOpacity, width, maxHeight, style]);
+    }), [color, opacity, hoverOpacity, width, maxHeight, trackPadding, style]);
 
     return (
         <OverlayScrollbarsComponent

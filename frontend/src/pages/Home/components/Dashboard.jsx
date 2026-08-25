@@ -84,7 +84,9 @@ const Dashboard = () => {
             <DashboardToolbar period={period} onPeriod={changePeriod} onRefresh={refresh}
                               loading={loading} todayLabel={todayLabel}/>
 
-            <ScrollContainer className="flex-1 min-h-0" overflowX="hidden" position="right">
+            {/* trackPadding برابرِ شعاعِ گوشهٔ کاشی‌هاست (rounded-[18px])، وگرنه
+                ریلِ اسکرول تا کنارِ انحنای گوشه بالا می‌رود و رویش می‌افتد */}
+            <ScrollContainer className="flex-1 min-h-0" overflowX="hidden" position="right" trackPadding={18}>
                 <div className="pl-2 pb-2">
                     {!data ? (
                         <SkeletonGrid failed={failed && !loading}/>
