@@ -121,10 +121,15 @@ const Tiles = ({data}) => {
     return (
         <>
             <div className="grid grid-cols-1 2xs:grid-cols-2 xl:grid-cols-4 gap-3">
+                {/* رنگِ این کارت بنفشِ ثابت است و با علامتِ مانده عوض نمی‌شود:
+                    وقتی مانده منفی بود همان صورتیِ کارتِ «نسیه» می‌شد و دو کارتِ
+                    کنارِ هم یک رنگ می‌گرفتند. طلب یا بدهی بودن را پسوندِ رنگی
+                    می‌گوید که صریح‌تر هم هست. */}
                 <KpiCard
                     title="ماندهٔ کل دفتر" delay={at(1)}
                     value={Math.abs(kpi.balance.value)} suffix={owed ? "تومان طلب" : "تومان بدهی"}
-                    icon={HiOutlineBanknotes} accent={owed ? "var(--color-var-color-55)" : "var(--color-var-color-31)"}
+                    suffixClass={owed ? "text-var-color-55" : "text-var-color-31"}
+                    icon={HiOutlineBanknotes} accent="var(--color-var-color-25)"
                     hint={`${toFaDigits(kpi.balance.transactions)} تراکنش در کلِ دفتر`}
                 />
                 <KpiCard

@@ -19,7 +19,7 @@ const TONE = {
 };
 
 const KpiCard = ({
-    title, value, suffix, icon: Icon, delay = 0,
+    title, value, suffix, suffixClass = "", icon: Icon, delay = 0,
     delta, previousLabel, tone = "good", accent = "var(--color-var-color-15)",
     // نمایشِ دلخواه به‌جای عددِ خام (مثلاً درصد یا «طلبکار/بدهکار»)
     format = faNumber, hint,
@@ -53,7 +53,13 @@ const KpiCard = ({
                                            text-var-color-08 dark:text-var-color-01">
                             {format(animated)}
                         </strong>
-                        {suffix && <span className="text-[11px] shrink-0 text-var-color-04 dark:text-var-color-39">{suffix}</span>}
+                        {/* رنگِ پسوند از رنگِ کارت جداست: کارت هویتِ خودش را دارد و
+                            پسوند می‌تواند معنای عدد (طلب یا بدهی) را برساند */}
+                        {suffix && (
+                            <span className={`text-[11px] shrink-0 ${
+                                suffixClass || "text-var-color-04 dark:text-var-color-39"
+                            }`}>{suffix}</span>
+                        )}
                     </p>
                 </div>
                 {Icon && (
