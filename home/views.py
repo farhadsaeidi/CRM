@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from core.permissions import IsOwner
 
+from .dashboard import DEFAULT_PERIOD, build_dashboard
 from .models import Customer, CustomerOwner, Transaction
 from .serializers import AllTransactionsSerializer, CustomerSerializer, TransactionSerializer
 from .services import (
@@ -96,6 +97,21 @@ class CustomerDetailView(OwnerScopedMixin, generics.RetrieveUpdateDestroyAPIView
     def destroy(self, request, *args, **kwargs):
         super().destroy(request, *args, **kwargs)
         return Response({"message": "حذف مشتری با موفقیت انجام شد."}, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------- داشبورد
+
+# noinspection PyMethodMayBeStatic
+class DashboardView(OwnerScopedMixin, APIView):
+    """همهٔ کاشی‌های داشبورد در یک پاسخ.
+
+    یک درخواست به‌جای هشت‌تا: هر کاشی یک aggregate است و فرستادنشان جدا فقط
+    رفت‌وبرگشتِ شبکه اضافه می‌کند. منطقش در `home/dashboard.py` است.
+    """
+
+    def get(self, request):
+        period = request.query_params.get("period") or DEFAULT_PERIOD
+        return Response(build_dashboard(request.user, period))
 
 
 # --------------------------------------------------------------- تراکنش‌ها
