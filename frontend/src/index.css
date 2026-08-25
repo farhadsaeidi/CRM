@@ -740,3 +740,26 @@
 .recharts-surface:focus {
     outline: none;
 }
+
+/* پدینگِ دو سرِ ریلِ اسکرول (پراپ trackPadding).
+ *
+ * ⚠️ چرا با نامِ متغیرِ خودمان و با گزینشگرِ صریح، و نه فقط با
+ * `--os-padding-axis` در بلاکِ تم؟ خودِ کتابخانه در قاعدهٔ `.os-scrollbar`
+ * همهٔ متغیرهای `--os-*` را روی **همان عنصری** صفر می‌کند که
+ * `.os-scrollbar-vertical` پدینگش را از آن‌ها می‌خواند. متغیری که روی خودِ
+ * عنصر اعلام شده بر مقدارِ به‌ارث‌رسیده می‌چربد، پس تکیه کردن به آن نگاشت
+ * شکننده است. `--scroll-padding-axis` نامِ خودِ ماست و کتابخانه هیچ‌جا ریستش
+ * نمی‌کند، و گزینشگرِ دوکلاسه از `.os-scrollbar-vertical` ویژه‌تر است.
+ *
+ * ریل که تو رفت، دسته هم خودبه‌خود کوتاه‌تر می‌شود: ارتفاعش
+ * `calc(var(--os-viewport-percent) * 100%)`ِ ریل است. حسابِ پیکسلیِ
+ * scrollSync هم درست می‌ماند چون همان ریلِ تورفته را اندازه می‌گیرد. */
+.os-theme-app .os-scrollbar-vertical {
+    padding-top: var(--scroll-padding-axis);
+    padding-bottom: var(--scroll-padding-axis);
+}
+
+.os-theme-app .os-scrollbar-horizontal {
+    padding-right: var(--scroll-padding-axis);
+    padding-left: var(--scroll-padding-axis);
+}
