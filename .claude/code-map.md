@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-25 13:58 · کامیت `82a238e`
+آخرین تولید: 2026-08-25 14:07 · کامیت `dec258c`
 
 | بخش | فایل | خط |
 |---|---|---|
 | بک‌اند | 31 | 2442 |
-| فرانت‌اند | 81 | 7579 |
+| فرانت‌اند | 82 | 7617 |
 
 اپ‌های جنگو: account api home
 
@@ -161,7 +161,7 @@
     - Breadcrumb
     - LedgerKpis
     - TransactionsTable
-- **frontend/src/pages/Customers/Customers.jsx** (32 خط)
+- **frontend/src/pages/Customers/Customers.jsx** (40 خط)
     - Breadcrumb
     - CustomerKpis
     - CustomersTable
@@ -184,7 +184,7 @@
 - `ChangePasswordModal` — 180 خط
 - `CustomTooltip` — 54 خط
 - `Footer` — 425 خط
-- `Header` — 45 خط
+- `Header` — 42 خط
 - `KpiCard` — 116 خط
 - `LogoIcon` — 28 خط
 - `MenuItem` — 34 خط

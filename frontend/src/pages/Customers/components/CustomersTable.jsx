@@ -37,7 +37,7 @@ const formatCreatedDate = (iso) =>
     iso ? new Intl.DateTimeFormat("fa-IR", {year: "numeric", month: "2-digit", day: "2-digit"})
         .format(new Date(iso)) : "—";
 
-const CustomersTable = ({onChanged}) => {
+const CustomersTable = ({onChanged, refreshSignal = 0}) => {
     const navigate = useNavigate();
     const goBack = useGoBack();
     // یوآرال منبعِ حقیقت است: رفرش و دکمهٔ back درست کار می‌کنند و جستجوی فوتر
@@ -95,7 +95,7 @@ const CustomersTable = ({onChanged}) => {
         return () => {
             ignore = true;
         };
-    }, [query, filter, page, refreshKey]);
+    }, [query, filter, page, refreshKey, refreshSignal]);
 
     const setParam = useCallback((changes) => {
         setSearchParams((prev) => {
@@ -111,22 +111,10 @@ const CustomersTable = ({onChanged}) => {
         });
     }, [setSearchParams]);
 
-    // دکمهٔ «ثبت مشتری جدید» هدر با ‎?new=1‎ خبر می‌دهد، نه با رویدادِ سراسری:
-    // هدر در RootLayout است و از هر صفحه‌ای زده می‌شود، پس باید اول ما را به این
-    // صفحه برساند و بعد مودال را باز کند.
-    // با مقایسه در حین رندر انجام می‌شود نه با افکت (قاعدهٔ set-state-in-effect)؛
-    // خودِ پارامتر هنگام بسته شدنِ مودال پاک می‌شود.
-    const wantsNew = searchParams.get("new") === "1";
-    const [lastWantsNew, setLastWantsNew] = useState(wantsNew);
-    if (wantsNew !== lastWantsNew) {
-        setLastWantsNew(wantsNew);
-        if (wantsNew) setModal({mode: "create", customer: null});
-    }
-
-    const closeModal = () => {
-        setModal(null);
-        if (wantsNew) setParam({new: null});
-    };
+    // دکمهٔ «ثبت مشتری جدید» هدر دیگر ما را صدا نمی‌زند: مودالش در RootLayout
+    // رندر می‌شود و همان‌جا که کاربر هست باز می‌شود. اینجا فقط دکمهٔ + خودِ جدول
+    // مانده، که مستقیم setModal می‌کند.
+    const closeModal = () => setModal(null);
 
     // بستنِ منوی فیلتر با کلیک بیرون
     useEffect(() => {

@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import {useNavigate} from "react-router";
 import {FiClock, FiMoon, FiPieChart, FiTrendingUp, FiUserPlus, FiUsers} from "react-icons/fi";
 import {HiOutlineArrowsRightLeft, HiOutlineBanknotes} from "react-icons/hi2";
 import {FaMedal} from "react-icons/fa6";
@@ -8,7 +7,7 @@ import {BsGraphDownArrow} from "react-icons/bs";
 import {dashboardApi} from "../../../api/dashboard.js";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import {faCompact, faPercent, toFaDigits} from "../../../lib/chart.js";
-import {CUSTOMERS_PATH} from "../../../lib/paths.js";
+import {OPEN_NEW_CUSTOMER_EVENT} from "../../../lib/events.js";
 import {notify} from "../../../lib/notify.jsx";
 import DashboardToolbar from "./DashboardToolbar.jsx";
 import DashboardTile from "./DashboardTile.jsx";
@@ -34,7 +33,6 @@ const SKELETONS = [
 ];
 
 const Dashboard = () => {
-    const navigate = useNavigate();
     const [period, setPeriod] = useState("year");
     const [refreshKey, setRefreshKey] = useState(0);
     const [state, setState] = useState({data: null, loading: true, failed: false});
@@ -91,7 +89,7 @@ const Dashboard = () => {
                     {!data ? (
                         <SkeletonGrid failed={failed && !loading}/>
                     ) : data.customers_total === 0 ? (
-                        <FirstRun onAdd={() => navigate(`${CUSTOMERS_PATH}?new=1`)}/>
+                        <FirstRun onAdd={() => window.dispatchEvent(new CustomEvent(OPEN_NEW_CUSTOMER_EVENT))}/>
                     ) : (
                         // key: با هر بازخوانی کلِ گرید از نو ساخته می‌شود تا انیمیشن‌ها
                         // دوباره اجرا شوند. loading روی شفافیت می‌نشیند نه روی نمایش،
