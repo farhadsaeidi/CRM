@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-25 13:46 · کامیت `126172f`
+آخرین تولید: 2026-08-25 13:54 · کامیت `ed01491`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 31 | 2306 |
-| فرانت‌اند | 79 | 7373 |
+| بک‌اند | 31 | 2378 |
+| فرانت‌اند | 80 | 7472 |
 
 اپ‌های جنگو: account api home
 
@@ -31,7 +31,8 @@
 | `/api/customers/stats/` | CustomerStatsView | home/views.py:87 | _(پیش‌فرض DRF)_ |
 | `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:98 | _(پیش‌فرض DRF)_ |
 | `/api/transactions/` | AllTransactionsView | home/views.py:142 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:170 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:178 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/stats/` | AllTransactionsStatsView | home/views.py:171 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -94,7 +95,7 @@
     - `TransactionAdmin` :22
 - **./home/apps.py** (5 خط، 1 نماد)
     - `HomeConfig` :4
-- **./home/dashboard.py** (426 خط، 19 نماد)
+- **./home/dashboard.py** (489 خط، 20 نماد)
     - `_today_jalali` :51
     - `_shift_month` :55
     - `_period_queries` :61
@@ -130,7 +131,7 @@
     - `_to_int` :85
     - `_field_query` :95
     - `build_date_search_query` :133
-- **./home/views.py** (308 خط، 31 نماد)
+- **./home/views.py** (316 خط، 33 نماد)
     - `CustomerPagination` :24
     - `OwnerScopedMixin` :33
     - `CustomerListCreateView` :50
@@ -139,10 +140,11 @@
     - `DashboardView` :117
     - `AllTransactionsPagination` :131
     - `AllTransactionsView` :142
-    - `AllTransactionsSearchView` :170
-    - `TransactionListCreateView` :198
-    - `TransactionDetailView` :252
-    - `TransactionSearchView` :281
+    - `AllTransactionsStatsView` :171
+    - `AllTransactionsSearchView` :178
+    - `TransactionListCreateView` :206
+    - `TransactionDetailView` :260
+    - `TransactionSearchView` :289
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
@@ -165,13 +167,14 @@
     - HomeSidebar
     - Sidebar
 - **frontend/src/pages/NotFound/NotFound.jsx** (27 خط)
-- **frontend/src/pages/Transactions/Transactions.jsx** (455 خط)
+- **frontend/src/pages/Transactions/Transactions.jsx** (460 خط)
     - Breadcrumb
     - CustomTooltip
     - Footer
     - MenuItem
     - RowSelectMark
     - ScrollContainer
+    - TransactionKpis
     - notify
 
 ### کامپوننت‌های مشترک
@@ -202,5 +205,5 @@
 
 - **dashboard.js**: get
 
-- **transactions.js**: list search create update remove list search
+- **transactions.js**: list search create update remove list stats search
 

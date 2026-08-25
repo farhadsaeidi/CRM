@@ -401,6 +401,69 @@ def build_customer_stats(user):
     }
 
 
+# ---------------------------------------- شاخص‌های بالای صفحهٔ تراکنش‌ها
+
+def build_transaction_stats(user):
+    """شاخص‌های تراکنش‌محورِ بالای جدولِ همهٔ تراکنش‌ها.
+
+    مثل شاخص‌های صفحهٔ مشتریان، اینجا هم عمداً به فیلترِ دوره و جستجوی تاریخِ
+    جدول وابسته نیست: اینها وضعیتِ کلِ دفترند و جدول خودش نمای فیلترشده را
+    نشان می‌دهد.
+    """
+    transactions = Transaction.objects.filter(owner=user)
+
+    # ⚠️ نامِ خروجی نباید با نامِ فیلد یکی باشد: در یک aggregate، اسم‌های تعریف‌شده
+    # به بقیهٔ عبارت‌ها هم دیده می‌شوند و `Max("debt")` به‌جای ستون، سراغ همان
+    # مجموع می‌رود و جنگو خطای «'debt' is an aggregate» می‌دهد.
+    totals = transactions.aggregate(
+        count=Count("id"),
+        debt_total=Coalesce(Sum("debt"), 0),
+        paid_total=Coalesce(Sum("paid"), 0),
+        biggest_debt=Coalesce(Max("debt"), 0),
+        biggest_paid=Coalesce(Max("paid"), 0),
+        last=Max("created"),
+    )
+    count = totals["count"]
+    debt, paid = totals["debt_total"], totals["paid_total"]
+    turnover = debt + paid
+
+    # هر ردیف یا نسیه است یا پرداخت، پس شمردنِ ردیف‌های ناصفرِ هر ستون یعنی
+    # «چند تا از این جنس ثبت شده»
+    debt_rows = transactions.filter(debt__gt=0).count()
+    paid_rows = transactions.filter(paid__gt=0).count()
+
+    today = _today_jalali()
+    prev_year, prev_month = _shift_month(today.year, today.month, -1)
+    this_month = transactions.filter(year=today.year, month=today.month).count()
+    last_month = transactions.filter(year=prev_year, month=prev_month).count()
+
+    # پرکارترین ماهِ دفتر — یک group by روی همان ستون‌های ایندکس‌دارِ شمسی
+    busiest = (transactions.values("year", "month")
+               .annotate(n=Count("id")).order_by("-n", "-year", "-month").first())
+
+    return {
+        "total": count,
+        "debt": {"amount": debt, "rows": debt_rows},
+        "paid": {"amount": paid, "rows": paid_rows},
+        "turnover": turnover,
+        # میانگینِ اندازهٔ یک ردیف، نه میانگینِ نسیه و پرداخت جدا: هر ردیف یکی از
+        # این دو است، پس گردش تقسیم بر تعداد همان «تراکنشِ متوسط» را می‌دهد
+        "average": round(turnover / count) if count else 0,
+        "largest": max(totals["biggest_debt"], totals["biggest_paid"]),
+        "rate": _collection_rate(debt, paid),
+        "this_month": {
+            "count": this_month, "previous": last_month,
+            "delta": _delta_percent(this_month, last_month),
+            "month_label": JALALI_MONTHS[today.month - 1],
+        },
+        "busiest": {
+            "label": JALALI_MONTHS[busiest["month"] - 1], "year": busiest["year"],
+            "count": busiest["n"],
+        } if busiest else None,
+        "days_since_last": _days_since(totals["last"], timezone.now()),
+    }
+
+
 # --------------------------------------------------------------- نقطهٔ ورود
 
 def build_dashboard(user, period=DEFAULT_PERIOD):

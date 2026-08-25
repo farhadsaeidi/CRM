@@ -33,6 +33,7 @@ ledger_patterns = [
     # همهٔ تراکنش‌های مالک، بدونِ قیدِ مشتری — صفحه‌بندی‌شده برای اسکرولِ بی‌نهایت
     path("transactions/", home_views.AllTransactionsView.as_view(), name="all_transactions"),
     path("transactions/search/", home_views.AllTransactionsSearchView.as_view(), name="all_transactions_search"),
+    path("transactions/stats/", home_views.AllTransactionsStatsView.as_view(), name="all_transactions_stats"),
 ]
 
 # عمومی

@@ -27,6 +27,8 @@ export const allTransactionsApi = {
         if (filter && filter !== "all") params.set("filter", filter);
         return api.get(`/transactions/?${params.toString()}`);
     },
+    // شاخص‌های بالای جدول — به فیلتر و جستجو وابسته نیستند، پس جدا گرفته می‌شوند
+    stats: () => api.get("/transactions/stats/"),
     // جستجوی تاریخ شمسی — بدنه POST است ولی صفحه‌بندی در query می‌ماند تا همان
     // اسکرولِ بی‌نهایت بتواند تغذیه‌اش کند
     search: ({page = 1, pageSize, payload}) => {

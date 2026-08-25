@@ -9,6 +9,7 @@ import Breadcrumb from "../../components/common/Breadcrumb.jsx";
 import CustomTooltip from "../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../components/common/MenuItem.jsx";
 import RowSelectMark from "../../components/common/RowSelectMark.jsx";
+import TransactionKpis from "./components/TransactionKpis.jsx";
 import ScrollContainer from "../../components/common/ScrollContainer.jsx";
 import {formatPersianNumber} from "../../lib/numbers.js";
 import {notify} from "../../lib/notify.jsx";
@@ -262,6 +263,7 @@ const Transactions = () => {
                 <Breadcrumb items={[
                     {label: "همه تراکنش ها", to: ALL_TRANSACTIONS_PATH, icon: HiOutlineArrowsRightLeft},
                 ]}/>
+                <TransactionKpis/>
                 <section className="w-full rounded-xl border border-var-color-57 dark:border-var-color-38 overflow-hidden flex flex-col max-h-full">
                     {/* هدر جدول */}
                     <header className="shrink-0 w-full bg-var-color-00 dark:bg-var-color-43 border-b border-var-color-57 dark:border-var-color-38">
@@ -323,8 +325,11 @@ const Transactions = () => {
                     </header>
 
                     {/* بدنه — اسکرولِ بی‌نهایت روی همین ناحیه */}
-                    <div className="relative flex-1 min-h-0 flex flex-col">
-                        <ScrollContainer viewportRef={viewportRef} hideScrollbars className="flex-1 min-h-0">
+                    {/* کادر دیگر کشیده نمی‌شود: ارتفاعش را خودِ ScrollContainer
+                        با h-transactions-7 تعیین می‌کند، پس مه‌آلودی هم دقیقاً
+                        روی لبهٔ پایینِ همان هفت ردیف می‌نشیند */}
+                    <div className="relative min-h-0 flex flex-col">
+                        <ScrollContainer viewportRef={viewportRef} hideScrollbars className="min-h-0 h-transactions-7">
                             <table className="w-full text-left border-collapse">
                                 <thead className="w-full sticky top-0 z-[1]">
                                     <tr className="w-full grid grid-all-transactions items-center bg-var-color-59 dark:bg-var-color-52 text-sm text-var-color-60 dark:text-var-color-51 border-b border-var-color-57 dark:border-var-color-38 font-IRANSansXFaNumLight px-4 py-3">

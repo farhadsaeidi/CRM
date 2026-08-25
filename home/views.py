@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from core.permissions import IsOwner
 
-from .dashboard import DEFAULT_PERIOD, build_customer_stats, build_dashboard
+from .dashboard import DEFAULT_PERIOD, build_customer_stats, build_dashboard, build_transaction_stats
 from .models import Customer, CustomerOwner, Transaction
 from .serializers import AllTransactionsSerializer, CustomerSerializer, TransactionSerializer
 from .services import (
@@ -165,6 +165,14 @@ class AllTransactionsView(OwnerScopedMixin, generics.ListAPIView):
                 Q(customer__fullname__icontains=query) | Q(customer__phone__icontains=query)
             )
         return queryset
+
+
+# noinspection PyMethodMayBeStatic
+class AllTransactionsStatsView(OwnerScopedMixin, APIView):
+    """شاخص‌های بالای جدولِ همهٔ تراکنش‌ها — قرینهٔ CustomerStatsView."""
+
+    def get(self, request):
+        return Response(build_transaction_stats(request.user))
 
 
 class AllTransactionsSearchView(OwnerScopedMixin, APIView):
