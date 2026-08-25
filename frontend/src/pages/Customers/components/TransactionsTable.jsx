@@ -42,7 +42,7 @@ const formatShamsi = ({year, month, day}) =>
         ? toFaDigits(`${year}/${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}`)
         : "—";
 
-const TransactionsTable = ({customerId, onBack}) => {
+const TransactionsTable = ({customerId, onBack, onChanged}) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const filter = searchParams.get("tfilter") || "all";
 
@@ -365,6 +365,8 @@ const TransactionsTable = ({customerId, onBack}) => {
                     onDone={() => {
                         setModal(null);
                         setRefreshKey((k) => k + 1);
+                        // شاخص‌های بالای جدول بیرونِ این کامپوننت‌اند و خودشان خبر ندارند
+                        onChanged?.();
                     }}
                 />
             )}

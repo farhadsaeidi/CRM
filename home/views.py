@@ -9,7 +9,13 @@ from rest_framework.views import APIView
 
 from core.permissions import IsOwner
 
-from .dashboard import DEFAULT_PERIOD, build_customer_stats, build_dashboard, build_transaction_stats
+from .dashboard import (
+    DEFAULT_PERIOD,
+    build_customer_stats,
+    build_dashboard,
+    build_ledger_stats,
+    build_transaction_stats,
+)
 from .models import Customer, CustomerOwner, Transaction
 from .serializers import AllTransactionsSerializer, CustomerSerializer, TransactionSerializer
 from .services import (
@@ -283,6 +289,18 @@ class TransactionDetailView(OwnerScopedMixin, generics.RetrieveUpdateDestroyAPIV
             remainder, _ = recalculate_account(customer, request.user)
         return Response({"message": "حذف تراکنش با موفقیت انجام شد.", "remainder": remainder},
                         status=status.HTTP_200_OK)
+
+
+class TransactionStatsView(OwnerScopedMixin, APIView):
+    """شاخص‌های بالای دفترِ یک مشتری.
+
+    اسکوپِ دوگانه دارد: مشتریِ مسیر باید مالِ همین مالک باشد، و مجموع‌ها فقط از
+    تراکنش‌های همین مالک می‌آیند.
+    """
+
+    def get(self, request, customer_id):
+        customer = self.get_customer_or_404(customer_id)
+        return Response(build_ledger_stats(request.user, customer))
 
 
 # noinspection PyMethodMayBeStatic

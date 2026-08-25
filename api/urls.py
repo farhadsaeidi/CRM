@@ -28,6 +28,8 @@ ledger_patterns = [
          home_views.TransactionListCreateView.as_view(), name="transactions"),
     path("customers/<int:customer_id>/transactions/search/",
          home_views.TransactionSearchView.as_view(), name="transaction_search"),
+    path("customers/<int:customer_id>/transactions/stats/",
+         home_views.TransactionStatsView.as_view(), name="transaction_stats"),
     path("customers/<int:customer_id>/transactions/<int:pk>/",
          home_views.TransactionDetailView.as_view(), name="transaction_detail"),
     # همهٔ تراکنش‌های مالک، بدونِ قیدِ مشتری — صفحه‌بندی‌شده برای اسکرولِ بی‌نهایت

@@ -17,6 +17,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .models import Customer, CustomerOwner, Transaction
+from .services import account_code_from_remainder
 
 # ---------------------------------------------------------------------------
 
@@ -460,6 +461,49 @@ def build_transaction_stats(user):
             "label": JALALI_MONTHS[busiest["month"] - 1], "year": busiest["year"],
             "count": busiest["n"],
         } if busiest else None,
+        "days_since_last": _days_since(totals["last"], timezone.now()),
+    }
+
+
+# ------------------------------------ شاخص‌های بالای دفترِ یک مشتری
+
+def build_ledger_stats(user, customer):
+    """شاخص‌های حسابِ یک مشتری — بالای جدولِ دفترش.
+
+    ⚠️ چرا endpointِ جدا و نه محاسبه در فرانت؟ فهرستِ دفتر صفحه‌بندی ندارد و
+    فرانت همهٔ ردیف‌ها را در دست دارد، ولی آن فهرست با فیلترِ دوره و جستجوی تاریخ
+    محدود می‌شود. جمع زدنِ همان ردیف‌ها یعنی شاخصی که با هر فیلتر عوض می‌شود —
+    برخلافِ دو صفحهٔ دیگر که شاخص‌هایشان کلِ دفتر را می‌گویند.
+    """
+    transactions = Transaction.objects.filter(owner=user, customer=customer)
+
+    totals = transactions.aggregate(
+        count=Count("id"),
+        debt_total=Coalesce(Sum("debt"), 0),
+        paid_total=Coalesce(Sum("paid"), 0),
+        biggest_debt=Coalesce(Max("debt"), 0),
+        biggest_paid=Coalesce(Max("paid"), 0),
+        last=Max("created"),
+    )
+    count = totals["count"]
+    debt, paid = totals["debt_total"], totals["paid_total"]
+    turnover = debt + paid
+
+    first_row = transactions.order_by("created").values("year", "month", "day").first()
+    last_row = transactions.order_by("-created").values("year", "month", "day").first()
+
+    return {
+        "balance": paid - debt,
+        "code": account_code_from_remainder(paid - debt),
+        "total": count,
+        "debt": {"amount": debt, "rows": transactions.filter(debt__gt=0).count()},
+        "paid": {"amount": paid, "rows": transactions.filter(paid__gt=0).count()},
+        "turnover": turnover,
+        "average": round(turnover / count) if count else 0,
+        "largest": max(totals["biggest_debt"], totals["biggest_paid"]),
+        "rate": _collection_rate(debt, paid),
+        "first": first_row,
+        "last": last_row,
         "days_since_last": _days_since(totals["last"], timezone.now()),
     }
 

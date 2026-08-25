@@ -7,6 +7,9 @@ const periodQuery = (filter) => (filter && filter !== "all" ? `?filter=${encodeU
 export const transactionsApi = {
     // {customer: {...}, transactions: [{id, debt, paid, created, year, month, day}], remainder}
     list: (customerId, filter) => api.get(`/customers/${customerId}/transactions/${periodQuery(filter)}`),
+    // شاخص‌های بالای دفتر — عمداً کلِ حساب را می‌گویند، نه نتیجهٔ فیلترِ دوره و
+    // جستجوی تاریخ؛ به همین دلیل از سرور می‌آیند نه از جمع زدنِ همان فهرست
+    stats: (customerId) => api.get(`/customers/${customerId}/transactions/stats/`),
     // جستجوی تاریخ شمسی POST است نه GET — ساختارِ تودرتوی سال/ماه/روز در
     // query string خوانا نمی‌شود
     search: (customerId, body) => api.post(`/customers/${customerId}/transactions/search/`, body),

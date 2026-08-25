@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-25 13:54 · کامیت `ed01491`
+آخرین تولید: 2026-08-25 13:58 · کامیت `82a238e`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 31 | 2378 |
-| فرانت‌اند | 80 | 7472 |
+| بک‌اند | 31 | 2442 |
+| فرانت‌اند | 81 | 7579 |
 
 اپ‌های جنگو: account api home
 
@@ -26,13 +26,13 @@
 | `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:229 | [AllowAny] |
 | `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:290 | [AllowAny] |
 | `/api/auth/change-password/` | ChangePasswordView | account/views.py:325 | _(پیش‌فرض DRF)_ |
-| `/api/dashboard/` | DashboardView | home/views.py:117 | _(پیش‌فرض DRF)_ |
-| `/api/customers/` | CustomerListCreateView | home/views.py:50 | _(پیش‌فرض DRF)_ |
-| `/api/customers/stats/` | CustomerStatsView | home/views.py:87 | _(پیش‌فرض DRF)_ |
-| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:98 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/` | AllTransactionsView | home/views.py:142 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:178 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/stats/` | AllTransactionsStatsView | home/views.py:171 | _(پیش‌فرض DRF)_ |
+| `/api/dashboard/` | DashboardView | home/views.py:123 | _(پیش‌فرض DRF)_ |
+| `/api/customers/` | CustomerListCreateView | home/views.py:56 | _(پیش‌فرض DRF)_ |
+| `/api/customers/stats/` | CustomerStatsView | home/views.py:93 | _(پیش‌فرض DRF)_ |
+| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:104 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/` | AllTransactionsView | home/views.py:148 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:184 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/stats/` | AllTransactionsStatsView | home/views.py:177 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -95,21 +95,21 @@
     - `TransactionAdmin` :22
 - **./home/apps.py** (5 خط، 1 نماد)
     - `HomeConfig` :4
-- **./home/dashboard.py** (489 خط، 20 نماد)
-    - `_today_jalali` :51
-    - `_shift_month` :55
-    - `_period_queries` :61
-    - `_delta_percent` :97
-    - `_sums` :104
-    - `_collection_rate` :110
-    - `_kpis` :119
-    - `_trend` :146
-    - `_customer_rows` :181
-    - `_days_since` :200
-    - `_customer_tiles` :204
-    - `_aging` :275
-    - `_concentration` :292
-    - `_recent` :309
+- **./home/dashboard.py** (533 خط، 21 نماد)
+    - `_today_jalali` :52
+    - `_shift_month` :56
+    - `_period_queries` :62
+    - `_delta_percent` :98
+    - `_sums` :105
+    - `_collection_rate` :111
+    - `_kpis` :120
+    - `_trend` :147
+    - `_customer_rows` :182
+    - `_days_since` :201
+    - `_customer_tiles` :205
+    - `_aging` :276
+    - `_concentration` :293
+    - `_recent` :310
 - **./home/management/commands/seed_demo.py** (174 خط، 7 نماد)
     - `Command` :50
 - **./home/models.py** (110 خط، 12 نماد)
@@ -131,20 +131,21 @@
     - `_to_int` :85
     - `_field_query` :95
     - `build_date_search_query` :133
-- **./home/views.py** (316 خط، 33 نماد)
-    - `CustomerPagination` :24
-    - `OwnerScopedMixin` :33
-    - `CustomerListCreateView` :50
-    - `CustomerStatsView` :87
-    - `CustomerDetailView` :98
-    - `DashboardView` :117
-    - `AllTransactionsPagination` :131
-    - `AllTransactionsView` :142
-    - `AllTransactionsStatsView` :171
-    - `AllTransactionsSearchView` :178
-    - `TransactionListCreateView` :206
-    - `TransactionDetailView` :260
-    - `TransactionSearchView` :289
+- **./home/views.py** (334 خط، 35 نماد)
+    - `CustomerPagination` :30
+    - `OwnerScopedMixin` :39
+    - `CustomerListCreateView` :56
+    - `CustomerStatsView` :93
+    - `CustomerDetailView` :104
+    - `DashboardView` :123
+    - `AllTransactionsPagination` :137
+    - `AllTransactionsView` :148
+    - `AllTransactionsStatsView` :177
+    - `AllTransactionsSearchView` :184
+    - `TransactionListCreateView` :212
+    - `TransactionDetailView` :266
+    - `TransactionStatsView` :294
+    - `TransactionSearchView` :307
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
@@ -156,8 +157,9 @@
     - ChatPane
     - ChatSidebar
     - Sidebar
-- **frontend/src/pages/Customers/CustomerLedger.jsx** (34 خط)
+- **frontend/src/pages/Customers/CustomerLedger.jsx** (41 خط)
     - Breadcrumb
+    - LedgerKpis
     - TransactionsTable
 - **frontend/src/pages/Customers/Customers.jsx** (32 خط)
     - Breadcrumb
@@ -205,5 +207,5 @@
 
 - **dashboard.js**: get
 
-- **transactions.js**: list search create update remove list stats search
+- **transactions.js**: list stats search create update remove list stats search
 
