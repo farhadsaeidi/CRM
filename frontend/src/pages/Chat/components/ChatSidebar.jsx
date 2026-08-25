@@ -41,7 +41,7 @@ const ChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete
         <div className="shrink-0 px-2.5 pb-2">
             <button type="button" onClick={onNew}
                     className="w-full flex items-center justify-center gap-2 h-9.5 rounded-xl text-[13px] cursor-pointer
-                               font-IRANSansXFaNumMedium bg-var-color-15 text-var-color-00
+                               font-IRANSansXFaNumMedium bg-var-color-15 text-var-color-11
                                hover:brightness-110 active:scale-[0.98] transition-all duration-200">
                 <FiPlus className="w-4.5 h-4.5"/> گفتگوی جدید
             </button>

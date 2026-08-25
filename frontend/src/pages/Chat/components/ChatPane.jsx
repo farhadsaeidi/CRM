@@ -181,7 +181,7 @@ const ChatPane = ({conversation, onPushMessage}) => {
                             <button type="button" aria-label="ارسال" disabled={!draft.trim() || pending}
                                     onClick={() => send()}
                                     className="w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all duration-200
-                                               bg-var-color-15 text-var-color-00
+                                               bg-var-color-15 text-var-color-11
                                                enabled:hover:brightness-110 enabled:active:scale-90
                                                disabled:opacity-35 disabled:cursor-default cursor-pointer">
                                 <FiArrowUp className="w-4.5 h-4.5"/>

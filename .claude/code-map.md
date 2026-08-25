@@ -4,11 +4,11 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-25 14:07 · کامیت `dec258c`
+آخرین تولید: 2026-08-25 16:42 · کامیت `76fc0d7`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 31 | 2442 |
+| بک‌اند | 40 | 3578 |
 | فرانت‌اند | 82 | 7617 |
 
 اپ‌های جنگو: account api home
@@ -68,6 +68,10 @@
     - `_run_with_timeout` :36
     - `send_sms` :45
     - `send_token_sms` :65
+- **./account/tests.py** (221 خط، 27 نماد)
+    - `RegisterLoginTests` :21
+    - `OtpTests` :95
+    - `PasswordTests` :171
 - **./account/views.py** (353 خط، 24 نماد)
     - `normalize_digits` :35
     - `to_persian_digits` :42
@@ -131,6 +135,33 @@
     - `_to_int` :85
     - `_field_query` :95
     - `build_date_search_query` :133
+- **./home/tests/factories.py** (68 خط، 6 نماد)
+    - `next_phone` :18
+    - `make_owner` :22
+    - `make_customer` :31
+    - `jalali_to_datetime` :42
+    - `make_transaction` :53
+    - `today_jalali` :67
+- **./home/tests/test_customers_api.py** (125 خط، 16 نماد)
+    - `CustomerListTests` :11
+    - `CustomerWriteTests` :62
+- **./home/tests/test_scoping.py** (167 خط، 18 نماد)
+    - `ScopingTests` :18
+    - `AuthenticationRequiredTests` :140
+- **./home/tests/test_seed_demo.py** (86 خط، 11 نماد)
+    - `SeedDemoTests` :18
+- **./home/tests/test_services.py** (96 خط، 17 نماد)
+    - `AccountCodeTests` :19
+    - `RemainderTests` :26
+    - `DateSearchQueryTests` :60
+- **./home/tests/test_stats_api.py** (193 خط، 25 نماد)
+    - `DashboardTests` :14
+    - `CustomerStatsTests` :125
+    - `TransactionStatsTests` :151
+- **./home/tests/test_transactions_api.py** (180 خط، 32 نماد)
+    - `LedgerTests` :11
+    - `DateSearchTests` :82
+    - `AllTransactionsTests` :132
 - **./home/views.py** (334 خط، 35 نماد)
     - `CustomerPagination` :30
     - `OwnerScopedMixin` :39

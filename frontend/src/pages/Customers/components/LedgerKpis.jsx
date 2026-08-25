@@ -31,7 +31,7 @@ const LedgerKpis = ({customerId, refreshKey = 0}) => {
 
     if (!stats) {
         return (
-            <div className="shrink-0 mb-3 grid grid-cols-2 xl:grid-cols-4 gap-3">
+            <div className="shrink-0 mb-3 grid grid-cols-1 2xs:grid-cols-2 xl:grid-cols-4 gap-3">
                 {[0, 1, 2, 3].map((index) => (
                     <div key={index}
                          style={{animationDelay: `${index * 45}ms`}}
@@ -50,7 +50,7 @@ const LedgerKpis = ({customerId, refreshKey = 0}) => {
     const settled = stats.balance === 0;
 
     return (
-        <div className="shrink-0 mb-3 grid grid-cols-2 xl:grid-cols-4 gap-3">
+        <div className="shrink-0 mb-3 grid grid-cols-1 2xs:grid-cols-2 xl:grid-cols-4 gap-3">
             <KpiCard
                 title="ماندهٔ حساب" delay={45}
                 value={Math.abs(stats.balance)}
