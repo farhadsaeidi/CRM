@@ -64,6 +64,9 @@ const addressSchema = z
     .max(300, "فیلد آدرس باید حداکثر ۳۰۰ کاراکتر داشته باشد.");
 
 export const profileSchema = z.object({
+    // سقفِ ۴۰ کاراکتر از خودِ پیامکِ یادآوری می‌آید، نه سلیقه — نامِ بلندتر پیامک
+    // را بی‌دلیل چندبخشی می‌کند
+    business_name: z.string().trim().max(40, "نام کسب‌وکار باید حداکثر ۴۰ کاراکتر باشد."),
     fullname: z
         .string({required_error: "فیلد نام و نام خانوادگی الزامی است."})
         .trim()

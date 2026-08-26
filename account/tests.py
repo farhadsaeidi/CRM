@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from account.models import SMSLog
+from account.services import _delivery_target
 from account.views import OTP_EXPIRY_SECONDS, OTP_MAX_ATTEMPTS
 
 User = get_user_model()
@@ -211,12 +212,16 @@ class PasswordTests(APITestCase):
         self.assertTrue(SMSLog.objects.exists())
 
     def test_forget_password_never_logs_the_new_password(self):
+        """قرارداد: بدنهٔ لاگ فقط نامِ الگو و رویداد است، هیچ‌چیزِ دیگری.
+
+        بررسیِ «کلمهٔ password در متن نیست» کافی نبود — نامِ خودِ الگو
+        (`crm-forget-password`) همان کلمه را دارد. پس بدنه را دقیق می‌سنجیم.
+        """
         self.client.post(reverse("api:forget_password"), {"otpPhone": "09121234567"}, format="json")
-        for log in SMSLog.objects.all():
-            self.assertNotIn("password", log.body.lower())
-            # طولِ رمزِ ساخته‌شده مشخص نیست، پس صرفِ نبودِ کلیدواژه کافی نیست:
-            # قرارداد این است که فقط نامِ الگو و رویداد ثبت شود
-            self.assertLess(len(log.body), 200)
+        logs = list(SMSLog.objects.all())
+        self.assertTrue(logs)
+        for log in logs:
+            self.assertEqual(log.body, "[crm-forget-password] ارسال شد.")
 
 
 @override_settings(SMS_DEV_MODE=True)
@@ -274,3 +279,88 @@ class ProfileTests(APITestCase):
         self.client.patch(self.url, {"fullname": "دستکاری شده"}, format="json")
         other.refresh_from_db()
         self.assertEqual(other.fullname, "دیگری")
+
+
+@override_settings(SMS_DEV_MODE=True)
+class BusinessNameTests(APITestCase):
+    """نامِ کسب‌وکار — در ثبت‌نام نیست و از پروفایل ذخیره می‌شود."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            fullname="کاربر", phone="09121234567", password="test1234",
+        )
+        self.client.force_login(self.user)
+
+    def test_a_new_owner_starts_without_one(self):
+        self.assertEqual(self.user.business_name, "")
+
+    def test_it_is_saved_from_the_profile_endpoint(self):
+        response = self.client.patch(reverse("api:profile"),
+                                     {"business_name": "سوپرمارکت رضا"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["userData"]["business_name"], "سوپرمارکت رضا")
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.business_name, "سوپرمارکت رضا")
+
+    def test_it_is_capped_at_forty_characters(self):
+        """سقف از خودِ پیامک می‌آید: نامِ بلندتر پیامک را چندبخشی می‌کند."""
+        response = self.client.patch(reverse("api:profile"),
+                                     {"business_name": "ب" * 41}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_it_may_be_cleared(self):
+        self.user.business_name = "سوپرمارکت رضا"
+        self.user.save(update_fields=["business_name"])
+        self.client.patch(reverse("api:profile"), {"business_name": ""}, format="json")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.business_name, "")
+
+    def test_it_reaches_the_client_through_me(self):
+        """فرانت از همین‌جا می‌فهمد باید مودالِ گرفتنِ نام را باز کند یا نه."""
+        self.assertIn("business_name", self.client.get(reverse("api:me")).json())
+
+
+class SmsDeliveryTargetTests(APITestCase):
+    """بازهدایتِ گیرندهٔ پیامک در محیطِ آزمایش.
+
+    کاوه‌نگار فقط به شماره‌های تاییدشدهٔ صاحب حساب ارسال دارد و شماره‌های دفترِ
+    آزمایشی ساختگی‌اند، پس همه‌چیز به یک شمارهٔ واقعی هدایت می‌شود.
+    """
+
+    @override_settings(SMS_TEST_RECIPIENT="")
+    def test_without_an_override_the_real_number_is_used(self):
+        self.assertEqual(_delivery_target("09121234567"), "09121234567")
+
+    @override_settings(SMS_TEST_RECIPIENT="09177969417")
+    def test_with_an_override_every_message_goes_to_that_number(self):
+        self.assertEqual(_delivery_target("09121234567"), "09177969417")
+        self.assertEqual(_delivery_target("09129999999"), "09177969417")
+
+    @override_settings(SMS_TEST_RECIPIENT="  09177969417  ")
+    def test_the_override_is_trimmed(self):
+        self.assertEqual(_delivery_target("09121234567"), "09177969417")
+
+    @override_settings(SMS_DEV_MODE=True, SMS_TEST_RECIPIENT="09177969417")
+    def test_the_log_keeps_the_real_recipient_not_the_override(self):
+        """وگرنه لاگ می‌گفت همهٔ پیامک‌ها برای یک نفر بوده."""
+        user = User.objects.create_user(
+            fullname="کاربر", phone="09121234567", password="test1234",
+        )
+        self.client.post(reverse("api:otp_phone"), {"otpPhone": user.phone}, format="json")
+        self.assertTrue(SMSLog.objects.filter(to_phone="09121234567").exists())
+
+    @override_settings(SMS_DEV_MODE=True)
+    def test_an_unknown_phone_never_reaches_the_sender(self):
+        """بازهدایت جای بررسیِ «این شماره در سیستم هست؟» را نمی‌گیرد."""
+        response = self.client.post(reverse("api:otp_phone"),
+                                    {"otpPhone": "09129999999"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertFalse(SMSLog.objects.exists())
+
+    @override_settings(SMS_DEV_MODE=True)
+    def test_forget_password_also_checks_the_phone_first(self):
+        response = self.client.post(reverse("api:forget_password"),
+                                    {"otpPhone": "09129999999"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertFalse(SMSLog.objects.exists())

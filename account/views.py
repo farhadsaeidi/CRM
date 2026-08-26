@@ -309,7 +309,7 @@ class ForgetPasswordView(APIView):
             # اول ارسالِ پیامک، بعد تغییرِ رمز — اگر ارسال بشکند کاربر با رمزِ قبلی
             # می‌ماند. برعکسش یعنی قفل‌شدنِ کاربر بیرونِ حسابِ خودش.
             try:
-                send_token_sms(phone=phone, template="crm-forget-pass", token=token, event="forget_password")
+                send_token_sms(phone=phone, template="crm-forget-password", token=token, event="forget_password")
             except OtpSendError as error:
                 return Response({"message": error.message}, status=error.status_code)
             user.set_password(token)

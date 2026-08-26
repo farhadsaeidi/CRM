@@ -4,7 +4,13 @@ import Header from "../common/Header.jsx";
 import Footer from "../common/Footer.jsx";
 import CustomerModal from "../../pages/Customers/components/CustomerModal.jsx";
 import GuideModal from "../common/GuideModal.jsx";
-import {CUSTOMER_CREATED_EVENT, OPEN_GUIDE_EVENT, OPEN_NEW_CUSTOMER_EVENT} from "../../lib/events.js";
+import BusinessNameModal from "../common/BusinessNameModal.jsx";
+import {
+    CUSTOMER_CREATED_EVENT,
+    OPEN_BUSINESS_NAME_EVENT,
+    OPEN_GUIDE_EVENT,
+    OPEN_NEW_CUSTOMER_EVENT,
+} from "../../lib/events.js";
 
 const DEFAULT_TITLE = "سامانه مدیریت مشتریان";
 
@@ -16,6 +22,7 @@ const RootLayout = () => {
     const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     // راهنما هم همین‌جاست: از منوی فوتر باز می‌شود و باید روی هر صفحه‌ای بیاید
     const [guideOpen, setGuideOpen] = useState(false);
+    const [businessOpen, setBusinessOpen] = useState(false);
     // useMatches لیستِ روت‌های فعال را می‌دهد؛ handleها از ریشه تا برگ روی هم می‌ریزند
     const handle = matches.reduce((merged, match) => ({...merged, ...(match.handle ?? {})}), {});
 
@@ -30,11 +37,14 @@ const RootLayout = () => {
     useEffect(() => {
         const openCustomer = () => setNewCustomerOpen(true);
         const openGuide = () => setGuideOpen(true);
+        const openBusiness = () => setBusinessOpen(true);
         window.addEventListener(OPEN_NEW_CUSTOMER_EVENT, openCustomer);
         window.addEventListener(OPEN_GUIDE_EVENT, openGuide);
+        window.addEventListener(OPEN_BUSINESS_NAME_EVENT, openBusiness);
         return () => {
             window.removeEventListener(OPEN_NEW_CUSTOMER_EVENT, openCustomer);
             window.removeEventListener(OPEN_GUIDE_EVENT, openGuide);
+            window.removeEventListener(OPEN_BUSINESS_NAME_EVENT, openBusiness);
         };
     }, []);
 
@@ -62,6 +72,7 @@ const RootLayout = () => {
             <Footer/>
 
             <GuideModal open={guideOpen} onClose={() => setGuideOpen(false)}/>
+            <BusinessNameModal open={businessOpen} onClose={() => setBusinessOpen(false)}/>
 
             {/* فقط وقتی باز است mount می‌شود تا state داخلیِ فرم هر بار از نو ساخته
                 شود — همان دلیلی که پنلِ جستجوی تاریخ هم شرطی رندر می‌شود */}

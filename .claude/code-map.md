@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-26 04:42 · کامیت `a50a4e5`
+آخرین تولید: 2026-08-26 05:47 · کامیت `827b9c8`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 42 | 4038 |
-| فرانت‌اند | 86 | 8517 |
+| بک‌اند | 42 | 4157 |
+| فرانت‌اند | 87 | 8732 |
 
 اپ‌های جنگو: account api home
 
@@ -42,8 +42,8 @@
 
 - `account.MyUserManager` — 0 فیلد — ./account/models.py:10
 - `account.Roles` — 0 فیلد — ./account/models.py:40
-- `account.MyUser` — 10 فیلد — ./account/models.py:45
-- `account.SMSLog` — 6 فیلد — ./account/models.py:97
+- `account.MyUser` — 11 فیلد — ./account/models.py:45
+- `account.SMSLog` — 6 فیلد — ./account/models.py:103
 - `home.AccountCode` — 0 فیلد — ./home/models.py:7
 - `home.Customer` — 5 فیلد — ./home/models.py:17
 - `home.CustomerOwner` — 3 فیلد — ./home/models.py:55
@@ -56,27 +56,30 @@
     - `SMSLogAdmin` :14
 - **./account/apps.py** (5 خط، 1 نماد)
     - `AccountConfig` :4
-- **./account/models.py** (128 خط، 15 نماد)
+- **./account/models.py** (134 خط، 15 نماد)
     - `MyUserManager` :10
     - `upload_file` :29
     - `Roles` :40
     - `MyUser` :45
-    - `SMSLog` :97
-- **./account/serializers.py** (34 خط، 4 نماد)
+    - `SMSLog` :103
+- **./account/serializers.py** (35 خط، 4 نماد)
     - `UserSerializer` :8
     - `ProfileUpdateSerializer` :18
-- **./account/services.py** (112 خط، 8 نماد)
+- **./account/services.py** (128 خط، 9 نماد)
     - `OtpSendError` :19
     - `_dev_mode` :28
     - `_api_key` :32
     - `_run_with_timeout` :36
-    - `send_sms` :45
-    - `send_token_sms` :65
-- **./account/tests.py** (276 خط، 36 نماد)
-    - `RegisterLoginTests` :21
-    - `OtpTests` :93
-    - `PasswordTests` :169
-    - `ProfileTests` :223
+    - `_delivery_target` :45
+    - `send_sms` :56
+    - `send_token_sms` :76
+- **./account/tests.py** (366 خط، 50 نماد)
+    - `RegisterLoginTests` :22
+    - `OtpTests` :94
+    - `PasswordTests` :170
+    - `ProfileTests` :228
+    - `BusinessNameTests` :285
+    - `SmsDeliveryTargetTests` :324
 - **./account/views.py** (371 خط، 26 نماد)
     - `normalize_digits` :36
     - `to_persian_digits` :43
@@ -213,7 +216,7 @@
     - HomeSidebar
     - Sidebar
 - **frontend/src/pages/NotFound/NotFound.jsx** (27 خط)
-- **frontend/src/pages/Profile/Profile.jsx** (354 خط)
+- **frontend/src/pages/Profile/Profile.jsx** (384 خط)
     - Breadcrumb
     - ChangePasswordModal
     - ScrollContainer
@@ -233,9 +236,10 @@
 
 ### کامپوننت‌های مشترک
 - `Breadcrumb` — 72 خط
+- `BusinessNameModal` — 166 خط
 - `ChangePasswordModal` — 180 خط
 - `CustomTooltip` — 54 خط
-- `Footer` — 454 خط
+- `Footer` — 455 خط
 - `GuideModal` — 238 خط
 - `Header` — 42 خط
 - `KpiCard` — 116 خط

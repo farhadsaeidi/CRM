@@ -3,9 +3,8 @@ import {useLocation, useMatch, useNavigate, useSearchParams} from "react-router"
 import {HiOutlineSearch} from "react-icons/hi";
 import {IoIosClose} from "react-icons/io";
 import {FaPowerOff, FaRegUser} from "react-icons/fa6";
-import {FiChevronUp, FiFileText, FiHelpCircle, FiLock} from "react-icons/fi";
+import {FiChevronUp, FiFileText, FiHelpCircle, FiLock, FiMessageSquare} from "react-icons/fi";
 import {TbFileSpreadsheet} from "react-icons/tb";
-import {FiMessageSquare} from "react-icons/fi";
 import WindowsIcon from "./WindowsIcon.jsx";
 import MenuItem from "./MenuItem.jsx";
 import ChangePasswordModal from "./ChangePasswordModal.jsx";
@@ -16,7 +15,7 @@ import {authApi} from "../../api/auth.js";
 import {notify} from "../../lib/notify.jsx";
 import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH, PROFILE_PATH, STATEMENT_PATH} from "../../lib/paths.js";
 import {excelExportUrl} from "../../api/reports.js";
-import {OPEN_GUIDE_EVENT} from "../../lib/events.js";
+import {OPEN_BUSINESS_NAME_EVENT, OPEN_GUIDE_EVENT} from "../../lib/events.js";
 
 // جستجوی تاریخِ تراکنش از همین نوار اجرا می‌شود ولی نتیجه‌اش را جدولِ تراکنش‌ها
 // نشان می‌دهد؛ فوتر در RootLayout است و جدول فرزندِ Outlet، پس رویدادِ سراسری
@@ -235,13 +234,6 @@ const Footer = () => {
         }
     };
 
-    // آیتم‌های منوی دراپ‌داون — همان سه گزینهٔ پروژهٔ CustomerManagement.
-    // هنوز صفحه‌ای پشتشان نیست، پس فعلاً پیغام می‌دهند نه لینکِ مرده.
-    const soon = (label) => () => {
-        setIsDropdownMenuOpen(false);
-        notify(`${label} به‌زودی اضافه می‌شود.`, "info");
-    };
-
     const dropdownItems = [
         {
             id: "billItem", icon: FiFileText, text: "صورتحساب مشتریان",
@@ -252,7 +244,16 @@ const Footer = () => {
         },
         {
             id: "smsItem", icon: FiMessageSquare, text: "یادآوری پیامکی به بدهکاران",
-            onClick: soon("یادآوری پیامکی"),
+            // بدونِ نامِ کسب‌وکار متنِ پیامک ناقص است، پس اول همان پرسیده می‌شود.
+            // وقتی ذخیره شد، دفعهٔ بعد مستقیم سراغِ خودِ ارسال می‌رویم.
+            onClick: () => {
+                setIsDropdownMenuOpen(false);
+                if (!user?.business_name) {
+                    window.dispatchEvent(new CustomEvent(OPEN_BUSINESS_NAME_EVENT));
+                    return;
+                }
+                notify("ارسال پیامک یادآوری به‌زودی فعال می‌شود.", "info");
+            },
         },
         {
             id: "excelItem", icon: TbFileSpreadsheet, text: "خروجی اکسل",

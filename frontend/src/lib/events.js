@@ -20,3 +20,7 @@ export const OPEN_NEW_CUSTOMER_EVENT = "crm:open-new-customer";
 // راهنمای نرم‌افزار از منوی فوتر باز می‌شود ولی خودِ مودال در RootLayout است،
 // چون باید روی هر صفحه‌ای که کاربر هست بیاید.
 export const OPEN_GUIDE_EVENT = "crm:open-guide";
+
+// نامِ کسب‌وکار فقط بارِ اول پرسیده می‌شود — موقعِ ارسالِ پیامکِ یادآوری. مودالش
+// هم مثلِ بقیه در RootLayout است تا از هر صفحه‌ای باز شود.
+export const OPEN_BUSINESS_NAME_EVENT = "crm:open-business-name";

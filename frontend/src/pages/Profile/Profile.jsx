@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {FiCamera, FiLock, FiLogOut, FiMapPin, FiSave, FiUser, FiUsers} from "react-icons/fi";
+import {FiCamera, FiLock, FiLogOut, FiMapPin, FiSave, FiShoppingBag, FiUser, FiUsers} from "react-icons/fi";
 import {HiOutlineArrowsRightLeft, HiOutlineBanknotes} from "react-icons/hi2";
 import {GrPhone} from "react-icons/gr";
 import {FaCrown} from "react-icons/fa6";
@@ -34,6 +34,7 @@ const Profile = () => {
 
     const [fullname, setFullname] = useState(user?.fullname ?? "");
     const [address, setAddress] = useState(user?.address ?? "");
+    const [businessName, setBusinessName] = useState(user?.business_name ?? "");
     const [imageFile, setImageFile] = useState(null);
     const [preview, setPreview] = useState(null);
     const [errors, setErrors] = useState({});
@@ -78,11 +79,12 @@ const Profile = () => {
 
     const dirty = fullname !== (user?.fullname ?? "") ||
         address !== (user?.address ?? "") ||
+        businessName !== (user?.business_name ?? "") ||
         imageFile !== null;
 
     const onSubmit = async (event) => {
         event.preventDefault();
-        const parsed = profileSchema.safeParse({fullname, address});
+        const parsed = profileSchema.safeParse({fullname, address, business_name: businessName});
         if (!parsed.success) {
             const fieldErrors = {};
             for (const issue of parsed.error.issues) fieldErrors[issue.path[0]] = issue.message;
@@ -100,6 +102,7 @@ const Profile = () => {
                 payload = new FormData();
                 payload.append("fullname", parsed.data.fullname);
                 payload.append("address", parsed.data.address);
+                payload.append("business_name", parsed.data.business_name);
                 payload.append("image", imageFile);
             }
             const res = await authApi.updateProfile(payload);
@@ -221,6 +224,33 @@ const Profile = () => {
                                 </div>
                                 {errors.fullname && (
                                     <p className="m-0 text-[11.5px] text-var-color-28">{errors.fullname}</p>
+                                )}
+                            </div>
+
+                            {/* نامِ کسب‌وکار — همان چیزی که در متنِ پیامکِ یادآوری
+                                برای مشتری فرستاده می‌شود */}
+                            <div className="flex flex-col gap-1.5">
+                                <label htmlFor="profile-business"
+                                       className="text-[13px] text-var-color-05 dark:text-var-color-39">
+                                    نام کسب‌وکار <span className="text-var-color-04">(اختیاری)</span>
+                                </label>
+                                <div className="relative w-full">
+                                    <FiShoppingBag className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4
+                                                              text-var-color-15 pointer-events-none"/>
+                                    <input id="profile-business" type="text" value={businessName}
+                                           maxLength={40}
+                                           placeholder="مثلاً: سوپرمارکت رضا"
+                                           onChange={(e) => {
+                                               setBusinessName(e.target.value);
+                                               setErrors((prev) => ({...prev, business_name: ""}));
+                                           }}
+                                           className={inputClass("business_name")}/>
+                                </div>
+                                <p className="m-0 text-[11.5px] text-var-color-04 dark:text-var-color-39">
+                                    در پیامکِ یادآوری به بدهکاران استفاده می‌شود تا مشتری بداند از طرفِ کیست.
+                                </p>
+                                {errors.business_name && (
+                                    <p className="m-0 text-[11.5px] text-var-color-28">{errors.business_name}</p>
                                 )}
                             </div>
 

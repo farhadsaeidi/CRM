@@ -42,6 +42,17 @@ def _run_with_timeout(func, params):
         pool.shutdown(wait=False)
 
 
+def _delivery_target(phone):
+    """شماره‌ای که پیامک واقعاً به آن می‌رود.
+
+    با `SMS_TEST_RECIPIENT` همه‌چیز به همان یک شماره می‌رسد، ولی متنِ پیامک با
+    دادهٔ گیرندهٔ اصلی ساخته شده و در `SMSLog` هم شمارهٔ اصلی ثبت می‌شود — وگرنه
+    لاگ می‌گفت همهٔ پیامک‌ها برای یک نفر بوده.
+    """
+    override = str(getattr(settings, "SMS_TEST_RECIPIENT", "") or "").strip()
+    return override or phone
+
+
 def send_sms(phone, body, event=""):
     """ارسال پیامک ساده با ثبت لاگ. در حالت توسعه فقط لاگ می‌شود.
 
@@ -53,7 +64,7 @@ def send_sms(phone, body, event=""):
     try:
         from kavenegar import KavenegarAPI
         api = KavenegarAPI(_api_key())
-        _run_with_timeout(api.sms_send, {"receptor": phone, "message": body})
+        _run_with_timeout(api.sms_send, {"receptor": _delivery_target(phone), "message": body})
         SMSLog.objects.create(to_phone=phone, body=body, event=event, status=SMSLog.SendStatus.SENT)
         return True
     except Exception as exc:  # noqa: BLE001 — خطای پیامک نباید فرایند اصلی را بشکند
@@ -62,7 +73,7 @@ def send_sms(phone, body, event=""):
         return False
 
 
-def send_token_sms(phone, template, token, event=""):
+def send_token_sms(phone, template, token, event="", **extra_tokens):
     """ارسال پیامکِ الگودار (verify_lookup) برای کد یکبار مصرف و رمز جدید.
 
     برخلاف send_sms اینجا خطا پرتاب می‌شود، چون اگر کد به دست کاربر نرسد ادامهٔ
@@ -82,10 +93,15 @@ def send_token_sms(phone, template, token, event=""):
 
     api = KavenegarAPI(_api_key())
     params = {
-        "receptor": phone,   # گیرنده
+        "receptor": _delivery_target(phone),
         "template": template,  # الگویی که داخل پنل کاوه‌نگار ساخته شده
-        "token": token,      # کد یکبار مصرف یا رمز جدید
+        "token": token,
     }
+    # ⚠️ `token` و `token2` و `token3` **فاصله نمی‌پذیرند** (خطای ۴۳۱). هر مقداری
+    # که فاصله دارد — مثل نامِ کسب‌وکار — باید در `token10` یا `token20` برود.
+    for name, value in extra_tokens.items():
+        if value not in (None, ""):
+            params[name] = value
     sender = str(getattr(settings, "KAVENEGAR_SENDER", "")).strip()
     if sender:
         params["sender"] = sender

@@ -55,6 +55,12 @@ class MyUser(AbstractBaseUser):
     # آدرس در ثبت‌نام گرفته نمی‌شود و جایش صفحهٔ پروفایل است — ۱۲ کاربرِ
     # منتقل‌شده از پروژهٔ قدیمی هم آدرس ندارند
     address = models.CharField(max_length=300, blank=True, verbose_name="نشانی")
+    # نامِ کسب‌وکار — در ثبت‌نام گرفته نمی‌شود و اولین بار موقعِ ارسالِ پیامکِ
+    # یادآوری پرسیده می‌شود. سقفِ ۴۰ کاراکتر از خودِ پیامک می‌آید: نامِ بلندتر هم
+    # توکن را به سقفِ کاوه‌نگار نزدیک می‌کند هم پیامک را بی‌دلیل چندبخشی.
+    # نوعِ کسب‌وکار داخلِ خودِ نام است («سوپرمارکت رضا»)، پس متنِ پیامک نباید
+    # کلمهٔ نوع را جلویش بگذارد.
+    business_name = models.CharField(max_length=40, blank=True, verbose_name="نام کسب‌وکار")
     created = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)  # لازمه ورود به پنل ادمین جنگو
