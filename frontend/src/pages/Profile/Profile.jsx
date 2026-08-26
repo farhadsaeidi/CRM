@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {FiCamera, FiLock, FiLogOut, FiMapPin, FiSave, FiShoppingBag, FiUser, FiUsers} from "react-icons/fi";
+import {FiCamera, FiLock, FiLogOut, FiSave, FiShoppingBag, FiUser, FiUsers} from "react-icons/fi";
 import {HiOutlineArrowsRightLeft, HiOutlineBanknotes} from "react-icons/hi2";
 import {GrPhone} from "react-icons/gr";
 import {FaCrown} from "react-icons/fa6";
@@ -33,7 +33,6 @@ const Profile = () => {
     const fileRef = useRef(null);
 
     const [fullname, setFullname] = useState(user?.fullname ?? "");
-    const [address, setAddress] = useState(user?.address ?? "");
     const [businessName, setBusinessName] = useState(user?.business_name ?? "");
     const [imageFile, setImageFile] = useState(null);
     const [preview, setPreview] = useState(null);
@@ -78,13 +77,12 @@ const Profile = () => {
     };
 
     const dirty = fullname !== (user?.fullname ?? "") ||
-        address !== (user?.address ?? "") ||
         businessName !== (user?.business_name ?? "") ||
         imageFile !== null;
 
     const onSubmit = async (event) => {
         event.preventDefault();
-        const parsed = profileSchema.safeParse({fullname, address, business_name: businessName});
+        const parsed = profileSchema.safeParse({fullname, business_name: businessName});
         if (!parsed.success) {
             const fieldErrors = {};
             for (const issue of parsed.error.issues) fieldErrors[issue.path[0]] = issue.message;
@@ -101,7 +99,6 @@ const Profile = () => {
             if (imageFile) {
                 payload = new FormData();
                 payload.append("fullname", parsed.data.fullname);
-                payload.append("address", parsed.data.address);
                 payload.append("business_name", parsed.data.business_name);
                 payload.append("image", imageFile);
             }
@@ -275,26 +272,6 @@ const Profile = () => {
                                 </p>
                             </div>
 
-                            <div className="flex flex-col gap-1.5">
-                                <label htmlFor="profile-address"
-                                       className="text-[13px] text-var-color-05 dark:text-var-color-39">
-                                    آدرس <span className="text-var-color-04">(اختیاری)</span>
-                                </label>
-                                <div className="relative w-full">
-                                    <FiMapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4
-                                                         text-var-color-15 pointer-events-none"/>
-                                    <input id="profile-address" type="text" value={address}
-                                           placeholder="آدرس کسب‌وکار یا محلِ سکونت..."
-                                           onChange={(e) => {
-                                               setAddress(e.target.value);
-                                               setErrors((prev) => ({...prev, address: ""}));
-                                           }}
-                                           className={inputClass("address")}/>
-                                </div>
-                                {errors.address && (
-                                    <p className="m-0 text-[11.5px] text-var-color-28">{errors.address}</p>
-                                )}
-                            </div>
 
                             {/* enabled: لازم است چون هاور روی دکمهٔ disabled هم اعمال می‌شود */}
                             <div className="flex flex-row items-center justify-end gap-2 mt-1">

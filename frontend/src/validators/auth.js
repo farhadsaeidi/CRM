@@ -57,12 +57,6 @@ const fullnameSchema = z
 // تا خطای سرور بدون نگاشت روی همان اینپوت بنشیند.
 export const loginSchema = z.object({username: phoneSchema, password: loginPasswordSchema});
 
-// آدرس در ثبت‌نام گرفته نمی‌شود؛ جایش صفحهٔ پروفایل است و آنجا اختیاری است.
-const addressSchema = z
-    .string()
-    .trim()
-    .max(300, "فیلد آدرس باید حداکثر ۳۰۰ کاراکتر داشته باشد.");
-
 export const profileSchema = z.object({
     // سقفِ ۴۰ کاراکتر از خودِ پیامکِ یادآوری می‌آید، نه سلیقه — نامِ بلندتر پیامک
     // را بی‌دلیل چندبخشی می‌کند
@@ -72,7 +66,6 @@ export const profileSchema = z.object({
         .trim()
         .min(3, "نام و نام خانوادگی باید حداقل ۳ کاراکتر باشد.")
         .max(100, "نام و نام خانوادگی باید حداکثر ۱۰۰ کاراکتر باشد."),
-    address: addressSchema,
 });
 
 export const changePasswordSchema = z

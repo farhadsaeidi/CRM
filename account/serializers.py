@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # لیست فیلدهایی که در خروجی JSON نمایش داده می‌شوند
-        fields = ["id", "fullname", "phone", "role", "address", "business_name", "image", "created"]
+        fields = ["id", "fullname", "phone", "role", "business_name", "image", "created"]
         # همه فیلدها را فقط خواندنی می‌کند، یعنی این سریالایزر فقط برای نمایش
         # اطلاعات است و امکان ایجاد یا ویرایش کاربر از طریق آن وجود ندارد.
         read_only_fields = fields
@@ -27,9 +27,8 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         "min_length": "نام و نام خانوادگی باید حداقل ۳ کاراکتر باشد.",
         "blank": "فیلد نام و نام خانوادگی الزامی است.",
     })
-    address = serializers.CharField(max_length=300, required=False, allow_blank=True)
     business_name = serializers.CharField(max_length=40, required=False, allow_blank=True)
 
     class Meta:
         model = User
-        fields = ["fullname", "address", "business_name", "image"]
+        fields = ["fullname", "business_name", "image"]

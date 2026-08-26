@@ -231,25 +231,34 @@ class PasswordTests(APITestCase):
 class ProfileTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            fullname="کاربر", phone="09121234567", password="test1234", address="تهران",
+            fullname="کاربر", phone="09121234567", password="test1234",
         )
         self.client.force_login(self.user)
         self.url = reverse("api:profile")
 
-    def test_updating_name_and_address(self):
-        response = self.client.patch(self.url,
-                                     {"fullname": "نامِ تازه", "address": "شیراز"}, format="json")
+    def test_updating_name(self):
+        response = self.client.patch(self.url, {"fullname": "نامِ تازه"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["userData"]["fullname"], "نامِ تازه")
 
         self.user.refresh_from_db()
-        self.assertEqual(self.user.address, "شیراز")
+        self.assertEqual(self.user.fullname, "نامِ تازه")
 
-    def test_address_may_be_cleared(self):
-        response = self.client.patch(self.url, {"address": ""}, format="json")
+    def test_address_is_not_editable_anymore(self):
+        """قرارداد: آدرس از فرمِ پروفایل حذف شد، پس از این endpoint هم ویرایش نمی‌شود.
+
+        ستونش در دیتابیس مانده ولی هیچ مسیری نمی‌نویسدش — اگر روزی برگشت، باید
+        عمداً به سریالایزر اضافه شود نه اینکه از قلم افتاده باشد.
+        """
+        self.user.address = "تهران"
+        self.user.save(update_fields=["address"])
+
+        response = self.client.patch(self.url, {"address": "شیراز"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn("address", response.json()["userData"])
+
         self.user.refresh_from_db()
-        self.assertEqual(self.user.address, "")
+        self.assertEqual(self.user.address, "تهران")
 
     def test_short_name_is_rejected(self):
         response = self.client.patch(self.url, {"fullname": "ال"}, format="json")
