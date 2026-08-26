@@ -15,6 +15,7 @@ auth_patterns = [
     path("auth/otp/phone/", account_views.OtpPhoneView.as_view(), name="otp_phone"),
     path("auth/otp/confirm/", account_views.OtpConfirmView.as_view(), name="otp_confirm"),
     path("auth/forget-password/", account_views.ForgetPasswordView.as_view(), name="forget_password"),
+    path("auth/profile/", account_views.ProfileView.as_view(), name="profile"),
     path("auth/change-password/", account_views.ChangePasswordView.as_view(), name="change_password"),
 ]
 

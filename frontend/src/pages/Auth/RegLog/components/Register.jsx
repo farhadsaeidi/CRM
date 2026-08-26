@@ -3,7 +3,7 @@ import {useNavigate} from "react-router";
 import toast from "react-hot-toast";
 import {GrPhone} from "react-icons/gr";
 import {FaRegEye, FaRegEyeSlash, FaRegUser} from "react-icons/fa6";
-import {FiLock, FiMapPin, FiUserPlus} from "react-icons/fi";
+import {FiLock, FiUserPlus} from "react-icons/fi";
 import {useAuth} from "../../../../context/AuthContext.js";
 import {authApi} from "../../../../api/auth.js";
 import ThemeSwitcher from "../../../../components/common/ThemeSwitcher.jsx";
@@ -11,7 +11,7 @@ import {notify, notifyLoading} from "../../../../lib/notify.jsx";
 import {sanitizePhone} from "../../../../lib/utils.js";
 import {registerSchema} from "../../../../validators/auth.js";
 
-const FIELD_INDEX = {fullname: 0, phone: 1, password: 2, address: 3};
+const FIELD_INDEX = {fullname: 0, phone: 1, password: 2};
 
 const Register = ({active = false}) => {
     const {setUser} = useAuth();
@@ -20,7 +20,6 @@ const Register = ({active = false}) => {
 
     const [fullname, setFullname] = useState("");
     const [phone, setPhone] = useState("");
-    const [address, setAddress] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
@@ -39,7 +38,7 @@ const Register = ({active = false}) => {
         e.preventDefault();
         if (submitting) return;
 
-        const parsed = registerSchema.safeParse({fullname, phone, address, password});
+        const parsed = registerSchema.safeParse({fullname, phone, password});
         if (!parsed.success) {
             const issue = parsed.error.issues[0];
             const field = issue.path[0];
@@ -52,7 +51,7 @@ const Register = ({active = false}) => {
         setSubmitting(true);
         const loadingId = notifyLoading();
         try {
-            const res = await authApi.register({fullname, phone, address, password});
+            const res = await authApi.register({fullname, phone, password});
             toast.dismiss(loadingId);
             notify(res.message, "success", 2000);
             // سرور بعد از ثبت‌نام خودش کاربر را وارد می‌کند، پس ورود دوباره لازم نیست
@@ -76,14 +75,14 @@ const Register = ({active = false}) => {
     };
 
     return (
-        <form className="w-100 h-150 rounded-3xl px-6 pt-6 pb-8 form-container" onSubmit={onSubmit} autoComplete="off" inert={!active}>
+        <form className="w-100 h-150 rounded-3xl px-6 pt-6 pb-8 form-container flex flex-col" onSubmit={onSubmit} autoComplete="off" inert={!active}>
             <header className="w-full py-3 flex flex-row justify-between items-center">
                 <div className="w-8 h-8"/>
                 <h2 className="text-var-color-08 dark:text-var-color-01 text-2xl text-center">ثبت نام</h2>
                 <ThemeSwitcher/>
             </header>
 
-            <main className="w-full mt-5">
+            <main className="w-full mt-5 flex-1 flex flex-col">
                 {/* نام و نام خانوادگی */}
                 <div className="w-full">
                     <label htmlFor={id + "fullname"} className="text-var-color-06 dark:text-var-color-03">
@@ -162,29 +161,10 @@ const Register = ({active = false}) => {
                     </div>
                 </div>
 
-                {/* آدرس */}
-                <div className="w-full my-5">
-                    <label htmlFor={id + "address"} className="text-var-color-06 dark:text-var-color-03">آدرس</label>
-                    <div className="relative w-full h-10 mt-2">
-                        <FiMapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-var-color-25 pointer-events-none"/>
-                        <input
-                            id={id + "address"}
-                            ref={setInputRef(3)}
-                            type="text"
-                            autoComplete="off"
-                            value={address}
-                            placeholder="آدرس خود را وارد کنید..."
-                            onChange={(e) => {
-                                setAddress(e.target.value);
-                                setErrors((prev) => ({...prev, address: ""}));
-                            }}
-                            className={`w-full h-full text-[15px] pr-8.5 pl-3 rounded-xl input input-purplish input-placeholder ${errors.address ? "input-error" : ""}`}
-                        />
-                    </div>
-                </div>
-
+                {/* mt-auto فضای آزادِ حاصل از حذفِ فیلدِ آدرس را بالای دکمه
+                    جمع می‌کند، پس فرم به‌جای اینکه ته‌اش خالی بماند نفس می‌کشد */}
                 <button type="submit" disabled={submitting}
-                        className="w-full py-2.5 rounded-xl btn btn-purplish disabled:opacity-60 disabled:cursor-not-allowed">
+                        className="w-full mt-auto py-2.5 rounded-xl btn btn-purplish disabled:opacity-60 disabled:cursor-not-allowed">
                     <FiUserPlus className="w-5 h-5 ml-2"/>
                     <span className="text-[17px]">{submitting ? "در حال ثبت نام ..." : "ثبت نام"}</span>
                 </button>

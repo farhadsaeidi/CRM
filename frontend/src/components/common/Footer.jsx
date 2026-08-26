@@ -13,7 +13,8 @@ import personImage from "/images/person2.png";
 import {useAuth} from "../../context/AuthContext.js";
 import {authApi} from "../../api/auth.js";
 import {notify} from "../../lib/notify.jsx";
-import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH} from "../../lib/paths.js";
+import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH, PROFILE_PATH} from "../../lib/paths.js";
+import {OPEN_GUIDE_EVENT} from "../../lib/events.js";
 
 // جستجوی تاریخِ تراکنش از همین نوار اجرا می‌شود ولی نتیجه‌اش را جدولِ تراکنش‌ها
 // نشان می‌دهد؛ فوتر در RootLayout است و جدول فرزندِ Outlet، پس رویدادِ سراسری
@@ -242,7 +243,14 @@ const Footer = () => {
     const dropdownItems = [
         {id: "moneyItem", icon: TbCoins, text: "سرمایه در گردش شما", onClick: soon("سرمایه در گردش")},
         {id: "billItem", icon: FiFileText, text: "صورتحساب همه مشتریان", onClick: soon("صورتحساب مشتریان")},
-        {id: "helpItem", icon: FiHelpCircle, text: "راهنمای نرم افزار", onClick: soon("راهنمای نرم‌افزار")},
+        {
+            id: "helpItem", icon: FiHelpCircle, text: "راهنمای نرم افزار",
+            // مودالِ راهنما در RootLayout است تا روی هر صفحه‌ای باز شود
+            onClick: () => {
+                setIsDropdownMenuOpen(false);
+                window.dispatchEvent(new CustomEvent(OPEN_GUIDE_EVENT));
+            },
+        },
     ];
 
     const menuItems = [
@@ -250,7 +258,7 @@ const Footer = () => {
             id: "profileItem", icon: FaRegUser, text: "پروفایل", toggle: "start",
             onClick: () => {
                 setIsStartMenuOpen(false);
-                notify("صفحه پروفایل به‌زودی اضافه می‌شود.", "info");
+                navigate(PROFILE_PATH);
             },
         },
         {

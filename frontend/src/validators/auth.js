@@ -57,12 +57,20 @@ const fullnameSchema = z
 // تا خطای سرور بدون نگاشت روی همان اینپوت بنشیند.
 export const loginSchema = z.object({username: phoneSchema, password: loginPasswordSchema});
 
+// آدرس در ثبت‌نام گرفته نمی‌شود؛ جایش صفحهٔ پروفایل است و آنجا اختیاری است.
 const addressSchema = z
-    .string({required_error: "فیلد آدرس الزامی است."})
+    .string()
     .trim()
-    .nonempty("فیلد آدرس الزامی است.")
-    .min(3, "فیلد آدرس باید حداقل ۳ حرف داشته باشد.")
     .max(300, "فیلد آدرس باید حداکثر ۳۰۰ کاراکتر داشته باشد.");
+
+export const profileSchema = z.object({
+    fullname: z
+        .string({required_error: "فیلد نام و نام خانوادگی الزامی است."})
+        .trim()
+        .min(3, "نام و نام خانوادگی باید حداقل ۳ کاراکتر باشد.")
+        .max(100, "نام و نام خانوادگی باید حداکثر ۱۰۰ کاراکتر باشد."),
+    address: addressSchema,
+});
 
 export const changePasswordSchema = z
     .object({
@@ -90,7 +98,6 @@ export const changePasswordSchema = z
 export const registerSchema = z.object({
     fullname: fullnameSchema,
     phone: phoneSchema,
-    address: addressSchema,
     password: newPasswordSchema,
 });
 

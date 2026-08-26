@@ -11,6 +11,7 @@ import Customers from "./pages/Customers/Customers.jsx";
 import CustomerLedger from "./pages/Customers/CustomerLedger.jsx";
 import Transactions from "./pages/Transactions/Transactions.jsx";
 import Chat from "./pages/Chat/Chat.jsx";
+import Profile from "./pages/Profile/Profile.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
 
 const router = createBrowserRouter([
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
                     },
                     {path: "all-transactions", element: <Transactions/>, handle: {title: "تراکنش ها"}},
                     {path: "chat", element: <Chat/>, handle: {title: "گفتگو"}},
+                    {path: "profile", element: <Profile/>, handle: {title: "پروفایل"}},
                 ],
             },
 

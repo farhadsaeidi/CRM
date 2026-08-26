@@ -20,9 +20,9 @@ User = get_user_model()
 @override_settings(SMS_DEV_MODE=True)
 class RegisterLoginTests(APITestCase):
     def test_register_creates_an_owner_and_logs_them_in(self):
+        """آدرس در ثبت‌نام گرفته نمی‌شود؛ جایش صفحهٔ پروفایل است."""
         response = self.client.post(reverse("api:register"), {
-            "fullname": "کاربر تازه", "phone": "09121234567",
-            "address": "تهران، خیابان آزادی", "password": "test1234",
+            "fullname": "کاربر تازه", "phone": "09121234567", "password": "test1234",
         }, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(User.objects.filter(phone="09121234567").exists())
@@ -32,16 +32,14 @@ class RegisterLoginTests(APITestCase):
 
     def test_register_normalises_persian_digits_and_country_code(self):
         self.client.post(reverse("api:register"), {
-            "fullname": "کاربر فارسی", "phone": "+۹۸۹۱۲۱۱۱۲۲۳۳",
-            "address": "اصفهان", "password": "test1234",
+            "fullname": "کاربر فارسی", "phone": "+۹۸۹۱۲۱۱۱۲۲۳۳", "password": "test1234",
         }, format="json")
         self.assertTrue(User.objects.filter(phone="09121112233").exists())
 
     def test_duplicate_phone_is_rejected(self):
         User.objects.create_user(fullname="اولی", phone="09121234567", password="test1234")
         response = self.client.post(reverse("api:register"), {
-            "fullname": "دومی", "phone": "09121234567",
-            "address": "تهران", "password": "test1234",
+            "fullname": "دومی", "phone": "09121234567", "password": "test1234",
         }, format="json")
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
@@ -219,3 +217,60 @@ class PasswordTests(APITestCase):
             # طولِ رمزِ ساخته‌شده مشخص نیست، پس صرفِ نبودِ کلیدواژه کافی نیست:
             # قرارداد این است که فقط نامِ الگو و رویداد ثبت شود
             self.assertLess(len(log.body), 200)
+
+
+@override_settings(SMS_DEV_MODE=True)
+class ProfileTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            fullname="کاربر", phone="09121234567", password="test1234", address="تهران",
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("api:profile")
+
+    def test_updating_name_and_address(self):
+        response = self.client.patch(self.url,
+                                     {"fullname": "نامِ تازه", "address": "شیراز"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["userData"]["fullname"], "نامِ تازه")
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.address, "شیراز")
+
+    def test_address_may_be_cleared(self):
+        response = self.client.patch(self.url, {"address": ""}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.address, "")
+
+    def test_short_name_is_rejected(self):
+        response = self.client.patch(self.url, {"fullname": "ال"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.fullname, "کاربر")
+
+    def test_phone_cannot_be_changed_from_the_profile(self):
+        """شماره همان نامِ کاربریِ ورود است و در سریالایزرِ ویرایش نیست."""
+        self.client.patch(self.url, {"phone": "09129999999"}, format="json")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.phone, "09121234567")
+
+    def test_role_cannot_be_escalated_from_the_profile(self):
+        self.client.patch(self.url, {"role": "superuser"}, format="json")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.role, "owner")
+
+    def test_profile_requires_login(self):
+        self.client.logout()
+        response = self.client.patch(self.url, {"fullname": "مهمان"}, format="json")
+        self.assertIn(response.status_code,
+                      (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
+
+    def test_one_user_cannot_edit_another(self):
+        """endpoint اصلاً شناسه نمی‌گیرد — همیشه روی request.user کار می‌کند."""
+        other = User.objects.create_user(
+            fullname="دیگری", phone="09121112233", password="test1234",
+        )
+        self.client.patch(self.url, {"fullname": "دستکاری شده"}, format="json")
+        other.refresh_from_db()
+        self.assertEqual(other.fullname, "دیگری")

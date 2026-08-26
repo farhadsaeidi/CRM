@@ -3,7 +3,8 @@ import {Outlet, ScrollRestoration, useMatches} from "react-router";
 import Header from "../common/Header.jsx";
 import Footer from "../common/Footer.jsx";
 import CustomerModal from "../../pages/Customers/components/CustomerModal.jsx";
-import {CUSTOMER_CREATED_EVENT, OPEN_NEW_CUSTOMER_EVENT} from "../../lib/events.js";
+import GuideModal from "../common/GuideModal.jsx";
+import {CUSTOMER_CREATED_EVENT, OPEN_GUIDE_EVENT, OPEN_NEW_CUSTOMER_EVENT} from "../../lib/events.js";
 
 const DEFAULT_TITLE = "سامانه مدیریت مشتریان";
 
@@ -13,6 +14,8 @@ const RootLayout = () => {
     // در همهٔ صفحه‌ها دیده می‌شود، پس باید همان‌جا که کاربر هست باز شود و او را
     // به صفحهٔ دیگری پرت نکند.
     const [newCustomerOpen, setNewCustomerOpen] = useState(false);
+    // راهنما هم همین‌جاست: از منوی فوتر باز می‌شود و باید روی هر صفحه‌ای بیاید
+    const [guideOpen, setGuideOpen] = useState(false);
     // useMatches لیستِ روت‌های فعال را می‌دهد؛ handleها از ریشه تا برگ روی هم می‌ریزند
     const handle = matches.reduce((merged, match) => ({...merged, ...(match.handle ?? {})}), {});
 
@@ -25,9 +28,14 @@ const RootLayout = () => {
     }, [handle.title]);
 
     useEffect(() => {
-        const open = () => setNewCustomerOpen(true);
-        window.addEventListener(OPEN_NEW_CUSTOMER_EVENT, open);
-        return () => window.removeEventListener(OPEN_NEW_CUSTOMER_EVENT, open);
+        const openCustomer = () => setNewCustomerOpen(true);
+        const openGuide = () => setGuideOpen(true);
+        window.addEventListener(OPEN_NEW_CUSTOMER_EVENT, openCustomer);
+        window.addEventListener(OPEN_GUIDE_EVENT, openGuide);
+        return () => {
+            window.removeEventListener(OPEN_NEW_CUSTOMER_EVENT, openCustomer);
+            window.removeEventListener(OPEN_GUIDE_EVENT, openGuide);
+        };
     }, []);
 
     if (!hasChrome) {
@@ -52,6 +60,8 @@ const RootLayout = () => {
                 </main>
             </div>
             <Footer/>
+
+            <GuideModal open={guideOpen} onClose={() => setGuideOpen(false)}/>
 
             {/* فقط وقتی باز است mount می‌شود تا state داخلیِ فرم هر بار از نو ساخته
                 شود — همان دلیلی که پنلِ جستجوی تاریخ هم شرطی رندر می‌شود */}

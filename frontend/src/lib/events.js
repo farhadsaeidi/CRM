@@ -16,3 +16,7 @@ export const CUSTOMER_CREATED_EVENT = "crm:customer-created";
 // خودِ مودال در RootLayout است و دکمهٔ هدر — که همسایه‌اش است — با پراپ صدایش
 // می‌زند؛ این رویداد برای فراخوان‌های دورتر است.
 export const OPEN_NEW_CUSTOMER_EVENT = "crm:open-new-customer";
+
+// راهنمای نرم‌افزار از منوی فوتر باز می‌شود ولی خودِ مودال در RootLayout است،
+// چون باید روی هر صفحه‌ای که کاربر هست بیاید.
+export const OPEN_GUIDE_EVENT = "crm:open-guide";

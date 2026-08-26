@@ -150,6 +150,13 @@
         outline: none;
     }
 
+    /* ⚠️ فونتِ پایه اینجاست نه روی RootLayout: صفحه‌های احراز هویت و ۴۰۴
+       با `handle: {chrome: false}` اصلاً از RootLayout رد نمی‌شوند و بدونِ این
+       با فونتِ پیش‌فرضِ مرورگر رندر می‌شدند. */
+    body {
+        font-family: "IRANSansXFaNum Regular", system-ui, sans-serif;
+    }
+
     /* بافتِ نقطه‌ایِ بسیار ملایمِ پس‌زمینه — تا صفحه به‌جای رنگِ تخت، عمق داشته باشد */
     .bg-dotted {
         background-image: radial-gradient(circle, rgba(100, 116, 139, 0.11) 1.2px, transparent 1.3px);

@@ -11,7 +11,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.exceptions import ParseError
-from .serializers import UserSerializer
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from .serializers import ProfileUpdateSerializer, UserSerializer
 from .services import OtpSendError, send_token_sms
 
 
@@ -115,10 +116,8 @@ class RegisterView(APIView):
         # معتبر بودن شماره همراه
         if not is_valid_iranian_mobile(phone):
             return Response({"fieldErrors": {"phone": "شماره همراه معتبر نیست."}}, status=status.HTTP_400_BAD_REQUEST)
-        # آدرس در فرم ثبت‌نام الزامی است (هم‌راستا با اعتبارسنجی فرانت)، هرچند
-        # در سطح مدل blank=True است تا کاربرانِ منتقل‌شدهٔ بدون آدرس معتبر بمانند
-        if len(address) < 3:
-            return Response({"fieldErrors": {"address": "فیلد آدرس باید حداقل ۳ حرف داشته باشد."}}, status=status.HTTP_400_BAD_REQUEST)
+        # آدرس در ثبت‌نام گرفته نمی‌شود — جایش صفحهٔ پروفایل است. اگر کلاینتی
+        # بفرستد ذخیره می‌شود، ولی نبودش خطا نیست: در سطح مدل هم blank=True است.
         # رمز عبور
         if len(password) < 4:
             return Response({"fieldErrors": {"password": "کلمه عبور باید حداقل ۴ کاراکتر داشته باشد."}}, status=status.HTTP_400_BAD_REQUEST)
@@ -322,6 +321,25 @@ class ForgetPasswordView(APIView):
 
 
 # noinspection PyMethodMayBeStatic
+# noinspection PyMethodMayBeStatic
+class ProfileView(APIView):
+    """ویرایشِ پروفایلِ کاربرِ واردشده (پیش‌فرضِ DRF یعنی IsAuthenticated).
+
+    ⚠️ `MultiPartParser` لازم است: پیش‌فرضِ پروژه فقط JSON است و بدونِ این، آپلودِ
+    تصویرِ پروفایل با ۴۱۵ رد می‌شود.
+    """
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def patch(self, request):
+        serializer = ProfileUpdateSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message": "پروفایل با موفقیت به‌روزرسانی شد.",
+            "userData": UserSerializer(request.user).data,
+        })
+
+
 class ChangePasswordView(APIView):
     """تغییر رمز عبور توسط کاربرِ واردشده (پیش‌فرضِ DRF یعنی IsAuthenticated)"""
 

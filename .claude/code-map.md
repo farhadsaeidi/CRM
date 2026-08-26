@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-25 16:42 · کامیت `76fc0d7`
+آخرین تولید: 2026-08-26 04:14 · کامیت `a728e0d`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 40 | 3578 |
-| فرانت‌اند | 82 | 7617 |
+| بک‌اند | 40 | 3671 |
+| فرانت‌اند | 84 | 8224 |
 
 اپ‌های جنگو: account api home
 
@@ -17,15 +17,16 @@
 
 | مسیر | ویو | فایل:خط | مجوز |
 |---|---|---|---|
-| `/api/auth/csrf/` | CSRFView | account/views.py:79 | [AllowAny] |
-| `/api/auth/me/` | MeView | account/views.py:87 | [AllowAny] |
-| `/api/auth/register/` | RegisterView | account/views.py:99 | [AllowAny] |
-| `/api/auth/login/` | LoginView | account/views.py:144 | [AllowAny] |
-| `/api/auth/logout/` | LogoutView | account/views.py:345 | [AllowAny] |
-| `/api/auth/otp/phone/` | OtpPhoneView | account/views.py:182 | [AllowAny] |
-| `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:229 | [AllowAny] |
-| `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:290 | [AllowAny] |
-| `/api/auth/change-password/` | ChangePasswordView | account/views.py:325 | _(پیش‌فرض DRF)_ |
+| `/api/auth/csrf/` | CSRFView | account/views.py:80 | [AllowAny] |
+| `/api/auth/me/` | MeView | account/views.py:88 | [AllowAny] |
+| `/api/auth/register/` | RegisterView | account/views.py:100 | [AllowAny] |
+| `/api/auth/login/` | LoginView | account/views.py:143 | [AllowAny] |
+| `/api/auth/logout/` | LogoutView | account/views.py:363 | [AllowAny] |
+| `/api/auth/otp/phone/` | OtpPhoneView | account/views.py:181 | [AllowAny] |
+| `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:228 | [AllowAny] |
+| `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:289 | [AllowAny] |
+| `/api/auth/profile/` | ProfileView | account/views.py:325 | _(پیش‌فرض DRF)_ |
+| `/api/auth/change-password/` | ChangePasswordView | account/views.py:343 | _(پیش‌فرض DRF)_ |
 | `/api/dashboard/` | DashboardView | home/views.py:123 | _(پیش‌فرض DRF)_ |
 | `/api/customers/` | CustomerListCreateView | home/views.py:56 | _(پیش‌فرض DRF)_ |
 | `/api/customers/stats/` | CustomerStatsView | home/views.py:93 | _(پیش‌فرض DRF)_ |
@@ -59,8 +60,9 @@
     - `Roles` :40
     - `MyUser` :45
     - `SMSLog` :97
-- **./account/serializers.py** (15 خط، 2 نماد)
+- **./account/serializers.py** (34 خط، 4 نماد)
     - `UserSerializer` :8
+    - `ProfileUpdateSerializer` :18
 - **./account/services.py** (112 خط، 8 نماد)
     - `OtpSendError` :19
     - `_dev_mode` :28
@@ -68,25 +70,26 @@
     - `_run_with_timeout` :36
     - `send_sms` :45
     - `send_token_sms` :65
-- **./account/tests.py** (221 خط، 27 نماد)
+- **./account/tests.py** (276 خط، 36 نماد)
     - `RegisterLoginTests` :21
-    - `OtpTests` :95
-    - `PasswordTests` :171
-- **./account/views.py** (353 خط، 24 نماد)
-    - `normalize_digits` :35
-    - `to_persian_digits` :42
-    - `generate_otp_code` :47
-    - `get_otp_remaining_seconds` :53
-    - `normalize_phone_number` :61
-    - `is_valid_iranian_mobile` :69
-    - `CSRFView` :79
-    - `MeView` :87
-    - `RegisterView` :99
-    - `LoginView` :144
-    - `OtpPhoneView` :182
-    - `OtpConfirmView` :229
-    - `ForgetPasswordView` :290
-    - `ChangePasswordView` :325
+    - `OtpTests` :93
+    - `PasswordTests` :169
+    - `ProfileTests` :223
+- **./account/views.py** (371 خط، 26 نماد)
+    - `normalize_digits` :36
+    - `to_persian_digits` :43
+    - `generate_otp_code` :48
+    - `get_otp_remaining_seconds` :54
+    - `normalize_phone_number` :62
+    - `is_valid_iranian_mobile` :70
+    - `CSRFView` :80
+    - `MeView` :88
+    - `RegisterView` :100
+    - `LoginView` :143
+    - `OtpPhoneView` :181
+    - `OtpConfirmView` :228
+    - `ForgetPasswordView` :289
+    - `ProfileView` :325
 - **./api/apps.py** (5 خط، 1 نماد)
     - `ApiConfig` :4
 - **./api/views.py** (15 خط، 2 نماد)
@@ -200,6 +203,11 @@
     - HomeSidebar
     - Sidebar
 - **frontend/src/pages/NotFound/NotFound.jsx** (27 خط)
+- **frontend/src/pages/Profile/Profile.jsx** (354 خط)
+    - Breadcrumb
+    - ChangePasswordModal
+    - ScrollContainer
+    - notify
 - **frontend/src/pages/Transactions/Transactions.jsx** (460 خط)
     - Breadcrumb
     - CustomTooltip
@@ -214,7 +222,8 @@
 - `Breadcrumb` — 72 خط
 - `ChangePasswordModal` — 180 خط
 - `CustomTooltip` — 54 خط
-- `Footer` — 425 خط
+- `Footer` — 433 خط
+- `GuideModal` — 238 خط
 - `Header` — 42 خط
 - `KpiCard` — 116 خط
 - `LogoIcon` — 28 خط
@@ -230,7 +239,7 @@
 - `WindowsIcon` — 37 خط
 
 ### لایهٔ API
-- **auth.js**: me login register otpPhone otpConfirm forgetPassword changePassword logout
+- **auth.js**: me login register otpPhone otpConfirm forgetPassword updateProfile changePassword logout
 
 - **client.js**: get post put patch delete
 
