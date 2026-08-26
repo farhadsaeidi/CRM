@@ -11,7 +11,7 @@ import {notify, notifyLoading} from "../../../../lib/notify.jsx";
 import {sanitizePhone} from "../../../../lib/utils.js";
 import {registerSchema} from "../../../../validators/auth.js";
 
-const FIELD_INDEX = {fullname: 0, phone: 1, password: 2};
+const FIELD_INDEX = {fullname: 0, phone: 1, password: 2, repeat_password: 3};
 
 const Register = ({active = false}) => {
     const {setUser} = useAuth();
@@ -21,7 +21,9 @@ const Register = ({active = false}) => {
     const [fullname, setFullname] = useState("");
     const [phone, setPhone] = useState("");
     const [password, setPassword] = useState("");
+    const [repeatPassword, setRepeatPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [showRepeat, setShowRepeat] = useState(false);
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
@@ -38,7 +40,7 @@ const Register = ({active = false}) => {
         e.preventDefault();
         if (submitting) return;
 
-        const parsed = registerSchema.safeParse({fullname, phone, password});
+        const parsed = registerSchema.safeParse({fullname, phone, password, repeat_password: repeatPassword});
         if (!parsed.success) {
             const issue = parsed.error.issues[0];
             const field = issue.path[0];
@@ -75,14 +77,14 @@ const Register = ({active = false}) => {
     };
 
     return (
-        <form className="w-100 h-150 rounded-3xl px-6 pt-6 pb-8 form-container flex flex-col" onSubmit={onSubmit} autoComplete="off" inert={!active}>
+        <form className="w-100 h-150 rounded-3xl px-6 pt-6 pb-8 form-container" onSubmit={onSubmit} autoComplete="off" inert={!active}>
             <header className="w-full py-3 flex flex-row justify-between items-center">
                 <div className="w-8 h-8"/>
                 <h2 className="text-var-color-08 dark:text-var-color-01 text-2xl text-center">ثبت نام</h2>
                 <ThemeSwitcher/>
             </header>
 
-            <main className="w-full mt-5 flex-1 flex flex-col">
+            <main className="w-full mt-5">
                 {/* نام و نام خانوادگی */}
                 <div className="w-full">
                     <label htmlFor={id + "fullname"} className="text-var-color-06 dark:text-var-color-03">
@@ -161,10 +163,43 @@ const Register = ({active = false}) => {
                     </div>
                 </div>
 
-                {/* mt-auto فضای آزادِ حاصل از حذفِ فیلدِ آدرس را بالای دکمه
-                    جمع می‌کند، پس فرم به‌جای اینکه ته‌اش خالی بماند نفس می‌کشد */}
+                {/* تکرار رمز عبور — قرینهٔ دقیقِ فیلدِ بالا، تا فرم چهار ردیفی و
+                    متقارن بماند. نمایش/پنهانِ هر کدام جداست: کاربر ممکن است فقط
+                    بخواهد ببیند در کدامشان اشتباه تایپ کرده. */}
+                <div className="w-full my-5">
+                    <label htmlFor={id + "repeat_password"} className="text-var-color-06 dark:text-var-color-03">تکرار رمز عبور</label>
+                    <div className="relative w-full h-10 mt-2">
+                        <FiLock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-var-color-25 pointer-events-none"/>
+                        <input
+                            id={id + "repeat_password"}
+                            ref={setInputRef(3)}
+                            type={showRepeat ? "text" : "password"}
+                            autoComplete="new-password"
+                            value={repeatPassword}
+                            placeholder="رمز عبور را دوباره وارد کنید..."
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setRepeatPassword(value);
+                                if (value.length === 0) setShowRepeat(false);
+                                setErrors((prev) => ({...prev, repeat_password: ""}));
+                            }}
+                            className={`w-full h-full text-[15px] pr-8.5 pl-10 rounded-xl input input-purplish input-placeholder ${errors.repeat_password ? "input-error" : ""}`}
+                        />
+                        {/* enabled: لازم است چون هاور روی دکمهٔ disabled هم اعمال می‌شود */}
+                        <button
+                            type="button"
+                            tabIndex={-1}
+                            onClick={() => setShowRepeat((s) => !s)}
+                            disabled={repeatPassword.length === 0}
+                            className="absolute top-1/2 left-3 -translate-y-1/2 disabled:text-var-color-04 dark:disabled:text-var-color-05 enabled:text-var-color-06 dark:enabled:text-var-color-03 enabled:cursor-pointer"
+                        >
+                            {showRepeat ? <FaRegEyeSlash/> : <FaRegEye/>}
+                        </button>
+                    </div>
+                </div>
+
                 <button type="submit" disabled={submitting}
-                        className="w-full mt-auto py-2.5 rounded-xl btn btn-purplish disabled:opacity-60 disabled:cursor-not-allowed">
+                        className="w-full py-2.5 rounded-xl btn btn-purplish disabled:opacity-60 disabled:cursor-not-allowed">
                     <FiUserPlus className="w-5 h-5 ml-2"/>
                     <span className="text-[17px]">{submitting ? "در حال ثبت نام ..." : "ثبت نام"}</span>
                 </button>

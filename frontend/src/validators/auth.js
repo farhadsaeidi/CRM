@@ -95,11 +95,22 @@ export const changePasswordSchema = z
         path: ["new_password"],
     });
 
-export const registerSchema = z.object({
-    fullname: fullnameSchema,
-    phone: phoneSchema,
-    password: newPasswordSchema,
-});
+export const registerSchema = z
+    .object({
+        fullname: fullnameSchema,
+        phone: phoneSchema,
+        password: newPasswordSchema,
+        repeat_password: z
+            .string({required_error: "فیلد تکرار رمز عبور الزامی است."})
+            .trim()
+            .nonempty("فیلد تکرار رمز عبور الزامی است."),
+    })
+    // تطابق روی خودِ فیلدِ تکرار گزارش می‌شود تا فوکوس جای درستی برود — همان
+    // قاعده‌ای که فرمِ تغییرِ رمز هم دارد
+    .refine((data) => data.password === data.repeat_password, {
+        message: "رمز عبور و تکرار آن یکسان نیستند.",
+        path: ["repeat_password"],
+    });
 
 export const otpPhoneSchema = z.object({otpPhone: phoneSchema});
 
