@@ -56,7 +56,7 @@ const LedgerKpis = ({customerId, refreshKey = 0}) => {
                 value={Math.abs(stats.balance)}
                 suffix={settled ? "تومان — تسویه" : owes ? "تومان بدهکار" : "تومان بستانکار"}
                 suffixClass={settled ? "" : owes ? "text-var-color-55" : "text-var-color-31"}
-                icon={HiOutlineBanknotes} accent="var(--color-var-color-25)"
+                icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
                 hint={stats.days_since_last === null
                     ? "هنوز تراکنشی ثبت نشده"
                     : `آخرین تراکنش ${toFaDigits(stats.days_since_last)} روز پیش`}

@@ -119,15 +119,20 @@ const Tiles = ({data}) => {
     return (
         <>
             <div className="grid grid-cols-1 2xs:grid-cols-2 xl:grid-cols-4 gap-3">
-                {/* رنگِ این کارت بنفشِ ثابت است و با علامتِ مانده عوض نمی‌شود:
+                {/* رنگِ این کارت نارنجیِ ثابت است و با علامتِ مانده عوض نمی‌شود:
                     وقتی مانده منفی بود همان صورتیِ کارتِ «نسیه» می‌شد و دو کارتِ
                     کنارِ هم یک رنگ می‌گرفتند. طلب یا بدهی بودن را پسوندِ رنگی
-                    می‌گوید که صریح‌تر هم هست. */}
+                    می‌گوید که صریح‌تر هم هست.
+
+                    ⚠️ نارنجی جای بنفش را گرفت. بنفشِ ۲۵ (#C084FC) و صورتیِ ۵۵
+                    (#E63BC5) روی چرخِ رنگ حدود ۴۳ درجه فاصله دارند و در اندازهٔ
+                    آیکون یک خانواده دیده می‌شدند. با نارنجی، چهار کاشی روی چرخ
+                    پخش می‌شوند: نارنجی ۲۵° / صورتی ۳۱۳° / سبز ۹۵° / فیروزه‌ای ۱۹۳°. */}
                 <KpiCard
                     title="ماندهٔ کل دفتر" delay={at(1)}
                     value={Math.abs(kpi.balance.value)} suffix={owed ? "تومان طلب" : "تومان بدهی"}
                     suffixClass={owed ? "text-var-color-55" : "text-var-color-31"}
-                    icon={HiOutlineBanknotes} accent="var(--color-var-color-25)"
+                    icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
                     hint={`${toFaDigits(kpi.balance.transactions)} تراکنش در کلِ دفتر`}
                 />
                 <KpiCard

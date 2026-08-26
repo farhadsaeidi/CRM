@@ -68,7 +68,7 @@ const CustomerKpis = ({refreshKey = 0}) => {
             <KpiCard
                 title="کل مشتریان" delay={45}
                 value={stats.total} suffix="نفر" icon={FiUsers}
-                accent="var(--color-var-color-25)"
+                accent="var(--color-var-color-32)"
                 delta={stats.new.delta} previousLabel="ماه گذشته" tone="good"
                 hint={stats.new.count
                     ? `${toFaDigits(stats.new.count)} نفر در ${stats.new.month_label} اضافه شدند`

@@ -50,7 +50,7 @@ const TransactionKpis = ({refreshKey = 0}) => {
             <KpiCard
                 title="تعداد تراکنش‌ها" delay={45}
                 value={stats.total} suffix="ردیف" icon={HiOutlineArrowsRightLeft}
-                accent="var(--color-var-color-25)"
+                accent="var(--color-var-color-32)"
                 delta={month.delta} previousLabel="ماه گذشته" tone="good"
                 hint={month.count
                     ? `${toFaDigits(month.count)} ردیف در ${month.month_label}`
