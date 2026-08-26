@@ -15,16 +15,16 @@ const SUGGESTIONS = [
      title: "گزارش دوره‌ای", body: "گزارش هفتگی یا ماهانه"},
 ];
 
-// TODO(فاز توسعه): این تابع نقطهٔ اتصال به موتور پاسخ‌گویی است.
-// فعلاً عمداً پاسخِ ساختگی تولید نمی‌کند تا با دستیارِ واقعی اشتباه گرفته نشود.
-const NOT_WIRED = "این بخش هنوز به موتور پاسخ‌گویی متصل نشده است. ساختار گفتگو آماده است و در فاز بعدی به داده‌های دفترِ مشتریان وصل می‌شود.";
+// TODO(فاز ۲): موتورِ پاسخ‌گویی. سرور پیامِ کاربر را ذخیره می‌کند ولی فعلاً
+// `assistantMessage` را `null` برمی‌گرداند. عمداً هیچ پاسخِ ساختگی‌ای ساخته
+// نمی‌شود — جمله‌ای خوش‌ظاهر بدتر از نبودنِ جواب است، چون کاربر باورش می‌کند.
+const NOT_WIRED = "پیام شما ذخیره شد. موتورِ پاسخ‌گویی هنوز وصل نشده است و در فاز بعد به داده‌های دفترِ مشتریان متصل می‌شود.";
 
-const ChatPane = ({conversation, onPushMessage}) => {
+const ChatPane = ({conversation, messages = [], onSend}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
     const taRef = useRef(null);
-    const messages = conversation?.messages || [];
 
     // چسبیدن به انتهای گفتگو با هر پیام تازه
     useEffect(() => {
@@ -39,18 +39,17 @@ const ChatPane = ({conversation, onPushMessage}) => {
         el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
     };
 
-    const send = (text) => {
+    const send = async (text) => {
         const body = (text ?? draft).trim();
-        if (!body || pending) return;
+        if (!body || pending || !conversation) return;
         setDraft("");
         if (taRef.current) taRef.current.style.height = "auto";
-        onPushMessage({role: "user", body});
         setPending(true);
-        // جای فراخوانیِ واقعیِ سرور در فاز بعد
-        setTimeout(() => {
-            onPushMessage({role: "assistant", body: NOT_WIRED});
+        try {
+            await onSend(body);
+        } finally {
             setPending(false);
-        }, 400);
+        }
     };
 
     const keyDown = (e) => {
@@ -112,14 +111,14 @@ const ChatPane = ({conversation, onPushMessage}) => {
                 ) : (
                     // ── گفتگو: پیام کاربر حباب‌دار، پاسخ دستیار تمام‌عرض (مثل چت مدل‌های زبانی) ──
                     <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-5">
-                        {messages.map((m, i) => m.role === "user" ? (
-                            <div key={i} className="self-start max-w-[85%] px-4 py-2.5 rounded-2xl rounded-br-md
+                        {messages.map((m) => m.role === "user" ? (
+                            <div key={m.id} className="self-start max-w-[85%] px-4 py-2.5 rounded-2xl rounded-br-md
                                                     bg-var-color-12 dark:bg-var-color-44 text-[13.5px] leading-7
                                                     text-var-color-06 dark:text-var-color-01 whitespace-pre-wrap wrap-break-word">
                                 {m.body}
                             </div>
                         ) : (
-                            <div key={i} className="flex gap-2.5">
+                            <div key={m.id} className="flex gap-2.5">
                                 <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
                                                  bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
                                     <FiCpu className="w-4 h-4 text-var-color-15"/>
@@ -128,6 +127,15 @@ const ChatPane = ({conversation, onPushMessage}) => {
                                               whitespace-pre-wrap wrap-break-word">{m.body}</p>
                             </div>
                         ))}
+                        {/* موتور هنوز وصل نیست: به‌جای ساختنِ جوابِ الکی، صریح
+                            می‌گوییم. ظاهرش هم عمداً با حبابِ دستیار فرق دارد. */}
+                        {!pending && messages.length > 0 && messages.at(-1).role === "user" && (
+                            <div className="flex gap-2.5 rounded-xl px-3 py-2.5
+                                            bg-var-color-54 border border-var-color-61/40">
+                                <FiCpu className="shrink-0 w-4 h-4 mt-1 text-var-color-53"/>
+                                <p className="m-0 text-[12.5px] leading-7 text-var-color-53">{NOT_WIRED}</p>
+                            </div>
+                        )}
                         {pending && (
                             <div className="flex gap-2.5 items-center">
                                 <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center

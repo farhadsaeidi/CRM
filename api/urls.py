@@ -1,5 +1,6 @@
 from django.urls import path
 from account import views as account_views
+from chat import views as chat_views
 from home import views as home_views
 from . import views
 
@@ -43,9 +44,16 @@ ledger_patterns = [
     path("transactions/stats/", home_views.AllTransactionsStatsView.as_view(), name="all_transactions_stats"),
 ]
 
+# دستیارِ گفتگو — اسکوپ‌شده به مالکِ درخواست، مثلِ بقیهٔ دامنه
+chat_patterns = [
+    path("chat/conversations/", chat_views.ConversationListCreateView.as_view(), name="conversations"),
+    path("chat/conversations/<int:pk>/", chat_views.ConversationDetailView.as_view(), name="conversation_detail"),
+    path("chat/conversations/<int:pk>/messages/", chat_views.MessageCreateView.as_view(), name="conversation_messages"),
+]
+
 # عمومی
 misc_patterns = [
     path("health/", views.HealthView.as_view(), name="health"),
 ]
 
-urlpatterns = auth_patterns + ledger_patterns + misc_patterns
+urlpatterns = auth_patterns + ledger_patterns + chat_patterns + misc_patterns

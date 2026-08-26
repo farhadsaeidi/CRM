@@ -1,65 +1,141 @@
-import {useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {FiMessageSquare} from "react-icons/fi";
 import Breadcrumb from "../../components/common/Breadcrumb.jsx";
 import Sidebar from "../../components/common/Sidebar.jsx";
 import ChatSidebar from "./components/ChatSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
+import {chatApi} from "../../api/chat.js";
+import {notify} from "../../lib/notify.jsx";
 import {CHAT_PATH} from "../../lib/paths.js";
 import {useGoBack} from "../../lib/useGoBack.js";
-
-// عنوانِ گفتگو از اولین پیامِ کاربر ساخته می‌شود (مثل چت مدل‌های زبانی)
-const titleFrom = (body) => {
-    const t = body.trim().replace(/\s+/g, " ");
-    return t.length > 34 ? `${t.slice(0, 34)}…` : t;
-};
-
-const newConversation = () => ({id: `c-${Date.now()}`, title: "گفتگوی جدید", messages: []});
 
 /**
  * صفحهٔ گفتگو. سایدبارش فهرستِ گفتگوهاست، نه ناوبریِ برنامه — ناوبری فقط در
  * صفحهٔ خانه است و دکمهٔ بازگشتِ همین سایدبار به صفحهٔ قبل برمی‌گردد.
  *
- * گفتگوها فعلاً فقط در حافظهٔ همین صفحه‌اند. نقطهٔ اتصال به سرور همین‌جاست:
- * state را با دادهٔ سرور جایگزین کنید و pushMessage را به فراخوانیِ واقعی وصل کنید.
+ * گفتگوها سمتِ سرور می‌مانند (`chat.Conversation`)، پس رفرش و بازکردن از
+ * دستگاهِ دیگر تاریخچه را نگه می‌دارد.
+ *
+ * ⚠️ **پیام‌ها فقط برای گفتگوی باز خوانده می‌شوند، نه همه با هم.** فهرستِ کناری
+ * عمداً بدونِ پیام می‌آید؛ وگرنه با ده گفتگو کلِ تاریخچه در هر بار باز شدنِ صفحه
+ * منتقل می‌شد در حالی که کاربر یکی را باز می‌کند.
  */
 const Chat = () => {
     const goBack = useGoBack();
-    const [conversations, setConversations] = useState(() => [newConversation()]);
-    const [activeId, setActiveId] = useState(() => null);
+    const [conversations, setConversations] = useState([]);
+    const [activeId, setActiveId] = useState(null);
+    // پیام‌های گفتگوی باز، جدا از فهرست — به همان دلیلِ بالا
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const active = conversations.find((c) => c.id === activeId) || conversations[0] || null;
+    const active = conversations.find((c) => c.id === activeId) ?? null;
 
-    const createConversation = () => {
-        const c = newConversation();
-        setConversations((prev) => [c, ...prev]);
-        setActiveId(c.id);
+    // فهرستِ اولیه. اگر مالک هیچ گفتگویی ندارد یکی ساخته می‌شود تا صفحه با
+    // حالتِ خالیِ بی‌مقصد باز نشود.
+    useEffect(() => {
+        let ignore = false;
+        chatApi.list()
+            .then(async (res) => {
+                const rows = res?.results ?? res ?? [];
+                if (ignore) return;
+                if (rows.length === 0) {
+                    const fresh = await chatApi.create();
+                    if (ignore) return;
+                    setConversations([fresh]);
+                    setActiveId(fresh.id);
+                } else {
+                    setConversations(rows);
+                    setActiveId(rows[0].id);
+                }
+            })
+            .catch(() => {
+                if (!ignore) notify("دریافت گفتگوها ناموفق بود.", "error");
+            })
+            .finally(() => {
+                if (!ignore) setLoading(false);
+            });
+        return () => {
+            ignore = true;
+        };
+    }, []);
+
+    // پاک‌سازیِ پیام‌ها هنگامِ تعویضِ گفتگو با مقایسه در حین رندر انجام می‌شود،
+    // نه با افکت: قاعدهٔ `react-hooks/set-state-in-effect` هر setStateِ همگام در
+    // بدنهٔ افکت را رد می‌کند. ضمناً این‌طور پیام‌های گفتگوی قبلی یک لحظه هم
+    // زیرِ عنوانِ گفتگوی تازه دیده نمی‌شوند.
+    const [lastActiveId, setLastActiveId] = useState(activeId);
+    if (lastActiveId !== activeId) {
+        setLastActiveId(activeId);
+        setMessages([]);
+    }
+
+    // پیام‌های گفتگوی باز
+    useEffect(() => {
+        if (activeId === null) return undefined;
+        let ignore = false;
+        chatApi.detail(activeId)
+            .then((res) => {
+                if (!ignore) setMessages(res.messages ?? []);
+            })
+            .catch(() => {
+                if (!ignore) notify("خواندن این گفتگو ناموفق بود.", "error");
+            });
+        return () => {
+            ignore = true;
+        };
+    }, [activeId]);
+
+    const createConversation = async () => {
+        try {
+            const fresh = await chatApi.create();
+            setConversations((prev) => [fresh, ...prev]);
+            setActiveId(fresh.id);
+            setMessages([]);
+        } catch {
+            notify("ساختِ گفتگوی تازه ناموفق بود.", "error");
+        }
     };
 
-    const deleteConversation = (id) => {
-        setConversations((prev) => {
-            const rest = prev.filter((c) => c.id !== id);
-            if (id === activeId) setActiveId(rest[0]?.id || null);
-            return rest;
-        });
+    const deleteConversation = async (id) => {
+        try {
+            await chatApi.remove(id);
+        } catch {
+            notify("حذف گفتگو ناموفق بود.", "error");
+            return;
+        }
+        const rest = conversations.filter((c) => c.id !== id);
+        setConversations(rest);
+        if (id === activeId) setActiveId(rest[0]?.id ?? null);
     };
 
-    // افزودن پیام به گفتگوی فعال؛ اولین پیامِ کاربر عنوان را هم می‌سازد
-    const pushMessage = (msg) => {
-        setConversations((prev) => prev.map((c) => {
-            if (c.id !== active?.id) return c;
-            const isFirstUserMsg = msg.role === "user" && c.messages.length === 0;
-            return {
-                ...c,
-                title: isFirstUserMsg ? titleFrom(msg.body) : c.title,
-                messages: [...c.messages, msg],
-            };
-        }));
-    };
+    // ارسالِ پیام. پیامِ کاربر بلافاصله روی صفحه می‌نشیند و بعد سرور تاییدش
+    // می‌کند — انتظار برای رفت‌وبرگشتِ شبکه قبل از دیدنِ حرفِ خود کاربر، چت را
+    // کند نشان می‌دهد.
+    const sendMessage = useCallback(async (body) => {
+        if (activeId === null) return;
+        const optimistic = {id: `tmp-${Date.now()}`, role: "user", body, created: null};
+        setMessages((prev) => [...prev, optimistic]);
+
+        try {
+            const res = await chatApi.send(activeId, body);
+            setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? res.userMessage : m)));
+            if (res.assistantMessage) {
+                setMessages((prev) => [...prev, res.assistantMessage]);
+            }
+            // عنوان را سرور می‌سازد (از اولین پیام)، پس از همان‌جا خوانده می‌شود
+            setConversations((prev) => prev.map((c) =>
+                (c.id === activeId ? {...c, title: res.title} : c)));
+        } catch {
+            setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+            notify("ارسال پیام ناموفق بود.", "error");
+        }
+    }, [activeId]);
 
     return (
         <section className="h-full min-h-0 flex flex-col md:flex-row gap-3 2xs:gap-4">
             <Sidebar className="max-h-52 md:max-h-none">
-                <ChatSidebar conversations={conversations} activeId={active?.id ?? null}
+                <ChatSidebar conversations={conversations} activeId={activeId}
+                             loading={loading}
                              onBack={goBack} onNew={createConversation}
                              onSelect={setActiveId} onDelete={deleteConversation}/>
             </Sidebar>
@@ -74,7 +150,8 @@ const Chat = () => {
                 <div className="shrink-0 px-3 pt-3">
                     <Breadcrumb items={[{label: "گفتگو", to: CHAT_PATH, icon: FiMessageSquare}]}/>
                 </div>
-                <ChatPane key={active?.id} conversation={active} onPushMessage={pushMessage}/>
+                <ChatPane key={activeId} conversation={active} messages={messages}
+                          onSend={sendMessage}/>
             </div>
         </section>
     );

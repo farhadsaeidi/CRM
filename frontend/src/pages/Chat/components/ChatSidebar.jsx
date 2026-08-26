@@ -5,7 +5,7 @@ import CustomTooltip from "../../../components/common/CustomTooltip.jsx";
 
 
 // ── سایدبارِ حالتِ چت: بازگشت، گفتگوی جدید، فهرست گفتگوها ──
-const ChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete}) => {
+const ChatSidebar = ({conversations, activeId, loading = false, onBack, onNew, onSelect, onDelete}) => {
     // تولتیپِ شناور و نه کلاسِ `custom-tooltip`: خودِ سایدبار overflow-hidden دارد
     // (برای گردیِ گوشه‌ها) و این دکمه در بالاترین نقطه‌اش است، پس تولتیپِ
     // شبه‌عنصری که رو به بالا باز می‌شود بریده می‌شد.
@@ -49,7 +49,14 @@ const ChatSidebar = ({conversations, activeId, onBack, onNew, onSelect, onDelete
 
         <ScrollContainer className="flex-1 min-h-0" overflowX="hidden">
         <div className="px-2.5 pb-2.5 flex flex-col gap-0.5">
-            {conversations.length === 0 ? (
+            {/* حالتِ بارگذاری با اسکلت پر می‌شود نه با «هنوز گفتگویی نیست» —
+                دومی دروغ است تا وقتی هنوز نمی‌دانیم چیزی هست یا نه */}
+            {loading ? (
+                [0, 1, 2].map((i) => (
+                    <div key={i} className="animate-pulse h-9 mx-0.5 my-0.5 rounded-xl
+                                            bg-var-color-01 dark:bg-var-color-40"/>
+                ))
+            ) : conversations.length === 0 ? (
                 <p className="m-0 px-2 py-6 text-center text-[12px] text-var-color-04 dark:text-var-color-39">
                     هنوز گفتگویی نیست.
                 </p>
