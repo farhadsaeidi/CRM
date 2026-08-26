@@ -1,4 +1,4 @@
-const BASE_URL = "/api";
+export const BASE_URL = "/api";
 
 // کارهای بی خطر! کارهایی که نیاز به مهر امنیتی ندارن
 const SAFE_METHODS = ["GET", "HEAD", "OPTIONS"];

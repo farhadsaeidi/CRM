@@ -12,6 +12,7 @@ import CustomerLedger from "./pages/Customers/CustomerLedger.jsx";
 import Transactions from "./pages/Transactions/Transactions.jsx";
 import Chat from "./pages/Chat/Chat.jsx";
 import Profile from "./pages/Profile/Profile.jsx";
+import Statement from "./pages/Statement/Statement.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
 
 const router = createBrowserRouter([
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
                     {path: "all-transactions", element: <Transactions/>, handle: {title: "تراکنش ها"}},
                     {path: "chat", element: <Chat/>, handle: {title: "گفتگو"}},
                     {path: "profile", element: <Profile/>, handle: {title: "پروفایل"}},
+                    // صورتحساب یک **سند** است نه صفحهٔ برنامه: هدر و فوترِ اپ
+                    // روی کاغذ معنایی ندارند و خودِ سند سربرگِ خودش را دارد
+                    {path: "statement", element: <Statement/>,
+                     handle: {title: "صورتحساب مشتریان", chrome: false}},
                 ],
             },
 

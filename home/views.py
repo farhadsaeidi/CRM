@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.exceptions import ParseError
 from rest_framework.pagination import PageNumberPagination
+from django.http import FileResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,6 +18,7 @@ from .dashboard import (
     build_transaction_stats,
 )
 from .models import Customer, CustomerOwner, Transaction
+from .reports import build_statement, build_workbook
 from .serializers import AllTransactionsSerializer, CustomerSerializer, TransactionSerializer
 from .services import (
     FILTER_CODES,
@@ -115,6 +117,35 @@ class CustomerDetailView(OwnerScopedMixin, generics.RetrieveUpdateDestroyAPIView
     def destroy(self, request, *args, **kwargs):
         super().destroy(request, *args, **kwargs)
         return Response({"message": "حذف مشتری با موفقیت انجام شد."}, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------- گزارش‌ها
+
+# noinspection PyMethodMayBeStatic
+class StatementView(OwnerScopedMixin, APIView):
+    """صورتحسابِ همهٔ مشتریان — برای نمای چاپی.
+
+    صفحه‌بندی ندارد و نباید داشته باشد: صورتحسابِ نصفه صورتحساب نیست.
+    """
+
+    def get(self, request):
+        return Response(build_statement(request.user))
+
+
+# noinspection PyMethodMayBeStatic
+class ExcelExportView(OwnerScopedMixin, APIView):
+    """کلِ دفترِ مالک در یک فایلِ اکسل با دو برگه.
+
+    نقشش پشتیبانِ خودِ کاربر است، پس همهٔ ردیف‌ها می‌روند نه خلاصه.
+    """
+
+    def get(self, request):
+        stream, filename = build_workbook(request.user)
+        # as_attachment باعث می‌شود مرورگر به‌جای باز کردن، دانلود کند
+        return FileResponse(
+            stream, as_attachment=True, filename=filename,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
 
 # ---------------------------------------------------------------- داشبورد

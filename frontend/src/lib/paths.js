@@ -5,6 +5,7 @@ export const HOME_PATH = "/home";
 export const CUSTOMERS_PATH = "/customers";
 export const CHAT_PATH = "/chat";
 export const PROFILE_PATH = "/profile";
+export const STATEMENT_PATH = "/statement";
 
 // جدولِ همهٔ تراکنش‌های مالک، بدونِ قیدِ مشتری
 export const ALL_TRANSACTIONS_PATH = "/all-transactions";

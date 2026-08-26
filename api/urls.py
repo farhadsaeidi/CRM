@@ -22,6 +22,8 @@ auth_patterns = [
 # مشتریان و تراکنش‌ها — همه اسکوپ‌شده به مالکِ درخواست
 ledger_patterns = [
     path("dashboard/", home_views.DashboardView.as_view(), name="dashboard"),
+    path("statement/", home_views.StatementView.as_view(), name="statement"),
+    path("export/xlsx/", home_views.ExcelExportView.as_view(), name="excel_export"),
     path("customers/", home_views.CustomerListCreateView.as_view(), name="customers"),
     path("customers/stats/", home_views.CustomerStatsView.as_view(), name="customer_stats"),
     path("customers/<int:pk>/", home_views.CustomerDetailView.as_view(), name="customer_detail"),

@@ -4,7 +4,8 @@ import {HiOutlineSearch} from "react-icons/hi";
 import {IoIosClose} from "react-icons/io";
 import {FaPowerOff, FaRegUser} from "react-icons/fa6";
 import {FiChevronUp, FiFileText, FiHelpCircle, FiLock} from "react-icons/fi";
-import {TbCoins} from "react-icons/tb";
+import {TbFileSpreadsheet} from "react-icons/tb";
+import {FiMessageSquare} from "react-icons/fi";
 import WindowsIcon from "./WindowsIcon.jsx";
 import MenuItem from "./MenuItem.jsx";
 import ChangePasswordModal from "./ChangePasswordModal.jsx";
@@ -13,7 +14,8 @@ import personImage from "/images/person2.png";
 import {useAuth} from "../../context/AuthContext.js";
 import {authApi} from "../../api/auth.js";
 import {notify} from "../../lib/notify.jsx";
-import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH, PROFILE_PATH} from "../../lib/paths.js";
+import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH, PROFILE_PATH, STATEMENT_PATH} from "../../lib/paths.js";
+import {excelExportUrl} from "../../api/reports.js";
 import {OPEN_GUIDE_EVENT} from "../../lib/events.js";
 
 // جستجوی تاریخِ تراکنش از همین نوار اجرا می‌شود ولی نتیجه‌اش را جدولِ تراکنش‌ها
@@ -241,8 +243,27 @@ const Footer = () => {
     };
 
     const dropdownItems = [
-        {id: "moneyItem", icon: TbCoins, text: "سرمایه در گردش شما", onClick: soon("سرمایه در گردش")},
-        {id: "billItem", icon: FiFileText, text: "صورتحساب همه مشتریان", onClick: soon("صورتحساب مشتریان")},
+        {
+            id: "billItem", icon: FiFileText, text: "صورتحساب مشتریان",
+            onClick: () => {
+                setIsDropdownMenuOpen(false);
+                navigate(STATEMENT_PATH);
+            },
+        },
+        {
+            id: "smsItem", icon: FiMessageSquare, text: "یادآوری پیامکی به بدهکاران",
+            onClick: soon("یادآوری پیامکی"),
+        },
+        {
+            id: "excelItem", icon: TbFileSpreadsheet, text: "خروجی اکسل",
+            // دانلود را به خودِ مرورگر می‌سپاریم: دیالوگِ ذخیره و نوارِ پیشرفتش
+            // رایگان به دست می‌آید و کوکیِ سشن هم چون هم‌دامنه است همراه می‌رود
+            onClick: () => {
+                setIsDropdownMenuOpen(false);
+                notify("در حال آماده‌سازی فایل اکسل ...", "info", 2000);
+                window.location.assign(excelExportUrl);
+            },
+        },
         {
             id: "helpItem", icon: FiHelpCircle, text: "راهنمای نرم افزار",
             // مودالِ راهنما در RootLayout است تا روی هر صفحه‌ای باز شود

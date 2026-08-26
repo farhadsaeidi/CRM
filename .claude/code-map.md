@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-26 04:14 · کامیت `a728e0d`
+آخرین تولید: 2026-08-26 04:42 · کامیت `a50a4e5`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 40 | 3671 |
-| فرانت‌اند | 84 | 8224 |
+| بک‌اند | 42 | 4038 |
+| فرانت‌اند | 86 | 8517 |
 
 اپ‌های جنگو: account api home
 
@@ -27,13 +27,15 @@
 | `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:289 | [AllowAny] |
 | `/api/auth/profile/` | ProfileView | account/views.py:325 | _(پیش‌فرض DRF)_ |
 | `/api/auth/change-password/` | ChangePasswordView | account/views.py:343 | _(پیش‌فرض DRF)_ |
-| `/api/dashboard/` | DashboardView | home/views.py:123 | _(پیش‌فرض DRF)_ |
-| `/api/customers/` | CustomerListCreateView | home/views.py:56 | _(پیش‌فرض DRF)_ |
-| `/api/customers/stats/` | CustomerStatsView | home/views.py:93 | _(پیش‌فرض DRF)_ |
-| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:104 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/` | AllTransactionsView | home/views.py:148 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:184 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/stats/` | AllTransactionsStatsView | home/views.py:177 | _(پیش‌فرض DRF)_ |
+| `/api/dashboard/` | DashboardView | home/views.py:154 | _(پیش‌فرض DRF)_ |
+| `/api/statement/` | StatementView | home/views.py:125 | _(پیش‌فرض DRF)_ |
+| `/api/export/xlsx/` | ExcelExportView | home/views.py:136 | _(پیش‌فرض DRF)_ |
+| `/api/customers/` | CustomerListCreateView | home/views.py:58 | _(پیش‌فرض DRF)_ |
+| `/api/customers/stats/` | CustomerStatsView | home/views.py:95 | _(پیش‌فرض DRF)_ |
+| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:106 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/` | AllTransactionsView | home/views.py:179 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:215 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/stats/` | AllTransactionsStatsView | home/views.py:208 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -124,6 +126,11 @@
     - `Customer` :17
     - `CustomerOwner` :55
     - `Transaction` :71
+- **./home/reports.py** (188 خط، 4 نماد)
+    - `_today` :30
+    - `build_statement` :36
+    - `_write_sheet` :101
+    - `build_workbook` :144
 - **./home/serializers.py** (88 خط، 11 نماد)
     - `normalize_phone_number` :12
     - `PhoneField` :18
@@ -148,6 +155,9 @@
 - **./home/tests/test_customers_api.py** (125 خط، 16 نماد)
     - `CustomerListTests` :11
     - `CustomerWriteTests` :62
+- **./home/tests/test_reports.py** (146 خط، 23 نماد)
+    - `StatementTests` :12
+    - `ExcelExportTests` :87
 - **./home/tests/test_scoping.py** (167 خط، 18 نماد)
     - `ScopingTests` :18
     - `AuthenticationRequiredTests` :140
@@ -165,21 +175,21 @@
     - `LedgerTests` :11
     - `DateSearchTests` :82
     - `AllTransactionsTests` :132
-- **./home/views.py** (334 خط، 35 نماد)
-    - `CustomerPagination` :30
-    - `OwnerScopedMixin` :39
-    - `CustomerListCreateView` :56
-    - `CustomerStatsView` :93
-    - `CustomerDetailView` :104
-    - `DashboardView` :123
-    - `AllTransactionsPagination` :137
-    - `AllTransactionsView` :148
-    - `AllTransactionsStatsView` :177
-    - `AllTransactionsSearchView` :184
-    - `TransactionListCreateView` :212
-    - `TransactionDetailView` :266
-    - `TransactionStatsView` :294
-    - `TransactionSearchView` :307
+- **./home/views.py** (365 خط، 39 نماد)
+    - `CustomerPagination` :32
+    - `OwnerScopedMixin` :41
+    - `CustomerListCreateView` :58
+    - `CustomerStatsView` :95
+    - `CustomerDetailView` :106
+    - `StatementView` :125
+    - `ExcelExportView` :136
+    - `DashboardView` :154
+    - `AllTransactionsPagination` :168
+    - `AllTransactionsView` :179
+    - `AllTransactionsStatsView` :208
+    - `AllTransactionsSearchView` :215
+    - `TransactionListCreateView` :243
+    - `TransactionDetailView` :297
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
@@ -208,6 +218,9 @@
     - ChangePasswordModal
     - ScrollContainer
     - notify
+- **frontend/src/pages/Statement/Statement.jsx** (208 خط)
+    - LogoIcon
+    - notify
 - **frontend/src/pages/Transactions/Transactions.jsx** (460 خط)
     - Breadcrumb
     - CustomTooltip
@@ -222,7 +235,7 @@
 - `Breadcrumb` — 72 خط
 - `ChangePasswordModal` — 180 خط
 - `CustomTooltip` — 54 خط
-- `Footer` — 433 خط
+- `Footer` — 454 خط
 - `GuideModal` — 238 خط
 - `Header` — 42 خط
 - `KpiCard` — 116 خط
@@ -246,6 +259,8 @@
 - **customers.js**: list stats create update remove
 
 - **dashboard.js**: get
+
+- **reports.js**: statement
 
 - **transactions.js**: list stats search create update remove list stats search
 
