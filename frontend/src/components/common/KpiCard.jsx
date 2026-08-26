@@ -51,13 +51,20 @@ const KpiCard = ({
     return (
         <section
             {...interactive}
-            style={{animationDelay: `${delay}ms`, ...(active ? {borderColor: accent} : {})}}
-            className={`animate-fade-up group relative min-w-0 overflow-hidden flex flex-col justify-between gap-3
+            style={{
+                animationDelay: `${delay}ms`,
+                // هاور در همان رنگِ کارت روشن می‌شود نه یک خاکستریِ مشترک، پس
+                // هویتِ رنگیِ هر کاشی با نشانگر هم تایید می‌شود. قاعده‌اش در
+                // index.css است چون با استایلِ درون‌خطی نمی‌شود :hover نوشت.
+                "--kpi-accent": accent,
+                ...(active ? {borderColor: accent} : {}),
+            }}
+            className={`kpi-card animate-fade-up group relative min-w-0 overflow-hidden
+                        flex flex-col justify-between gap-3
                         rounded-[18px] p-4 bg-var-color-00 dark:bg-var-color-36
                         border transition-colors duration-300
                         ${active ? "" : "border-var-color-02 dark:border-var-color-38"}
-                        ${clickable ? "cursor-pointer" : ""}
-                        hover:border-var-color-14 dark:hover:border-var-color-16`}
+                        ${clickable ? "cursor-pointer" : ""}`}
         >
             {/* هالهٔ رنگیِ گوشه — همان لهجهٔ بصریِ کارت‌های مرجع. در RTL گوشهٔ
                 شروعِ خط سمت راست است، پس هاله همان‌جا می‌نشیند. */}
@@ -84,9 +91,16 @@ const KpiCard = ({
                     </p>
                 </div>
                 {Icon && (
-                    <span style={{color: accent, borderColor: accent}}
-                          className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center
-                                     border opacity-90 bg-var-color-01 dark:bg-var-color-40">
+                    // پرِ کم‌رنگ + بوردرِ نرم از همان رنگ، به‌جای بوردرِ تخت روی
+                    // پس‌زمینهٔ خنثی: آیکون در یک لکهٔ هم‌رنگ می‌نشیند و به‌جای یک
+                    // خطِ نازک، خودش وزن پیدا می‌کند — همان الگوی کارت‌های مرجع.
+                    // کنتراستِ آیکون هم بهتر می‌شود چون زمینه‌اش دیگر خنثی نیست.
+                    <span style={{
+                        color: accent,
+                        background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+                        borderColor: `color-mix(in srgb, ${accent} 30%, transparent)`,
+                    }}
+                          className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border">
                         <Icon className="w-4.5 h-4.5"/>
                     </span>
                 )}
