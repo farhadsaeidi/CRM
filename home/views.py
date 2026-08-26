@@ -18,6 +18,7 @@ from .dashboard import (
     build_transaction_stats,
 )
 from .models import Customer, CustomerOwner, Transaction
+from .reminders import build_debtor_list, send_reminders
 from .reports import build_statement, build_workbook
 from .serializers import AllTransactionsSerializer, CustomerSerializer, TransactionSerializer
 from .services import (
@@ -146,6 +147,46 @@ class ExcelExportView(OwnerScopedMixin, APIView):
             stream, as_attachment=True, filename=filename,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
+
+
+# ------------------------------------------------------ یادآوری پیامکی
+
+# noinspection PyMethodMayBeStatic
+class DebtorReminderListView(OwnerScopedMixin, APIView):
+    """بدهکارانی که می‌شود به آن‌ها یادآوری فرستاد."""
+
+    def get(self, request):
+        return Response(build_debtor_list(request.user))
+
+
+# noinspection PyMethodMayBeStatic
+class DebtorReminderSendView(OwnerScopedMixin, APIView):
+    """ارسالِ یادآوری به مشتریانِ انتخاب‌شده.
+
+    اسکوپینگ اینجا با فیلتر انجام می‌شود نه با ۴۰۴: شناسه‌ای که بدهکارِ این مالک
+    نباشد اصلاً در فهرست نیست و در پاسخ «رد شده» گزارش می‌شود.
+    """
+
+    def post(self, request):
+        data = request.data if isinstance(request.data, dict) else {}
+        raw_ids = data.get("customer_ids") or []
+        if not isinstance(raw_ids, list) or not raw_ids:
+            return Response({"message": "هیچ مشتری‌ای انتخاب نشده است."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        customer_ids = [int(value) for value in raw_ids if str(value).isdigit()]
+        result = send_reminders(request.user, customer_ids)
+        if result is None:
+            return Response(
+                {"message": "برای ارسال پیامک، اول نام کسب‌وکارتان را وارد کنید.",
+                 "needsBusinessName": True},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response({
+            "message": f"{len(result['sent'])} پیامک ارسال شد.",
+            **result,
+        })
 
 
 # ---------------------------------------------------------------- داشبورد

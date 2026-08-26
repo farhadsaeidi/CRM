@@ -24,3 +24,7 @@ export const OPEN_GUIDE_EVENT = "crm:open-guide";
 // نامِ کسب‌وکار فقط بارِ اول پرسیده می‌شود — موقعِ ارسالِ پیامکِ یادآوری. مودالش
 // هم مثلِ بقیه در RootLayout است تا از هر صفحه‌ای باز شود.
 export const OPEN_BUSINESS_NAME_EVENT = "crm:open-business-name";
+
+// مودالِ انتخابِ بدهکاران هم از منوی فوتر باز می‌شود و هم بلافاصله بعد از ذخیرهٔ
+// نامِ کسب‌وکار — کاربری که برای ارسالِ پیامک آمده بود نباید دوباره از منو شروع کند.
+export const OPEN_DEBT_REMINDER_EVENT = "crm:open-debt-reminder";

@@ -15,7 +15,11 @@ import {authApi} from "../../api/auth.js";
 import {notify} from "../../lib/notify.jsx";
 import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH, PROFILE_PATH, STATEMENT_PATH} from "../../lib/paths.js";
 import {excelExportUrl} from "../../api/reports.js";
-import {OPEN_BUSINESS_NAME_EVENT, OPEN_GUIDE_EVENT} from "../../lib/events.js";
+import {
+    OPEN_BUSINESS_NAME_EVENT,
+    OPEN_DEBT_REMINDER_EVENT,
+    OPEN_GUIDE_EVENT,
+} from "../../lib/events.js";
 
 // جستجوی تاریخِ تراکنش از همین نوار اجرا می‌شود ولی نتیجه‌اش را جدولِ تراکنش‌ها
 // نشان می‌دهد؛ فوتر در RootLayout است و جدول فرزندِ Outlet، پس رویدادِ سراسری
@@ -252,7 +256,7 @@ const Footer = () => {
                     window.dispatchEvent(new CustomEvent(OPEN_BUSINESS_NAME_EVENT));
                     return;
                 }
-                notify("ارسال پیامک یادآوری به‌زودی فعال می‌شود.", "info");
+                window.dispatchEvent(new CustomEvent(OPEN_DEBT_REMINDER_EVENT));
             },
         },
         {

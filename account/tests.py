@@ -5,6 +5,7 @@
 """
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -214,14 +215,16 @@ class PasswordTests(APITestCase):
     def test_forget_password_never_logs_the_new_password(self):
         """قرارداد: بدنهٔ لاگ فقط نامِ الگو و رویداد است، هیچ‌چیزِ دیگری.
 
-        بررسیِ «کلمهٔ password در متن نیست» کافی نبود — نامِ خودِ الگو
-        (`crm-forget-password`) همان کلمه را دارد. پس بدنه را دقیق می‌سنجیم.
+        بررسیِ «کلمهٔ password در متن نیست» کافی نبود — اگر نامِ الگو خودش
+        `crm-forget-password` باشد همان کلمه را دارد. پس بدنه را دقیق می‌سنجیم،
+        و نامِ الگو از تنظیمات خوانده می‌شود نه ثابتِ داخلِ تست.
         """
         self.client.post(reverse("api:forget_password"), {"otpPhone": "09121234567"}, format="json")
         logs = list(SMSLog.objects.all())
         self.assertTrue(logs)
+        expected = f"[{settings.SMS_TEMPLATE_FORGET_PASSWORD}] ارسال شد."
         for log in logs:
-            self.assertEqual(log.body, "[crm-forget-password] ارسال شد.")
+            self.assertEqual(log.body, expected)
 
 
 @override_settings(SMS_DEV_MODE=True)

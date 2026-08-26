@@ -1,5 +1,6 @@
 import re
 from secrets import choice, randbelow
+from django.conf import settings
 from django.core.cache import cache
 from django.contrib.auth import authenticate, login, logout, get_user_model, update_session_auth_hash
 from django.db import transaction
@@ -213,7 +214,8 @@ class OtpPhoneView(APIView):
             user.save(update_fields=["otp", "otp_time"])
             # در صورت خطا کد ذخیره‌شده را پاک کن تا کاربر بتواند دوباره تلاش کند
             try:
-                send_token_sms(phone=phone, template="crm", token=otp_code, event="otp_login")
+                send_token_sms(phone=phone, template=settings.SMS_TEMPLATE_OTP,
+                               token=otp_code, event="otp_login")
             except OtpSendError as error:
                 user.otp = None
                 user.otp_time = None
@@ -309,7 +311,8 @@ class ForgetPasswordView(APIView):
             # اول ارسالِ پیامک، بعد تغییرِ رمز — اگر ارسال بشکند کاربر با رمزِ قبلی
             # می‌ماند. برعکسش یعنی قفل‌شدنِ کاربر بیرونِ حسابِ خودش.
             try:
-                send_token_sms(phone=phone, template="crm-forget-password", token=token, event="forget_password")
+                send_token_sms(phone=phone, template=settings.SMS_TEMPLATE_FORGET_PASSWORD,
+                               token=token, event="forget_password")
             except OtpSendError as error:
                 return Response({"message": error.message}, status=error.status_code)
             user.set_password(token)

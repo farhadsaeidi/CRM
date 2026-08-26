@@ -233,6 +233,12 @@ SMS_DEV_MODE = config("SMS_DEV_MODE", default=True, cast=bool)
 # لازم است چون کاوه‌نگار فقط به شماره‌های تاییدشدهٔ صاحب حساب ارسال دارد و
 # شماره‌های دفترِ آزمایشی همه ساختگی‌اند.
 SMS_TEST_RECIPIENT = config("SMS_TEST_RECIPIENT", default="")
+
+# نامِ الگوهای کاوه‌نگار. اینها پیکربندیِ استقرارند نه ثابتِ کد: اگر روزی الگویی
+# در پنل با نامِ دیگری ساخته شود، نباید کد عوض شود.
+SMS_TEMPLATE_OTP = config("SMS_TEMPLATE_OTP", default="crm")
+SMS_TEMPLATE_FORGET_PASSWORD = config("SMS_TEMPLATE_FORGET_PASSWORD", default="crm-forget-pass")
+SMS_TEMPLATE_DEBT_REMINDER = config("SMS_TEMPLATE_DEBT_REMINDER", default="crm-debt-reminder")
 KAVENEGAR_API_KEY = config("KAVENEGAR_API_KEY", default="")
 # این خط حقوقیه و خدماتی نشده. برای خدماتی شدن باید حقوقی بود مثلا باید شرکت ثبت شده داشت
 # بنابراین با این حال از این خط فقط برای پیام های تبلیغاتی (مسیج بدون توکن) میشه استفاده کرد
