@@ -118,42 +118,40 @@ const Tiles = ({data}) => {
     return (
         <>
             <div className="grid grid-cols-1 2xs:grid-cols-2 xl:grid-cols-4 gap-3">
+                {/* رنگِ این کارت ثابت است و با علامتِ مانده عوض نمی‌شود: وقتی
+                    مانده منفی بود همان صورتیِ کارتِ «نسیه» می‌شد و دو کارتِ کنارِ
+                    هم یک رنگ می‌گرفتند. طلبکار یا بدهکار بودن را پسوند می‌گوید
+                    که صریح‌تر هم هست — و پسوند رنگش را از خودِ کارت می‌گیرد.
+
+                    چهار کاشی روی چرخِ رنگ پخش‌اند تا دوتاشان یک خانواده دیده
+                    نشوند: فیروزه‌ای ۱۹۳° / نارنجی ۲۵° / صورتی ۳۱۳° / سبز ۹۵°. */}
+                <KpiCard
+                    title="ماندهٔ کل دفتر" delay={at(1)}
+                    value={Math.abs(kpi.balance.value)}
+                    suffix={owed ? "تومان طلبکار" : "تومان بدهکار"}
+                    suffixAccent
+                    icon={HiOutlineBanknotes} accent="var(--color-var-color-15)"
+                    hint={`${toFaDigits(kpi.balance.transactions)} تراکنش در کلِ دفتر`}
+                />
                 {/* شمارشِ تراکنش‌های دوره — `kpi.count` از قبل در پاسخِ سرور بود
                     (با دلتای دورهٔ قبل)، پس چیزی به بک‌اند اضافه نشد. */}
                 <KpiCard
-                    title={`تعداد کل تراکنش های ${data.period_label}`} delay={at(1)}
+                    title={`تعداد تراکنش های ${data.period_label}`} delay={at(2)}
                     value={kpi.count.value} suffix="تراکنش" icon={HiOutlineArrowsRightLeft}
-                    accent="var(--color-var-color-15)" tone="good"
+                    accent="var(--color-var-color-32)" tone="good"
                     delta={kpi.count.delta} previousLabel={previous}
                 />
                 <KpiCard
-                    title={`نسیهٔ ${data.period_label}`} delay={at(2)}
+                    title={`نسیهٔ ${data.period_label}`} delay={at(3)}
                     value={kpi.debt.value} suffix="تومان" icon={BsGraphDownArrow}
                     accent="var(--color-var-color-55)" tone="bad"
                     delta={kpi.debt.delta} previousLabel={previous}
                 />
                 <KpiCard
-                    title={`وصولیِ ${data.period_label}`} delay={at(3)}
+                    title={`وصولیِ ${data.period_label}`} delay={at(4)}
                     value={kpi.paid.value} suffix="تومان" icon={FiTrendingUp}
                     accent="var(--color-var-color-31)" tone="good"
                     delta={kpi.paid.delta} previousLabel={previous}
-                />
-                {/* رنگِ این کارت نارنجیِ ثابت است و با علامتِ مانده عوض نمی‌شود:
-                    وقتی مانده منفی بود همان صورتیِ کارتِ «نسیه» می‌شد و دو کارتِ
-                    کنارِ هم یک رنگ می‌گرفتند. طلبکار یا بدهکار بودن را پسوند
-                    می‌گوید که صریح‌تر هم هست.
-
-                    ⚠️ نارنجی جای بنفش را گرفت. بنفشِ ۲۵ (#C084FC) و صورتیِ ۵۵
-                    (#E63BC5) روی چرخِ رنگ حدود ۴۳ درجه فاصله دارند و در اندازهٔ
-                    آیکون یک خانواده دیده می‌شدند. با نارنجی، چهار کاشی روی چرخ
-                    پخش می‌شوند: فیروزه‌ای ۱۹۳° / صورتی ۳۱۳° / سبز ۹۵° / نارنجی ۲۵°. */}
-                <KpiCard
-                    title="ماندهٔ کل دفتر" delay={at(4)}
-                    value={Math.abs(kpi.balance.value)}
-                    suffix={owed ? "تومان طلبکار" : "تومان بدهکار"}
-                    suffixAccent
-                    icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
-                    hint={`${toFaDigits(kpi.balance.transactions)} تراکنش در کلِ دفتر`}
                 />
             </div>
 
