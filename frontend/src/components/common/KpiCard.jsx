@@ -19,7 +19,7 @@ const TONE = {
 };
 
 const KpiCard = ({
-    title, value, suffix, suffixClass = "", icon: Icon, delay = 0,
+    title, value, suffix, suffixClass = "", suffixAccent = false, icon: Icon, delay = 0,
     delta, previousLabel, tone = "good", accent = "var(--color-var-color-15)",
     // نمایشِ دلخواه به‌جای عددِ خام (مثلاً درصد یا «طلبکار/بدهکار»)
     format = faNumber, hint, hintClass,
@@ -81,12 +81,16 @@ const KpiCard = ({
                                            text-var-color-08 dark:text-var-color-01">
                             {format(animated)}
                         </strong>
-                        {/* رنگِ پسوند از رنگِ کارت جداست: کارت هویتِ خودش را دارد و
-                            پسوند می‌تواند معنای عدد (طلب یا بدهی) را برساند */}
+                        {/* ⚠️ `suffixAccent` رنگ را از خودِ `accent` می‌گیرد، نه از یک
+                            کلاسِ نوشته‌شده. با کلاس، رنگِ پسوند نسخهٔ دومی از رنگِ
+                            کارت می‌شد و با عوض شدنِ اکسنت بی‌صدا از آن واگرا
+                            می‌ماند — همان اتفاقی که یک بار افتاد و پسوند صورتی
+                            ماند در حالی که کارت نارنجی شده بود. */}
                         {suffix && (
-                            <span className={`text-[11px] shrink-0 ${
-                                suffixClass || "text-var-color-04 dark:text-var-color-39"
-                            }`}>{suffix}</span>
+                            <span style={suffixAccent && !suffixClass ? {color: accent} : undefined}
+                                  className={`text-[11px] shrink-0 ${
+                                      suffixClass || (suffixAccent ? "" : "text-var-color-04 dark:text-var-color-39")
+                                  }`}>{suffix}</span>
                         )}
                     </p>
                 </div>

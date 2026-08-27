@@ -131,7 +131,7 @@ const Tiles = ({data}) => {
                 <KpiCard
                     title="ماندهٔ کل دفتر" delay={at(1)}
                     value={Math.abs(kpi.balance.value)} suffix={owed ? "تومان طلب" : "تومان بدهی"}
-                    suffixClass={owed ? "text-var-color-55" : "text-var-color-31"}
+                    suffixAccent
                     icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
                     hint={`${toFaDigits(kpi.balance.transactions)} تراکنش در کلِ دفتر`}
                 />
