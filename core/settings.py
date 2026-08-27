@@ -192,15 +192,61 @@ CSRF_COOKIE_SAMESITE = "Lax"
 # امنیت CSRF: مشخص می‌کند درخواست‌های تغییردهنده (POST/PUT/DELETE) از کدام Origin
 # «خودی» محسوب می‌شوند. خودِ حفاظت CSRF کامل برقرار است (هم توکن و هم Origin بررسی
 # می‌شوند)؛ این لیست فقط مبدأهای مجاز را تعیین می‌کند.
+def _local_ipv4s():
+    """آی‌پی‌های خودِ این ماشین در شبکهٔ محلی.
+
+    ⚠️ لازم است چون از سمتِ ویندوز `localhost:5173` به سرورِ داخلِ WSL نمی‌رسد
+    (شبکه در حالت NAT است) و باید با آی‌پیِ WSL باز شود — مثلاً
+    `http://192.168.1.22:5173`. آن آدرس در `CSRF_TRUSTED_ORIGINS` نبود و **هر**
+    POST/PATCH/DELETE با «Origin checking failed» رد می‌شد.
+
+    خودکار تشخیص داده می‌شود نه دستی نوشته: آی‌پی با DHCP عوض می‌شود و آدرسِ
+    ثابت در کد یعنی همان خطا چند وقت دیگر دوباره برمی‌گردد.
+    """
+    import socket
+    found = set()
+
+    # ⚠️ سوکتِ UDP، نه `gethostbyname_ex`. داخلِ WSL دومی فقط `127.0.1.1` را
+    # می‌دهد و آی‌پیِ واقعیِ شبکه را اصلاً نمی‌بیند (آزموده شد). این روش هیچ
+    # بسته‌ای نمی‌فرستد — فقط از سیستم‌عامل می‌پرسد برای رسیدن به بیرون کدام
+    # اینترفیس را انتخاب می‌کند — پس آفلاین هم کار می‌کند.
+    probe = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        probe.connect(("8.8.8.8", 80))
+        found.add(probe.getsockname()[0])
+    except OSError:
+        pass
+    finally:
+        probe.close()
+
+    try:
+        _, _, addresses = socket.gethostbyname_ex(socket.gethostname())
+        found.update(addresses)
+    except OSError:
+        # تشخیصِ نام میزبان می‌تواند شکست بخورد؛ تنظیمات نباید به خاطرش بالا نیاید
+        pass
+
+    return sorted(address for address in found if not address.startswith("127."))
+
+
 if DEBUG:
     # در توسعه، فرانت (Vite) روی پورت جداست. Vite معمولاً 5173 است اما اگر اشغال باشد
     # پورت بعدی را می‌گیرد؛ پس کل محدودهٔ متداول را مجاز می‌کنیم تا فلوها مستقل از پورتِ
     # دقیق کار کنند و پایه به یک پورت ثابت گره نخورد.
+    #
+    # علاوه بر localhost، آی‌پیِ محلیِ همین ماشین هم مجاز است تا باز کردنِ برنامه
+    # با آدرسِ شبکه (از ویندوز، یا از موبایلِ روی همان وای‌فای) کار کند.
+    _DEV_HOSTS = ["localhost", "127.0.0.1", *_local_ipv4s()]
     CSRF_TRUSTED_ORIGINS = [
         f"http://{host}:{port}"
-        for host in ("localhost", "127.0.0.1")
+        for host in _DEV_HOSTS
         for port in range(5173, 5184)  # 5173 تا 5183
     ]
+    # اگر روزی از آدرسِ دیگری باز کردید (مثلاً یک هاست‌نیمِ محلی)، به‌جای دست زدن
+    # به کد یک خط در `.env` بگذارید:  DEV_TRUSTED_ORIGINS=http://myhost:5173
+    CSRF_TRUSTED_ORIGINS += config("DEV_TRUSTED_ORIGINS", default="", cast=Csv())
+    # همان میزبان‌ها برای وقتی که مستقیم به جنگو (۸۰۰۰) وصل می‌شوید، بدونِ پراکسیِ Vite
+    ALLOWED_HOSTS = sorted(set(ALLOWED_HOSTS) | set(_DEV_HOSTS))
 else:
     # در پروداکشن، فرانت و بک‌اند Same-Origin پشت یک reverse proxy سرو می‌شوند.
     # دامنه(های) واقعی را از متغیر محیطی بخوان (با کاما جدا شده)، مثلاً:
