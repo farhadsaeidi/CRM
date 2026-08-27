@@ -1,6 +1,5 @@
 import {useNavigate} from "react-router";
-import {FiArrowLeft} from "react-icons/fi";
-import {HiOutlineBanknotes} from "react-icons/hi2";
+import {FiArrowLeft, FiUsers} from "react-icons/fi";
 import {faNumber, toFaDigits} from "../../../lib/chart.js";
 import {CUSTOMERS_PATH} from "../../../lib/paths.js";
 
@@ -45,9 +44,11 @@ const DebtorsCta = ({count, amount, delay = 0}) => {
                                          text-var-color-04 dark:text-var-color-39">تومان طلب</span>
                     </p>
                 </div>
+                {/* آیکونِ مشتریان، نه اسکناس: موضوعِ این کارت **چند نفر**اند،
+                    و مبلغ زیرش جدا نوشته می‌شود */}
                 <span className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center
                                  bg-var-color-56 text-var-color-55">
-                    <HiOutlineBanknotes className="w-5 h-5"/>
+                    <FiUsers className="w-5 h-5"/>
                 </span>
             </div>
 

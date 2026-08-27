@@ -2,11 +2,10 @@ import {useEffect, useState} from "react";
 import {FiClock, FiMoon, FiPieChart, FiTrendingUp, FiUserPlus, FiUsers} from "react-icons/fi";
 import {HiOutlineArrowsRightLeft, HiOutlineBanknotes} from "react-icons/hi2";
 import {FaMedal} from "react-icons/fa6";
-import {TbTargetArrow} from "react-icons/tb";
 import {BsGraphDownArrow} from "react-icons/bs";
 import {dashboardApi} from "../../../api/dashboard.js";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
-import {faCompact, faPercent, toFaDigits} from "../../../lib/chart.js";
+import {faCompact, toFaDigits} from "../../../lib/chart.js";
 import {OPEN_NEW_CUSTOMER_EVENT} from "../../../lib/events.js";
 import {notify} from "../../../lib/notify.jsx";
 import DashboardToolbar from "./DashboardToolbar.jsx";
@@ -119,21 +118,13 @@ const Tiles = ({data}) => {
     return (
         <>
             <div className="grid grid-cols-1 2xs:grid-cols-2 xl:grid-cols-4 gap-3">
-                {/* رنگِ این کارت نارنجیِ ثابت است و با علامتِ مانده عوض نمی‌شود:
-                    وقتی مانده منفی بود همان صورتیِ کارتِ «نسیه» می‌شد و دو کارتِ
-                    کنارِ هم یک رنگ می‌گرفتند. طلب یا بدهی بودن را پسوندِ رنگی
-                    می‌گوید که صریح‌تر هم هست.
-
-                    ⚠️ نارنجی جای بنفش را گرفت. بنفشِ ۲۵ (#C084FC) و صورتیِ ۵۵
-                    (#E63BC5) روی چرخِ رنگ حدود ۴۳ درجه فاصله دارند و در اندازهٔ
-                    آیکون یک خانواده دیده می‌شدند. با نارنجی، چهار کاشی روی چرخ
-                    پخش می‌شوند: نارنجی ۲۵° / صورتی ۳۱۳° / سبز ۹۵° / فیروزه‌ای ۱۹۳°. */}
+                {/* شمارشِ تراکنش‌های دوره — `kpi.count` از قبل در پاسخِ سرور بود
+                    (با دلتای دورهٔ قبل)، پس چیزی به بک‌اند اضافه نشد. */}
                 <KpiCard
-                    title="ماندهٔ کل دفتر" delay={at(1)}
-                    value={Math.abs(kpi.balance.value)} suffix={owed ? "تومان طلب" : "تومان بدهی"}
-                    suffixAccent
-                    icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
-                    hint={`${toFaDigits(kpi.balance.transactions)} تراکنش در کلِ دفتر`}
+                    title={`کل تراکنش ${data.period_label}`} delay={at(1)}
+                    value={kpi.count.value} suffix="ردیف" icon={HiOutlineArrowsRightLeft}
+                    accent="var(--color-var-color-15)" tone="good"
+                    delta={kpi.count.delta} previousLabel={previous}
                 />
                 <KpiCard
                     title={`نسیهٔ ${data.period_label}`} delay={at(2)}
@@ -147,12 +138,22 @@ const Tiles = ({data}) => {
                     accent="var(--color-var-color-31)" tone="good"
                     delta={kpi.paid.delta} previousLabel={previous}
                 />
+                {/* رنگِ این کارت نارنجیِ ثابت است و با علامتِ مانده عوض نمی‌شود:
+                    وقتی مانده منفی بود همان صورتیِ کارتِ «نسیه» می‌شد و دو کارتِ
+                    کنارِ هم یک رنگ می‌گرفتند. طلبکار یا بدهکار بودن را پسوند
+                    می‌گوید که صریح‌تر هم هست.
+
+                    ⚠️ نارنجی جای بنفش را گرفت. بنفشِ ۲۵ (#C084FC) و صورتیِ ۵۵
+                    (#E63BC5) روی چرخِ رنگ حدود ۴۳ درجه فاصله دارند و در اندازهٔ
+                    آیکون یک خانواده دیده می‌شدند. با نارنجی، چهار کاشی روی چرخ
+                    پخش می‌شوند: فیروزه‌ای ۱۹۳° / صورتی ۳۱۳° / سبز ۹۵° / نارنجی ۲۵°. */}
                 <KpiCard
-                    title="نرخ وصول" delay={at(4)}
-                    value={kpi.rate.value ?? 0} format={faPercent} icon={TbTargetArrow}
-                    accent="var(--color-var-color-15)" tone="good"
-                    delta={kpi.rate.delta} previousLabel={previous}
-                    hint={kpi.rate.value === null ? "در این دوره نسیه‌ای ثبت نشده" : undefined}
+                    title="ماندهٔ کل دفتر" delay={at(4)}
+                    value={Math.abs(kpi.balance.value)}
+                    suffix={owed ? "تومان طلبکار" : "تومان بدهکار"}
+                    suffixAccent
+                    icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
+                    hint={`${toFaDigits(kpi.balance.transactions)} تراکنش در کلِ دفتر`}
                 />
             </div>
 
