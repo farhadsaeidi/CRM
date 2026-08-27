@@ -7,6 +7,7 @@ import {FiLock} from "react-icons/fi";
 import {FaRegEye, FaRegEyeSlash} from "react-icons/fa6";
 import {authApi} from "../../api/auth.js";
 import {notify, notifyLoading} from "../../lib/notify.jsx";
+import {errorMessage, fieldErrorsOf} from "../../lib/apiError.js";
 import {changePasswordSchema} from "../../validators/auth.js";
 
 // فیلدهای مودال (ترتیبِ فوکوس/تب = ترتیبِ همین آرایه)
@@ -78,18 +79,15 @@ const ChangePasswordModal = ({open, onClose}) => {
         } catch (err) {
             // err ---> تشخیص ارور به کمک استاتوسی که از سمت سرور میاد انجام میشه
             toast.dismiss(loadingId);
-            const data = err?.data || {};
-            if (data.fieldErrors) {
-                // خطای مربوط به یک فیلد مشخص (رمز قبلی یا رمز جدید)
-                const field = Object.keys(data.fieldErrors)[0];
-                const msg = data.fieldErrors[field];
-                setErrors({[field]: msg});
-                notify(msg, "error");
+            // خطای فیلد و خطای کلی، هر دو از یک جا خوانده می‌شوند
+            const fields = fieldErrorsOf(err);
+            const [field] = Object.keys(fields);
+            const message = errorMessage(err, "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید...");
+            if (field) {
+                setErrors({[field]: fields[field]});
                 focusField(field);
-            } else {
-                // خطای کلی سرور
-                notify(data.message || "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید...", "error");
             }
+            notify(message, "error");
         } finally {
             setSubmitting(false);
         }

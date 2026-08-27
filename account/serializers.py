@@ -27,7 +27,12 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         "min_length": "نام و نام خانوادگی باید حداقل ۳ کاراکتر باشد.",
         "blank": "فیلد نام و نام خانوادگی الزامی است.",
     })
-    business_name = serializers.CharField(max_length=40, required=False, allow_blank=True)
+    # ⚠️ پیام‌ها فارسی نوشته می‌شوند: پیش‌فرضِ DRF انگلیسی است و مستقیم در یک
+    # رابطِ کاملاً فارسی می‌نشیند. سقفِ ۴۰ کاراکتر هم از خودِ پیامکِ یادآوری می‌آید.
+    business_name = serializers.CharField(
+        max_length=40, required=False, allow_blank=True,
+        error_messages={"max_length": "نام کسب‌وکار باید حداکثر ۴۰ کاراکتر باشد."},
+    )
 
     class Meta:
         model = User

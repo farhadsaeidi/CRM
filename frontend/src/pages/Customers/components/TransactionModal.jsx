@@ -8,6 +8,7 @@ import ModalActions from "../../../components/common/ModalActions.jsx";
 import ModalCloseButton from "../../../components/common/ModalCloseButton.jsx";
 import {transactionsApi} from "../../../api/transactions.js";
 import {notify, notifyLoading} from "../../../lib/notify.jsx";
+import {errorMessage, fieldErrorsOf} from "../../../lib/apiError.js";
 import {formatPersianNumber, numberToPersianWords, sanitizeAmount} from "../../../lib/numbers.js";
 import {transactionSchema} from "../../../validators/transaction.js";
 
@@ -135,16 +136,13 @@ const TransactionModal = ({mode, customerId, transaction, onClose, onDone}) => {
             onDone(mode);
         } catch (err) {
             toast.dismiss(loadingId);
-            const data = err?.data || {};
-            const fieldKey = Object.keys(data).find((key) => Array.isArray(data[key]));
+            const fields = fieldErrorsOf(err);
+            const [fieldKey] = Object.keys(fields);
             if (fieldKey) {
-                const message = data[fieldKey][0];
                 // non_field_errors جای فیلدِ خاصی نیست؛ روی مبلغ نسیه می‌نشیند
-                setErrors({[fieldKey === "non_field_errors" ? "debt" : fieldKey]: message});
-                notify(message, "error");
-            } else {
-                notify(data.detail || data.message || "عملیات ناموفق بود. لطفاً دوباره تلاش کنید...", "error");
+                setErrors({[fieldKey === "non_field_errors" ? "debt" : fieldKey]: fields[fieldKey]});
             }
+            notify(errorMessage(err), "error");
             setSubmitting(false);
         }
     };

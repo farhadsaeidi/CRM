@@ -6,6 +6,7 @@ import ModalCloseButton from "./ModalCloseButton.jsx";
 import {authApi} from "../../api/auth.js";
 import {useAuth} from "../../context/AuthContext.js";
 import {notify, notifyLoading} from "../../lib/notify.jsx";
+import {errorMessage} from "../../lib/apiError.js";
 
 const MAX_LENGTH = 40;
 
@@ -65,8 +66,7 @@ const BusinessNameModal = ({open, onClose, onSaved}) => {
             requestClose();
         } catch (err) {
             toast.dismiss(loadingId);
-            const data = err?.data || {};
-            const message = data.fieldErrors?.business_name || data.message || "ذخیرهٔ نام ناموفق بود.";
+            const message = errorMessage(err, "ذخیرهٔ نام ناموفق بود.", "business_name");
             setError(message);
             notify(message, "error");
         } finally {

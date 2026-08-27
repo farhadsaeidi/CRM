@@ -9,6 +9,7 @@ import ModalActions from "../../../components/common/ModalActions.jsx";
 import ModalCloseButton from "../../../components/common/ModalCloseButton.jsx";
 import {customersApi} from "../../../api/customers.js";
 import {notify, notifyLoading} from "../../../lib/notify.jsx";
+import {errorMessage, fieldErrorsOf} from "../../../lib/apiError.js";
 import {sanitizePhone} from "../../../lib/utils.js";
 import {customerSchema} from "../../../validators/customer.js";
 
@@ -140,16 +141,10 @@ const CustomerModal = ({mode, customer, onClose, onDone}) => {
             onDone(mode);
         } catch (err) {
             toast.dismiss(loadingId);
-            const data = err?.data || {};
-            // خطاهای سریالایزر DRF به شکل {field: ["پیام"]} می‌آیند
-            const fieldKey = Object.keys(data).find((key) => Array.isArray(data[key]));
-            if (fieldKey) {
-                const message = data[fieldKey][0];
-                setErrors({[fieldKey]: message});
-                notify(message, "error");
-            } else {
-                notify(data.detail || data.message || "عملیات ناموفق بود. لطفاً دوباره تلاش کنید...", "error");
-            }
+            const fields = fieldErrorsOf(err);
+            const [fieldKey] = Object.keys(fields);
+            if (fieldKey) setErrors({[fieldKey]: fields[fieldKey]});
+            notify(errorMessage(err), "error");
             setSubmitting(false);
         }
     };

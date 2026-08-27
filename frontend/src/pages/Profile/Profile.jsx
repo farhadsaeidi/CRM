@@ -12,6 +12,7 @@ import {allTransactionsApi} from "../../api/transactions.js";
 import {useAuth} from "../../context/AuthContext.js";
 import {faCompact, faNumber, toFaDigits} from "../../lib/chart.js";
 import {notify} from "../../lib/notify.jsx";
+import {errorMessage, fieldErrorsOf} from "../../lib/apiError.js";
 import {PROFILE_PATH} from "../../lib/paths.js";
 import {profileSchema} from "../../validators/auth.js";
 
@@ -109,14 +110,10 @@ const Profile = () => {
             setPreview(null);
             notify(res.message || "پروفایل به‌روزرسانی شد.", "success");
         } catch (err) {
-            const data = err?.data || {};
-            const field = data.fieldErrors && Object.keys(data.fieldErrors)[0];
-            if (field) {
-                setErrors({[field]: data.fieldErrors[field]});
-                notify(data.fieldErrors[field], "error");
-            } else {
-                notify(data.detail || data.message || "به‌روزرسانی پروفایل ناموفق بود.", "error");
-            }
+            const fields = fieldErrorsOf(err);
+            const [field] = Object.keys(fields);
+            if (field) setErrors({[field]: fields[field]});
+            notify(errorMessage(err, "به‌روزرسانی پروفایل ناموفق بود."), "error");
         } finally {
             setSaving(false);
         }
