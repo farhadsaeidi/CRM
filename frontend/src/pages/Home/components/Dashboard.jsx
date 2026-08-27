@@ -121,8 +121,8 @@ const Tiles = ({data}) => {
                 {/* شمارشِ تراکنش‌های دوره — `kpi.count` از قبل در پاسخِ سرور بود
                     (با دلتای دورهٔ قبل)، پس چیزی به بک‌اند اضافه نشد. */}
                 <KpiCard
-                    title={`کل تراکنش ${data.period_label}`} delay={at(1)}
-                    value={kpi.count.value} suffix="ردیف" icon={HiOutlineArrowsRightLeft}
+                    title={`تعداد کل تراکنش های ${data.period_label}`} delay={at(1)}
+                    value={kpi.count.value} suffix="تراکنش" icon={HiOutlineArrowsRightLeft}
                     accent="var(--color-var-color-15)" tone="good"
                     delta={kpi.count.delta} previousLabel={previous}
                 />
