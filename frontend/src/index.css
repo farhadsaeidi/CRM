@@ -473,6 +473,19 @@
         @apply border border-var-color-13 dark:border-var-color-16 hover:border-transparent bg-var-color-12 dark:bg-var-color-12 hover:bg-var-color-15 dark:text-var-color-15;
     }
 
+    /* دکمه‌های گردِ آیکونی در هدرِ جدول‌ها.
+       هاورشان توپُر نمی‌شود: بوردر همان رنگِ پرِ داخلِ دایره می‌گیرد و هر دو
+       آبیِ نیمه‌شفاف‌اند، پس دایره یک لکهٔ نرمِ یکدست می‌شود به‌جای یک قرصِ
+       آبیِ پررنگ. آیکون هم آبی می‌ماند نه سفید — روی زمینهٔ کم‌رنگ، سفید
+       خوانده نمی‌شود.
+
+       ⚠️ فقط `rounded-full`ها: دکمه‌های مودال هم `btn-bluish`اند ولی
+       `rounded-xl` دارند و آنجا هاورِ توپُر درست است، چون دکمهٔ اقدامِ اصلی
+       باید وزن داشته باشد. */
+    .btn-bluish.rounded-full:hover {
+        @apply bg-var-color-13 border-var-color-13 text-var-color-15 dark:text-var-color-15;
+    }
+
     .btn-purplish {
         @apply border border-var-color-22 dark:border-var-color-24 hover:border-transparent bg-var-color-21 dark:bg-var-color-21 hover:bg-var-color-25 dark:text-var-color-25;
     }
