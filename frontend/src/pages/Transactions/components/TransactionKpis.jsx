@@ -49,13 +49,13 @@ const TransactionKpis = ({refreshKey = 0}) => {
         <div className="shrink-0 mb-3 grid grid-cols-1 2xs:grid-cols-2 xl:grid-cols-4 gap-3">
             <KpiCard
                 title="تعداد تراکنش‌ها" delay={45}
-                value={stats.total} suffix="ردیف" icon={HiOutlineArrowsRightLeft}
+                value={stats.total} suffix="تراکنش" icon={HiOutlineArrowsRightLeft}
                 accent="var(--color-var-color-15)"
                 delta={month.delta} previousLabel="ماه گذشته" tone="good"
                 hint={month.count
-                    ? `${toFaDigits(month.count)} ردیف در ${month.month_label}`
+                    ? `${toFaDigits(month.count)} تراکنش در ${month.month_label}`
                     : busiest
-                        ? `پرکارترین ماه: ${busiest.label} با ${toFaDigits(busiest.count)} ردیف`
+                        ? `پرکارترین ماه: ${busiest.label} با ${toFaDigits(busiest.count)} تراکنش`
                         : "هنوز تراکنشی ثبت نشده"}
             />
 
@@ -63,7 +63,7 @@ const TransactionKpis = ({refreshKey = 0}) => {
                 title="مجموع نسیه" delay={90}
                 value={debt.amount} suffix="تومان" icon={BsGraphDownArrow}
                 accent="var(--color-var-color-55)"
-                hint={`در ${toFaDigits(debt.rows)} ردیف ثبت شده`}
+                hint={`در ${toFaDigits(debt.rows)} تراکنش ثبت شده`}
                 hintClass="text-var-color-55"
             />
 
@@ -72,7 +72,7 @@ const TransactionKpis = ({refreshKey = 0}) => {
                 value={paid.amount} suffix="تومان" icon={FiTrendingUp}
                 accent="var(--color-var-color-31)"
                 hint={stats.rate === null
-                    ? `در ${toFaDigits(paid.rows)} ردیف ثبت شده`
+                    ? `در ${toFaDigits(paid.rows)} تراکنش ثبت شده`
                     : `${faPercent(stats.rate)} از نسیه وصول شده`}
                 hintClass="text-var-color-31"
             />

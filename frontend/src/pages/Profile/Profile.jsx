@@ -309,7 +309,7 @@ const Profile = () => {
                                             value={toFaDigits(stats.customers.total)} unit="نفر"
                                             tone="text-var-color-25"/>
                                     <Figure icon={HiOutlineArrowsRightLeft} label="تراکنش‌ها"
-                                            value={toFaDigits(stats.transactions.total)} unit="ردیف"
+                                            value={toFaDigits(stats.transactions.total)} unit="تراکنش"
                                             tone="text-var-color-15"/>
                                     <Figure icon={HiOutlineBanknotes} label="طلبِ شما"
                                             value={faCompact(stats.customers.debtors.amount)} unit="تومان"

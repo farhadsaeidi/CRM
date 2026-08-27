@@ -198,7 +198,7 @@ const Tiles = ({data}) => {
                 {/* ریتمِ چیدمان عمداً پهن-باریک است: کاشی‌های جدولی و نموداری دو
                     ستون می‌گیرند و فهرست‌های کوتاه یک ستون. */}
                 <DashboardTile
-                    title="آخرین تراکنش‌ها" subtitle="پنج ردیفِ تازهٔ دفتر"
+                    title="آخرین تراکنش‌ها" subtitle="پنج تراکنشِ تازهٔ دفتر"
                     icon={HiOutlineArrowsRightLeft} delay={at(10)} className="xl:col-span-2"
                     empty={data.recent_transactions.length === 0}
                     emptyText="هنوز تراکنشی ثبت نشده"

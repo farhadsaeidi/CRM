@@ -52,21 +52,19 @@ const LedgerKpis = ({customerId, refreshKey = 0}) => {
     return (
         <div className="shrink-0 mb-3 grid grid-cols-1 2xs:grid-cols-2 xl:grid-cols-4 gap-3">
             <KpiCard
-                title="ماندهٔ حساب" delay={45}
-                value={Math.abs(stats.balance)}
-                suffix={settled ? "تومان — تسویه" : owes ? "تومان بدهکار" : "تومان بستانکار"}
-                suffixAccent={!settled}
-                icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
-                hint={stats.days_since_last === null
-                    ? "هنوز تراکنشی ثبت نشده"
-                    : `آخرین تراکنش ${toFaDigits(stats.days_since_last)} روز پیش`}
+                title="تعداد تراکنش‌ها" delay={45}
+                value={stats.total} suffix="تراکنش" icon={FiActivity}
+                accent="var(--color-var-color-15)"
+                hint={stats.first
+                    ? `از ${faShamsi(stats.first)} — میانگین ${faCompact(stats.average)} تومان`
+                    : "هنوز تراکنشی ثبت نشده"}
             />
 
             <KpiCard
                 title="مجموع نسیه" delay={90}
                 value={debt.amount} suffix="تومان" icon={BsGraphDownArrow}
                 accent="var(--color-var-color-55)"
-                hint={`در ${toFaDigits(debt.rows)} ردیف ثبت شده`}
+                hint={`در ${toFaDigits(debt.rows)} تراکنش ثبت شده`}
                 hintClass="text-var-color-55"
             />
 
@@ -75,18 +73,20 @@ const LedgerKpis = ({customerId, refreshKey = 0}) => {
                 value={paid.amount} suffix="تومان" icon={FiTrendingUp}
                 accent="var(--color-var-color-31)"
                 hint={stats.rate === null
-                    ? `در ${toFaDigits(paid.rows)} ردیف ثبت شده`
+                    ? `در ${toFaDigits(paid.rows)} تراکنش ثبت شده`
                     : `${faPercent(stats.rate)} از نسیه پرداخت شده`}
                 hintClass="text-var-color-31"
             />
 
             <KpiCard
-                title="تعداد تراکنش‌ها" delay={180}
-                value={stats.total} suffix="ردیف" icon={FiActivity}
-                accent="var(--color-var-color-15)"
-                hint={stats.first
-                    ? `از ${faShamsi(stats.first)} — میانگین ${faCompact(stats.average)} تومان`
-                    : "هنوز تراکنشی ثبت نشده"}
+                title="ماندهٔ حساب" delay={180}
+                value={Math.abs(stats.balance)}
+                suffix={settled ? "تومان — تسویه" : owes ? "تومان بدهکار" : "تومان بستانکار"}
+                suffixAccent={!settled}
+                icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
+                hint={stats.days_since_last === null
+                    ? "هنوز تراکنشی ثبت نشده"
+                    : `آخرین تراکنش ${toFaDigits(stats.days_since_last)} روز پیش`}
             />
         </div>
     );
