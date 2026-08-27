@@ -42,13 +42,16 @@ const formatShamsi = ({year, month, day}) =>
         ? toFaDigits(`${year}/${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}`)
         : "—";
 
-const TransactionsTable = ({customerId, onBack, onChanged}) => {
+const TransactionsTable = ({customerId, onBack, onChanged, autoNew = false}) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const filter = searchParams.get("tfilter") || "all";
 
     const [data, setData] = useState(EMPTY);
     const [loading, setLoading] = useState(true);
-    const [modal, setModal] = useState(null);
+    // `autoNew` یعنی کاربر از صفحهٔ «همه تراکنش‌ها» مشتری را انتخاب کرده و
+    // نیتش ثبتِ تراکنش بوده. مقدارِ اولیهٔ state ست می‌شود، نه با افکت — روی
+    // mountِ تازه مودال از همان اولین رندر باز است و پرشِ صفحه دیده نمی‌شود.
+    const [modal, setModal] = useState(() => (autoNew ? {mode: "create", transaction: null} : null));
     const [refreshKey, setRefreshKey] = useState(0);
     // جستجوی تاریخ در یوآرال نمی‌نشیند: ساختارش تودرتوست و یوآرال را ناخوانا می‌کند.
     // با تعویضِ مشتری هم باید پاک شود، که با key در والد انجام می‌گیرد.

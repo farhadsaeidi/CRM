@@ -1,5 +1,5 @@
-import {useState} from "react";
-import {useParams} from "react-router";
+import {useEffect, useState} from "react";
+import {useLocation, useNavigate, useParams} from "react-router";
 import {FiUsers} from "react-icons/fi";
 import {HiOutlineArrowsRightLeft} from "react-icons/hi2";
 import Breadcrumb from "../../components/common/Breadcrumb.jsx";
@@ -17,6 +17,18 @@ import {useGoBack} from "../../lib/useGoBack.js";
 const CustomerLedger = () => {
     const {customerId} = useParams();
     const goBack = useGoBack(CUSTOMERS_PATH);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // ⚠️ نیت **یک بار** مصرف می‌شود و بلافاصله از تاریخچه پاک: بدونِ این، دکمهٔ
+    // back یا رفرش دوباره مودال را باز می‌کرد. مقدار در همان اولین رندر خوانده
+    // می‌شود چون بعدش دیگر نیست.
+    const [openNewTransaction] = useState(() => location.state?.openTransaction === true);
+    useEffect(() => {
+        if (location.state?.openTransaction) {
+            navigate(location.pathname, {replace: true, state: null});
+        }
+    }, [location.pathname, location.state, navigate]);
     // شاخص‌ها بیرونِ جدول‌اند و از تغییرِ داده خبر ندارند، پس جدول بعد از هر کراد
     // این کلید را جلو می‌برد تا دوباره خوانده شوند
     const [statsKey, setStatsKey] = useState(0);
@@ -32,6 +44,7 @@ const CustomerLedger = () => {
                 {/* key تضمین می‌کند با عوض شدنِ مشتری، فیلتر و جستجوی تاریخِ
                     مشتریِ قبلی روی این یکی نماند */}
                 <TransactionsTable key={customerId} customerId={customerId} onBack={goBack}
+                                   autoNew={openNewTransaction}
                                    onChanged={() => setStatsKey((k) => k + 1)}/>
             </div>
         </section>

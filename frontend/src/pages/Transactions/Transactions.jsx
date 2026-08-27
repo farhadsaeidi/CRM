@@ -1,11 +1,12 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useNavigate, useSearchParams} from "react-router";
-import {FiChevronUp, FiFilter, FiRefreshCw} from "react-icons/fi";
+import {FiChevronUp, FiFilter, FiPlus, FiRefreshCw} from "react-icons/fi";
 import {HiOutlineArrowRight, HiOutlineArrowsRightLeft} from "react-icons/hi2";
 import {TbMoodNeutral} from "react-icons/tb";
 import {allTransactionsApi} from "../../api/transactions.js";
 import {TRANSACTION_SEARCH_EVENT} from "../../components/common/Footer.jsx";
 import Breadcrumb from "../../components/common/Breadcrumb.jsx";
+import CustomerPickerModal from "../../components/common/CustomerPickerModal.jsx";
 import CustomTooltip from "../../components/common/CustomTooltip.jsx";
 import MenuItem from "../../components/common/MenuItem.jsx";
 import RowSelectMark from "../../components/common/RowSelectMark.jsx";
@@ -83,6 +84,9 @@ const ROW_STAGGER_MAX = 10;
 const Transactions = () => {
     const navigate = useNavigate();
     const goBack = useGoBack();
+    // ثبتِ تراکنش از این صفحه اول مشتری می‌خواهد: این صفحه به مشتریِ خاصی گره
+    // نخورده و تراکنشِ بی‌مشتری معنا ندارد
+    const [pickerOpen, setPickerOpen] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get("query") || "";
     const filter = searchParams.get("tfilter") || "all";
@@ -117,6 +121,7 @@ const Transactions = () => {
     const [filterMenuPos, setFilterMenuPos] = useState(null);
     const [tooltip, setTooltip] = useState({text: "", pos: null, visible: false});
 
+    const addBtnRef = useRef(null);
     const filterBtnRef = useRef(null);
     const filterMenuRef = useRef(null);
     const refreshBtnRef = useRef(null);
@@ -288,6 +293,21 @@ const Transactions = () => {
                             </div>
 
                             <div className="flex flex-row justify-between items-center gap-3">
+                                {/* در RTL اولین فرزندِ این گروه راست‌ترینِ خودش است و
+                                    کلِ گروه سمتِ چپِ هدر می‌نشیند */}
+                                <button type="button" ref={addBtnRef}
+                                        onClick={() => {
+                                            hideTooltip();
+                                            setPickerOpen(true);
+                                        }}
+                                        onMouseEnter={() => showTooltip(addBtnRef, "ثبت تراکنش")}
+                                        onMouseLeave={hideTooltip}
+                                        className="rounded-full btn btn-bluish">
+                                    <div className="w-7 h-7 flex justify-center items-center">
+                                        <FiPlus className="w-4.5 h-4.5"/>
+                                    </div>
+                                </button>
+
                                 <button
                                     type="button"
                                     ref={filterBtnRef}
@@ -451,6 +471,17 @@ const Transactions = () => {
                     />
                 ))}
             </div>
+
+            {/* بعد از انتخاب، به دفترِ همان مشتری می‌رویم و همان‌جا مودالِ ثبت
+                باز می‌شود. پیام با `state` منتقل می‌شود نه با پارامترِ یوآرال:
+                این یک نیتِ یک‌بارمصرف است، و در یوآرال با هر رفرش مودال دوباره
+                باز می‌شد. */}
+            <CustomerPickerModal
+                open={pickerOpen}
+                onClose={() => setPickerOpen(false)}
+                onPick={(customer) => navigate(customerLedgerPath(customer.id),
+                                               {state: {openTransaction: true}})}
+            />
 
             <CustomTooltip text={tooltip.text} pos={tooltip.pos} visible={tooltip.visible}/>
         </section>
