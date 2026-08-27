@@ -293,21 +293,6 @@ const Transactions = () => {
                             </div>
 
                             <div className="flex flex-row justify-between items-center gap-3">
-                                {/* در RTL اولین فرزندِ این گروه راست‌ترینِ خودش است و
-                                    کلِ گروه سمتِ چپِ هدر می‌نشیند */}
-                                <button type="button" ref={addBtnRef}
-                                        onClick={() => {
-                                            hideTooltip();
-                                            setPickerOpen(true);
-                                        }}
-                                        onMouseEnter={() => showTooltip(addBtnRef, "ثبت تراکنش")}
-                                        onMouseLeave={hideTooltip}
-                                        className="rounded-full btn btn-bluish">
-                                    <div className="w-7 h-7 flex justify-center items-center">
-                                        <FiPlus className="w-4.5 h-4.5"/>
-                                    </div>
-                                </button>
-
                                 <button
                                     type="button"
                                     ref={filterBtnRef}
@@ -338,6 +323,21 @@ const Transactions = () => {
                                         className="rounded-full btn btn-bluish">
                                     <div className="w-7 h-7 flex justify-center items-center">
                                         <FiRefreshCw className="w-4 h-4"/>
+                                    </div>
+                                </button>
+
+                                {/* ⚠️ در RTL آخرین فرزند چپ‌ترین است. این دکمه باید
+                                    انتهای چپِ هدر بنشیند، پس پایینِ گروه می‌آید نه بالایش. */}
+                                <button type="button" ref={addBtnRef}
+                                        onClick={() => {
+                                            hideTooltip();
+                                            setPickerOpen(true);
+                                        }}
+                                        onMouseEnter={() => showTooltip(addBtnRef, "ثبت تراکنش")}
+                                        onMouseLeave={hideTooltip}
+                                        className="rounded-full btn btn-bluish">
+                                    <div className="w-7 h-7 flex justify-center items-center">
+                                        <FiPlus className="w-4.5 h-4.5"/>
                                     </div>
                                 </button>
                             </div>

@@ -87,7 +87,7 @@ const CustomerPickerModal = ({open, onClose, onPick}) => {
     // انتخابِ قبلی را دور می‌زند و لازم نیست اول ردیف انتخاب شود.
     const confirm = (customer = selected) => {
         if (!customer) {
-            notify("اول یک مشتری را انتخاب کنید.", "error");
+            notify("اول یک مشتری را انتخاب کنید.", "warning");
             return;
         }
         onPick(customer);

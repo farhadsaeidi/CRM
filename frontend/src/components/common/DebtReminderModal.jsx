@@ -76,7 +76,7 @@ const DebtReminderModal = ({open, onClose}) => {
 
     const submit = async () => {
         if (selected.size === 0) {
-            notify("حداقل یک مشتری را انتخاب کنید.", "error");
+            notify("حداقل یک مشتری را انتخاب کنید.", "warning");
             return;
         }
 
