@@ -68,7 +68,7 @@ const CustomerKpis = ({refreshKey = 0}) => {
             <KpiCard
                 title="کل مشتریان" delay={45}
                 value={stats.total} suffix="نفر" icon={FiUsers}
-                accent="var(--color-var-color-32)"
+                accent="var(--color-var-color-15)"
                 delta={stats.new.delta} previousLabel="ماه گذشته" tone="good"
                 hint={stats.new.count
                     ? `${toFaDigits(stats.new.count)} نفر در ${stats.new.month_label} اضافه شدند`
@@ -96,7 +96,7 @@ const CustomerKpis = ({refreshKey = 0}) => {
             {/* «راکد» یعنی یا هرگز معامله‌ای نکرده یا مدتی است خبری ازش نیست؛ هر دو
                 گروه پیگیری می‌خواهند ولی از دو جنس‌اند، پس تفکیکشان گفته می‌شود */}
             <KpiCard
-                title="نیازمندِ پیگیری" delay={180}
+                title="مشتریان نیازمندِ پیگیری" delay={180}
                 value={stats.dormant} suffix="نفر" icon={FiMoon}
                 accent="var(--color-var-color-53)"
                 hint={stats.untouched

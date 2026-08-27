@@ -50,7 +50,7 @@ const TransactionKpis = ({refreshKey = 0}) => {
             <KpiCard
                 title="تعداد تراکنش‌ها" delay={45}
                 value={stats.total} suffix="ردیف" icon={HiOutlineArrowsRightLeft}
-                accent="var(--color-var-color-32)"
+                accent="var(--color-var-color-15)"
                 delta={month.delta} previousLabel="ماه گذشته" tone="good"
                 hint={month.count
                     ? `${toFaDigits(month.count)} ردیف در ${month.month_label}`
@@ -80,7 +80,7 @@ const TransactionKpis = ({refreshKey = 0}) => {
             <KpiCard
                 title="میانگین هر تراکنش" delay={180}
                 value={stats.average} suffix="تومان" icon={FiActivity}
-                accent="var(--color-var-color-15)"
+                accent="var(--color-var-color-32)"
                 hint={stats.largest
                     ? `بزرگ‌ترین تراکنش: ${faCompact(stats.largest)} تومان`
                     : "هنوز تراکنشی ثبت نشده"}
