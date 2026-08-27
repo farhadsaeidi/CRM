@@ -49,7 +49,9 @@ const DashboardToolbar = ({period, onPeriod, onRefresh, loading, todayLabel}) =>
                            bg-var-color-00 dark:bg-var-color-36
                            border-var-color-02 dark:border-var-color-38
                            text-var-color-05 dark:text-var-color-39
-                           enabled:hover:text-var-color-15 enabled:hover:border-var-color-14
+                           enabled:hover:bg-var-color-12 dark:enabled:hover:bg-var-color-44
+                           enabled:hover:border-var-color-13 dark:enabled:hover:border-var-color-16
+                           enabled:hover:text-var-color-15
                            disabled:cursor-default"
             >
                 {/* چرخشِ آیکون تنها نشانهٔ «در حال به‌روزرسانی» است؛ داده‌های قبلی
