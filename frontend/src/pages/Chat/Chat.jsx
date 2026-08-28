@@ -5,6 +5,7 @@ import Sidebar from "../../components/common/Sidebar.jsx";
 import ChatSidebar from "./components/ChatSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
 import {chatApi} from "../../api/chat.js";
+import {errorMessage} from "../../lib/apiError.js";
 import {notify} from "../../lib/notify.jsx";
 import {CHAT_PATH} from "../../lib/paths.js";
 import {useGoBack} from "../../lib/useGoBack.js";
@@ -27,6 +28,8 @@ const Chat = () => {
     // پیام‌های گفتگوی باز، جدا از فهرست — به همان دلیلِ بالا
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
+    // خطای موتور — پاسخ نیامده ولی پیامِ کاربر سرِ جایش است
+    const [engineError, setEngineError] = useState(null);
 
     const active = conversations.find((c) => c.id === activeId) ?? null;
 
@@ -67,6 +70,7 @@ const Chat = () => {
     if (lastActiveId !== activeId) {
         setLastActiveId(activeId);
         setMessages([]);
+        setEngineError(null);
     }
 
     // پیام‌های گفتگوی باز
@@ -115,6 +119,7 @@ const Chat = () => {
         if (activeId === null) return;
         const optimistic = {id: `tmp-${Date.now()}`, role: "user", body, created: null};
         setMessages((prev) => [...prev, optimistic]);
+        setEngineError(null);
 
         try {
             const res = await chatApi.send(activeId, body);
@@ -122,12 +127,16 @@ const Chat = () => {
             if (res.assistantMessage) {
                 setMessages((prev) => [...prev, res.assistantMessage]);
             }
+            // ⚠️ خطای موتور با شکستِ درخواست فرق دارد: پیامِ کاربر ذخیره شده و
+            // باید بماند؛ فقط پاسخی نیامده. پس به‌جای دور ریختنِ پیام، دلیل را
+            // زیرِ همان گفتگو نشان می‌دهیم.
+            if (res.error) setEngineError(res.error);
             // عنوان را سرور می‌سازد (از اولین پیام)، پس از همان‌جا خوانده می‌شود
             setConversations((prev) => prev.map((c) =>
                 (c.id === activeId ? {...c, title: res.title} : c)));
-        } catch {
+        } catch (err) {
             setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-            notify("ارسال پیام ناموفق بود.", "error");
+            notify(errorMessage(err, "ارسال پیام ناموفق بود."), "error");
         }
     }, [activeId]);
 
@@ -151,7 +160,7 @@ const Chat = () => {
                     <Breadcrumb items={[{label: "گفتگو", to: CHAT_PATH, icon: FiMessageSquare}]}/>
                 </div>
                 <ChatPane key={activeId} conversation={active} messages={messages}
-                          onSend={sendMessage}/>
+                          engineError={engineError} onSend={sendMessage}/>
             </div>
         </section>
     );

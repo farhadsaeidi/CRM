@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {FiArrowUp, FiCpu, FiMic, FiPlus} from "react-icons/fi";
+import {FiAlertTriangle, FiArrowUp, FiCpu, FiMic, FiPlus} from "react-icons/fi";
 import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentReport} from "react-icons/hi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
@@ -15,12 +15,18 @@ const SUGGESTIONS = [
      title: "گزارش دوره‌ای", body: "گزارش هفتگی یا ماهانه"},
 ];
 
-// TODO(فاز ۲): موتورِ پاسخ‌گویی. سرور پیامِ کاربر را ذخیره می‌کند ولی فعلاً
-// `assistantMessage` را `null` برمی‌گرداند. عمداً هیچ پاسخِ ساختگی‌ای ساخته
-// نمی‌شود — جمله‌ای خوش‌ظاهر بدتر از نبودنِ جواب است، چون کاربر باورش می‌کند.
-const NOT_WIRED = "پیام شما ذخیره شد. موتورِ پاسخ‌گویی هنوز وصل نشده است و در فاز بعد به داده‌های دفترِ مشتریان متصل می‌شود.";
+// نامِ ابزارها به فارسی، برای خطِ «این عدد از کجا آمد» زیرِ پاسخ.
+// بدونِ آن کاربر نمی‌داند جواب از دفترِ خودش آمده یا مدل جمله ساخته.
+const TOOL_LABELS = {
+    overview: "نمای کلی دفتر",
+    customer_summary: "خلاصهٔ مشتریان",
+    transaction_summary: "خلاصهٔ تراکنش‌ها",
+    debtors: "فهرست بدهکاران",
+    find_customer: "جستجوی مشتری",
+    customer_ledger: "حساب مشتری",
+};
 
-const ChatPane = ({conversation, messages = [], onSend}) => {
+const ChatPane = ({conversation, messages = [], engineError = null, onSend}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
@@ -123,17 +129,26 @@ const ChatPane = ({conversation, messages = [], onSend}) => {
                                                  bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
                                     <FiCpu className="w-4 h-4 text-var-color-15"/>
                                 </span>
-                                <p className="m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
-                                              whitespace-pre-wrap wrap-break-word">{m.body}</p>
+                                <div className="min-w-0">
+                                    <p className="m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
+                                                  whitespace-pre-wrap wrap-break-word">{m.body}</p>
+                                    {/* منبعِ عدد — تا کاربر بداند جواب از دفترِ
+                                        خودش خوانده شده، نه از حافظهٔ مدل */}
+                                    {m.tools_used?.length > 0 && (
+                                        <p className="m-0 mt-1.5 text-[11px] text-var-color-04 dark:text-var-color-39">
+                                            بر پایهٔ {m.tools_used.map((t) => TOOL_LABELS[t] ?? t).join("، ")}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         ))}
-                        {/* موتور هنوز وصل نیست: به‌جای ساختنِ جوابِ الکی، صریح
-                            می‌گوییم. ظاهرش هم عمداً با حبابِ دستیار فرق دارد. */}
-                        {!pending && messages.length > 0 && messages.at(-1).role === "user" && (
+                        {/* پاسخی نیامده و دلیلش را سرور گفته. ظاهرش عمداً با
+                            حبابِ دستیار فرق دارد تا با یک جوابِ واقعی اشتباه نشود. */}
+                        {!pending && engineError && (
                             <div className="flex gap-2.5 rounded-xl px-3 py-2.5
                                             bg-var-color-54 border border-var-color-61/40">
-                                <FiCpu className="shrink-0 w-4 h-4 mt-1 text-var-color-53"/>
-                                <p className="m-0 text-[12.5px] leading-7 text-var-color-53">{NOT_WIRED}</p>
+                                <FiAlertTriangle className="shrink-0 w-4 h-4 mt-1 text-var-color-53"/>
+                                <p className="m-0 text-[12.5px] leading-7 text-var-color-53">{engineError}</p>
                             </div>
                         )}
                         {pending && (
@@ -142,11 +157,20 @@ const ChatPane = ({conversation, messages = [], onSend}) => {
                                                  bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
                                     <FiCpu className="w-4 h-4 text-var-color-15"/>
                                 </span>
-                                <span className="flex gap-1" aria-label="در حال آماده‌سازی پاسخ">
-                                    {[0, 1, 2].map((d) => (
-                                        <span key={d} className="w-1.5 h-1.5 rounded-full bg-var-color-04 dark:bg-var-color-39"
-                                              style={{animation: `crm-blink 1s ease-in-out ${d * 0.15}s infinite`}}/>
-                                    ))}
+                                {/* ⚠️ فقط سه نقطه کافی نیست: مدلِ محلی روی CPU
+                                    چند دقیقه طول می‌کشد و کاربر بی‌متن فکر می‌کند
+                                    برنامه هنگ کرده. */}
+                                <span className="flex flex-row items-center gap-2"
+                                      aria-label="در حال آماده‌سازی پاسخ">
+                                    <span className="flex gap-1">
+                                        {[0, 1, 2].map((d) => (
+                                            <span key={d} className="w-1.5 h-1.5 rounded-full bg-var-color-04 dark:bg-var-color-39"
+                                                  style={{animation: `crm-blink 1s ease-in-out ${d * 0.15}s infinite`}}/>
+                                        ))}
+                                    </span>
+                                    <span className="text-[11.5px] text-var-color-04 dark:text-var-color-39">
+                                        در حال خواندنِ دفتر و آماده‌سازی پاسخ …
+                                    </span>
                                 </span>
                             </div>
                         )}
