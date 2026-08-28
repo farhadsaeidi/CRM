@@ -57,6 +57,10 @@ GENERAL = [
 # به‌جای کمک، شلوغی می‌شود.
 MAX_SUGGESTIONS = 3
 
+# ⚠️ و کفِ دوتا: یک دکمهٔ تنها وسطِ صفحه شبیهِ دستور است نه پیشنهاد. اگر ابزارِ
+# اجراشده فقط یکی داد، بقیه از فهرستِ عمومی پر می‌شود.
+MIN_SUGGESTIONS = 2
+
 
 def build_suggestions(tools_used, context=None):
     """تا سه پیشنهادِ عمل، بر پایهٔ ابزارهای اجراشده.
@@ -100,4 +104,7 @@ def build_suggestions(tools_used, context=None):
 
     for item in GENERAL:
         add(dict(item))
-    return out
+
+    # اگر با همهٔ این‌ها هم به کف نرسیدیم، چیزی نشان نمی‌دهیم — یک دکمهٔ تنها
+    # بدتر از هیچ دکمه‌ای است
+    return out if len(out) >= MIN_SUGGESTIONS else []

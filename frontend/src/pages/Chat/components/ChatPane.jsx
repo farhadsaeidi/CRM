@@ -245,8 +245,6 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                 <div className="max-w-3xl mx-auto rounded-[26px] p-2.5
                                 bg-var-color-00 dark:bg-var-color-37
                                 border border-var-color-02 dark:border-var-color-38
-                                focus-within:border-var-color-15
-                                focus-within:shadow-[0_0_0_3px_var(--color-var-color-63)]
                                 shadow-[0_2px_10px_rgba(15,23,42,0.05)] dark:shadow-none
                                 transition-all duration-200">
                     <textarea ref={taRef} rows={1} value={draft} onKeyDown={keyDown}
@@ -295,12 +293,16 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                         {suggestions.map((item) => (
                             <button key={item.action} type="button"
                                     onClick={() => runSuggestion(item)}
+                                    // ⚠️ هاور فقط پس‌زمینه را کمی روشن می‌کند. بوردر
+                                    // عمداً ثابت می‌ماند: این‌ها پیشنهادند نه دکمهٔ
+                                    // اقدام، و برجسته شدنشان توجه را از خودِ گفتگو
+                                    // می‌دزدد.
                                     className="inline-flex flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full
                                                cursor-pointer text-[12px] transition-colors duration-200
                                                text-var-color-06 dark:text-var-color-39
                                                bg-var-color-01 dark:bg-var-color-40
                                                border border-var-color-02 dark:border-var-color-38
-                                               hover:text-var-color-15 hover:border-var-color-15">
+                                               hover:bg-var-color-02 dark:hover:bg-var-color-44">
                                 {item.label}
                                 <FiArrowLeft className="w-3.5 h-3.5"/>
                             </button>
@@ -308,11 +310,6 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                     </div>
                 )}
 
-                {/* دستیار حالا به دفتر وصل است، ولی فقط می‌خواند. این خط همان
-                    مرز را می‌گوید تا کاربر انتظارِ اشتباه نداشته باشد. */}
-                <p className="m-0 mt-2 text-center text-[10.5px] text-var-color-04 dark:text-var-color-39">
-                    دستیار فقط دفترِ شما را می‌خواند؛ چیزی ثبت یا ارسال نمی‌کند.
-                </p>
             </div>
         </div>
     );
