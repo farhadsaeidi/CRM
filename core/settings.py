@@ -286,6 +286,19 @@ SMS_TEST_RECIPIENT = config("SMS_TEST_RECIPIENT", default="")
 SMS_TEMPLATE_OTP = config("SMS_TEMPLATE_OTP", default="crm")
 SMS_TEMPLATE_FORGET_PASSWORD = config("SMS_TEMPLATE_FORGET_PASSWORD", default="crm-forget-pass")
 SMS_TEMPLATE_DEBT_REMINDER = config("SMS_TEMPLATE_DEBT_REMINDER", default="crm-debt-reminder")
+
+
+# دستیارِ گفتگو (گام ۱۱)
+#
+# قرارداد عمداً **سازگار با OpenAI** است، نه مخصوصِ یک ارائه‌دهنده: اولامای محلی،
+# واسطه‌های ایرانی و OpenRouter هر سه همین شکل را حرف می‌زنند. یعنی عوض کردنِ
+# مدل یا سرویس سه خط در `.env` است، نه یک بازنویسی.
+#
+# ⚠️ `LLM_API_KEY` برای اولاما بی‌معناست ولی خالی نباید بماند — کتابخانه‌ها
+# انتظارِ یک رشته دارند و با خالی، هدرِ Authorization ناقص می‌رود.
+LLM_BASE_URL = config("LLM_BASE_URL", default="")
+LLM_API_KEY = config("LLM_API_KEY", default="")
+LLM_MODEL = config("LLM_MODEL", default="")
 KAVENEGAR_API_KEY = config("KAVENEGAR_API_KEY", default="")
 # این خط حقوقیه و خدماتی نشده. برای خدماتی شدن باید حقوقی بود مثلا باید شرکت ثبت شده داشت
 # بنابراین با این حال از این خط فقط برای پیام های تبلیغاتی (مسیج بدون توکن) میشه استفاده کرد
