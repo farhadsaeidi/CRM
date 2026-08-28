@@ -1,6 +1,9 @@
 import json
 import logging
+import queue
+import threading
 
+from django.db import connections
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -108,6 +111,22 @@ class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
         )
 
 
+# ⚠️ **ضربانِ نگه‌دارندهٔ اتصال.**
+#
+# بینِ `event: start` و اولین حرفِ جواب، مدل پرامپت را پردازش می‌کند و این روی
+# CPU **بیش از یک دقیقه** طول می‌کشد — در گفتگویی که تاریخچه دارد، بیشتر. در آن
+# فاصله هیچ بایتی روی جریان نمی‌رود و پراکسیِ Vite اتصالِ بی‌جنب‌وجوش را می‌بندد؛
+# مرورگر آن را یک درخواستِ شکست‌خورده می‌بیند، نه یک استریمِ در حالِ کار.
+#
+# با curl دیده نمی‌شد چون آنجا نه پراکسی هست نه مهلتِ بی‌کاری — برای همین پیامِ
+# دوم در ترمینال کار می‌کرد و در مرورگر نه.
+#
+# خطِ کامنتِ SSE (شروع با «:») را کلاینت نادیده می‌گیرد، پس فقط اتصال را زنده
+# نگه می‌دارد بی‌آنکه چیزی به گفتگو اضافه کند.
+HEARTBEAT_SECONDS = 10
+HEARTBEAT = ": ping" + chr(10) + chr(10)
+
+
 def _sse(event, data):
     """یک رویدادِ SSE.
 
@@ -165,30 +184,54 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
             yield _sse("error", {"error": "دستیار هنوز پیکربندی نشده است."})
             return
 
-        try:
-            for kind, payload in answer_stream(user, conversation):
-                if kind == "delta":
-                    yield _sse("delta", {"text": payload})
-                elif kind == "tool":
-                    yield _sse("tool", {"name": payload})
-                elif kind == "reset":
-                    # متنِ خامِ یک فراخوانیِ ابزار روی صفحه رفته بود؛ فرانت
-                    # باید آنچه تا حالا نوشته را دور بریزد
-                    yield _sse("reset", {})
-                elif kind == "done":
-                    text, used, context = payload
-                    assistant = conversation.messages.create(
-                        role="assistant", body=text, tools_used=used,
-                        suggestion=build_suggestions(used, context),
-                    )
-                    yield _sse("done", {"assistantMessage": MessageSerializer(assistant).data})
-        except EngineNotConfigured as exc:
-            yield _sse("error", {"error": str(exc)})
-        except EngineError as exc:
-            logger.exception("chat stream failed")
-            yield _sse("error", {"error": str(exc)})
-        except Exception as exc:  # noqa: BLE001
-            # ⚠️ استثنای فرارِ داخلِ ژنراتور، جریان را بی‌صدا نصفه می‌گذارد و
-            # کلاینت تا ابد منتظر می‌ماند. پس همه‌چیز اینجا گرفته می‌شود.
-            logger.exception("chat stream crashed")
-            yield _sse("error", {"error": f"خطای غیرمنتظره: {exc}"})
+        # کارِ سنگین در تردِ جدا می‌رود تا این جریان بتواند در فاصله‌های سکوت
+        # ضربان بفرستد. بدونِ آن، `answer_stream` جریان را بلاک می‌کند و هیچ
+        # بایتی بیرون نمی‌رود.
+        events = queue.Queue()
+
+        def produce():
+            try:
+                for item in answer_stream(user, conversation):
+                    events.put(("event", item))
+            except (EngineNotConfigured, EngineError) as exc:
+                events.put(("error", str(exc)))
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("chat stream crashed")
+                events.put(("error", f"خطای غیرمنتظره: {exc}"))
+            finally:
+                # ⚠️ اتصالِ دیتابیسِ این ترد باید بسته شود، وگرنه با هر پیام یک
+                # اتصالِ بی‌صاحب در استخر جا می‌ماند
+                connections.close_all()
+                events.put(("end", None))
+
+        threading.Thread(target=produce, daemon=True).start()
+
+        while True:
+            try:
+                kind, payload = events.get(timeout=HEARTBEAT_SECONDS)
+            except queue.Empty:
+                yield HEARTBEAT
+                continue
+
+            if kind == "end":
+                return
+            if kind == "error":
+                yield _sse("error", {"error": payload})
+                continue
+
+            name, data = payload
+            if name == "delta":
+                yield _sse("delta", {"text": data})
+            elif name == "tool":
+                yield _sse("tool", {"name": data})
+            elif name == "reset":
+                # متنِ خامِ یک فراخوانیِ ابزار روی صفحه رفته بود؛ فرانت
+                # باید آنچه تا حالا نوشته را دور بریزد
+                yield _sse("reset", {})
+            elif name == "done":
+                text, used, context = data
+                assistant = conversation.messages.create(
+                    role="assistant", body=text, tools_used=used,
+                    suggestion=build_suggestions(used, context),
+                )
+                yield _sse("done", {"assistantMessage": MessageSerializer(assistant).data})

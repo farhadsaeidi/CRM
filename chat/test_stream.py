@@ -6,6 +6,7 @@
 """
 import io
 import json
+import time
 from unittest.mock import patch
 
 from django.test import override_settings
@@ -267,6 +268,31 @@ class StreamEndpointTests(APITestCase):
         self.assertEqual(saved["suggestion"][0]["action"], "debt_reminder")
         self.assertLessEqual(len(saved["suggestion"]), 3)
         self.assertEqual(self.conversation.messages.count(), 2)
+
+    def test_heartbeat_keeps_a_silent_stream_alive(self):
+        """قرارداد: در فاصلهٔ سکوت، ضربان فرستاده می‌شود.
+
+        ⚠️ بینِ `start` و اولین حرفِ جواب، مدل پرامپت را پردازش می‌کند و این روی
+        CPU بیش از یک دقیقه طول می‌کشد. بدونِ ضربان، پراکسیِ Vite اتصالِ
+        بی‌جنب‌وجوش را می‌بندد و مرورگر آن را «ارسال ناموفق» می‌بیند — در حالی
+        که سرور مشغولِ کار است.
+        """
+        import chat.views as views
+
+        def slow(_messages):
+            time.sleep(0.35)          # سکوت، مثل پردازشِ پرامپت
+            yield "سلام"
+            return {"role": "assistant", "content": "سلام"}
+
+        with patch.object(views, "HEARTBEAT_SECONDS", 0.05),                 patch("chat.engine._stream_model", side_effect=slow):
+            response = self.client.post(self.url, {"body": "سلام"}, format="json")
+            raw = b"".join(response.streaming_content).decode()
+
+        self.assertIn(": ping", raw)
+        # ضربان‌ها پیش از اولین متن آمده‌اند، نه بعدش
+        self.assertLess(raw.index(": ping"), raw.index("event: delta"))
+        # و کلاینت آن‌ها را رویداد حساب نمی‌کند
+        self.assertNotIn("event: ping", raw)
 
     def test_headers_prevent_buffering(self):
         """بدونِ این هدرها پراکسی جریان را جمع می‌کند و همه‌چیز یکجا می‌رسد."""

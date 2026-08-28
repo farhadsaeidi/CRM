@@ -35,6 +35,20 @@ const TOOL_LABELS = {
  * یک کامپوننت برای هر دو، تا وقتی استریم تمام می‌شود و پیامِ ذخیره‌شده جایش را
  * می‌گیرد، متن یک پیکسل هم جابه‌جا نشود.
  */
+// ⚠️ عددی که بدونِ ابزار آمده، ساختهٔ مدل است.
+//
+// مدل‌های کوچک وقتی جوابِ شبیهی در تاریخچه می‌بینند وسوسه می‌شوند تکرارش کنند
+// به‌جای اینکه دوباره دفتر را بخوانند — و در یک دفترِ حساب، عددِ ساختگی بدترین
+// خروجیِ ممکن است. پرامپت این را کم می‌کند ولی از بین نمی‌برد.
+//
+// شرط عمداً «عدد دارد» است نه «ابزار ندارد»: «سلام، چطور کمکتان کنم؟» هم ابزاری
+// ندارد ولی خطری هم ندارد، و هشدار روی آن فقط نویز است.
+const DIGITS = /[0-9۰-۹٠-٩]/;
+
+const isUngrounded = (message) =>
+    (message.tools_used?.length ?? 0) === 0 && DIGITS.test(message.body || "");
+
+
 const AssistantMessage = ({message, streaming = false}) => (
     <div className="flex gap-2.5">
         <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
@@ -52,6 +66,12 @@ const AssistantMessage = ({message, streaming = false}) => (
                 )}
             </p>
 
+            {!streaming && isUngrounded(message) && (
+                <p className="m-0 mt-1.5 flex flex-row items-start gap-1.5 text-[11px] text-var-color-53">
+                    <FiAlertTriangle className="shrink-0 w-3.5 h-3.5 mt-0.5"/>
+                    این پاسخ از دفترِ شما خوانده نشده؛ عددهایش قابلِ اتکا نیست.
+                </p>
+            )}
         </div>
     </div>
 );
