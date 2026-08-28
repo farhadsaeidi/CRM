@@ -477,20 +477,10 @@
         @apply border border-var-color-13 dark:border-var-color-16 hover:border-transparent bg-var-color-12 dark:bg-var-color-12 hover:bg-var-color-15 dark:text-var-color-15;
     }
 
-    /* دکمه‌های گردِ آیکونی در هدرِ جدول‌ها.
-       هاورشان توپُر نمی‌شود: داخلِ دایره آبیِ کم‌رنگ می‌شود و بوردر همان آبی
-       ولی کمی پررنگ‌تر (۳۰٪ در برابر ۴۵٪) — اختلاف کم است ولی لبهٔ دایره را
-       نگه می‌دارد. ⚠️ اولش ۱۶/۲۶ بود و روی سطحِ تیره تقریباً دیده نمی‌شد:
-       ۱۶٪ آبی روی ‎#0F131C‎ می‌شود ‎#12354A‎ که تفاوتش در یک دایرهٔ کوچک به
-       چشم نمی‌آید. مقدار را از روی ترکیبِ واقعیِ رنگ انتخاب کنید، نه حدس. آیکون هم آبی می‌ماند نه سفید؛ روی زمینهٔ کم‌رنگ، سفید
-       خوانده نمی‌شود.
-
-       ⚠️ فقط `rounded-full`ها: دکمه‌های مودال هم `btn-bluish`اند ولی
-       `rounded-xl` دارند و آنجا هاورِ توپُر درست است، چون دکمهٔ اقدامِ اصلی
-       باید وزن داشته باشد. */
-    .btn-bluish.rounded-full:hover {
-        @apply bg-var-color-63 border-var-color-64 text-var-color-15 dark:text-var-color-15;
-    }
+    /* ⚠️ دکمه‌های گرد قبلاً هاورِ نرمِ خودشان را داشتند (پرِ آبیِ کم‌رنگ با
+       بوردر). آن قاعده برداشته شد تا **همهٔ** دکمه‌های آبی یک هاور داشته
+       باشند — همان توپُری که دکمهٔ «ثبت مشتری جدید» در هدر دارد. دو رفتارِ
+       متفاوت برای یک رنگ، ناهماهنگ دیده می‌شد. */
 
     .btn-purplish {
         @apply border border-var-color-22 dark:border-var-color-24 hover:border-transparent bg-var-color-21 dark:bg-var-color-21 hover:bg-var-color-25 dark:text-var-color-25;

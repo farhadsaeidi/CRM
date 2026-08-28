@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import {useSearchParams} from "react-router";
 import {FiMoon, FiUsers} from "react-icons/fi";
 import {BsGraphDownArrow, BsGraphUpArrow} from "react-icons/bs";
 import {customersApi} from "../../../api/customers.js";
@@ -13,11 +12,12 @@ import {faCompact, toFaDigits} from "../../../lib/chart.js";
  * با تایپ در کادرِ جستجو تکان بخورد دیگر شاخص نیست؛ تعدادِ نتیجهٔ فیلترشده را
  * خودِ جدول در نوارِ صفحه‌بندی‌اش نشان می‌دهد.
  *
- * سه کارتِ وضعیت روی کلیک، فیلترِ متناظرِ جدول را می‌گذارند — پس کاشی‌ها راهِ
- * میان‌بر هم هستند نه فقط عدد.
+ * ⚠️ کارت‌ها **فقط‌خواندنی**اند. پیش‌تر کلیک روی «بدهکاران» و «بستانکاران»
+ * فیلترِ جدول را عوض می‌کرد، ولی همان فیلتر از نوارِ خودِ جدول هم در دسترس است —
+ * دو راه برای یک کار، و کارتی که هم عدد نشان می‌دهد هم دکمه است، معلوم نمی‌کند
+ * کدام. حالا اینجا فقط گزارش است و فیلتر کارِ جدول.
  */
 const CustomerKpis = ({refreshKey = 0}) => {
-    const [searchParams, setSearchParams] = useSearchParams();
     const [stats, setStats] = useState(null);
 
     useEffect(() => {
@@ -33,19 +33,6 @@ const CustomerKpis = ({refreshKey = 0}) => {
             ignore = true;
         };
     }, [refreshKey]);
-
-    const applyFilter = (key) => {
-        setSearchParams((prev) => {
-            const params = new URLSearchParams(prev);
-            // کلیکِ دوباره روی همان کارت، فیلتر را برمی‌دارد
-            if (params.get("filter") === key) params.delete("filter");
-            else params.set("filter", key);
-            params.delete("page");
-            return params;
-        });
-    };
-
-    const active = searchParams.get("filter") || "all";
 
     if (!stats) {
         return (
@@ -79,7 +66,6 @@ const CustomerKpis = ({refreshKey = 0}) => {
                 title="بدهکاران" delay={90}
                 value={debtors.count} suffix="نفر" icon={BsGraphDownArrow}
                 accent="var(--color-var-color-55)"
-                onClick={() => applyFilter("debt")} active={active === "debt"}
                 hint={`${faCompact(debtors.amount)} تومان طلب`}
                 hintClass="text-var-color-55"
             />
@@ -88,7 +74,6 @@ const CustomerKpis = ({refreshKey = 0}) => {
                 title="بستانکاران" delay={135}
                 value={creditors.count} suffix="نفر" icon={BsGraphUpArrow}
                 accent="var(--color-var-color-31)"
-                onClick={() => applyFilter("credit")} active={active === "credit"}
                 hint={`${faCompact(creditors.amount)} تومان بستانکاری`}
                 hintClass="text-var-color-31"
             />

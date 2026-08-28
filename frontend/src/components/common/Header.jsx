@@ -14,7 +14,7 @@ const Header = ({onNewCustomer}) => (
                     سامانه مدیریت مشتریان
                 </h1>
                 <p className="mt-0.75 mb-0 text-sm text-var-color-04 dark:text-var-color-39 whitespace-nowrap overflow-hidden text-ellipsis">
-                    دفتر حساب نسیه و پرداختی مشتریان
+                    دفتر حساب مشتریان
                 </p>
             </div>
         </Link>
