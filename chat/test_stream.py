@@ -122,6 +122,16 @@ class ToolDeltaMergeTests(APITestCase):
         self.assertEqual(buffer[0]["function"]["name"], "debtors")
         self.assertEqual(json.loads(buffer[0]["function"]["arguments"]), {"limit": 5})
 
+    def test_missing_id_gets_one(self):
+        """قرارداد: `id` هیچ‌وقت خالی نمی‌ماند.
+
+        اولاما در استریم شناسه نمی‌فرستد، و پیامی که با `"id": ""` به سرور
+        برگردد با ۴۰۰ رد می‌شود — پیش از اینکه مدل اصلاً ببیندش.
+        """
+        buffer = {}
+        _merge_tool_deltas(buffer, [{"index": 0, "function": {"name": "debtors", "arguments": "{}"}}])
+        self.assertTrue(buffer[0]["id"])
+
     def test_two_tools_stay_separate(self):
         buffer = {}
         _merge_tool_deltas(buffer, [

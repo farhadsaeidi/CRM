@@ -292,8 +292,10 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                         </span>
                     </div>
                 </div>
+                {/* دستیار حالا به دفتر وصل است، ولی فقط می‌خواند. این خط همان
+                    مرز را می‌گوید تا کاربر انتظارِ اشتباه نداشته باشد. */}
                 <p className="m-0 mt-2 text-center text-[10.5px] text-var-color-04 dark:text-var-color-39">
-                    این دستیار هنوز به داده‌های سامانه متصل نیست.
+                    دستیار فقط دفترِ شما را می‌خواند؛ چیزی ثبت یا ارسال نمی‌کند.
                 </p>
             </div>
         </div>
