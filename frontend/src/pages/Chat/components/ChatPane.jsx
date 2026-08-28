@@ -35,7 +35,7 @@ const TOOL_LABELS = {
  * یک کامپوننت برای هر دو، تا وقتی استریم تمام می‌شود و پیامِ ذخیره‌شده جایش را
  * می‌گیرد، متن یک پیکسل هم جابه‌جا نشود.
  */
-const AssistantMessage = ({message, streaming = false, onSuggestion}) => (
+const AssistantMessage = ({message, streaming = false}) => (
     <div className="flex gap-2.5">
         <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
                          bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
@@ -52,27 +52,6 @@ const AssistantMessage = ({message, streaming = false, onSuggestion}) => (
                 )}
             </p>
 
-            {/* منبعِ عدد — تا کاربر بداند جواب از دفترِ خودش خوانده شده، نه از
-                حافظهٔ مدل. حینِ استریم نشان داده نمی‌شود چون هنوز قطعی نیست. */}
-            {!streaming && message.tools_used?.length > 0 && (
-                <p className="m-0 mt-1.5 text-[11px] text-var-color-04 dark:text-var-color-39">
-                    بر پایهٔ {message.tools_used.map((t) => TOOL_LABELS[t] ?? t).join("، ")}
-                </p>
-            )}
-
-            {/* پیشنهادِ قدمِ بعد. دکمه است نه متن، چون مقصد دارد. */}
-            {!streaming && message.suggestion?.label && (
-                <button type="button"
-                        onClick={() => onSuggestion?.(message.suggestion)}
-                        className="mt-2.5 inline-flex flex-row items-center gap-1.5 px-3 py-1.5 rounded-full
-                                   cursor-pointer text-[12px] transition-colors duration-200
-                                   text-var-color-15 bg-var-color-12 dark:bg-var-color-44
-                                   border border-var-color-13 dark:border-var-color-16
-                                   hover:bg-var-color-13 dark:hover:bg-var-color-13">
-                    {message.suggestion.label}
-                    <FiArrowLeft className="w-3.5 h-3.5"/>
-                </button>
-            )}
         </div>
     </div>
 );
@@ -144,6 +123,12 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
         }
     };
 
+    // پیشنهادهای آخرین پاسخِ دستیار. فیلد در دیتابیس JSON است و روزگاری یک
+    // شیء بود، پس هر دو شکل پذیرفته می‌شود تا گفتگوهای قدیمی نشکنند.
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    const raw = lastAssistant?.suggestion;
+    const suggestions = Array.isArray(raw) ? raw : (raw?.label ? [raw] : []);
+
     const empty = messages.length === 0;
 
     // ریشه `flex-1` است و نه `h-full`: نوارِ مسیر هم بالای همین ستون نشسته، پس
@@ -197,13 +182,16 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                     // ── گفتگو: پیام کاربر حباب‌دار، پاسخ دستیار تمام‌عرض (مثل چت مدل‌های زبانی) ──
                     <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-5">
                         {messages.map((m) => m.role === "user" ? (
-                            <div key={m.id} className="self-start max-w-[85%] px-4 py-2.5 rounded-2xl rounded-br-md
+                            // ⚠️ در RTL «انتهای خط» چپ است، پس `self-end` حبابِ
+                            // کاربر را سمتِ چپ می‌برد و پاسخِ دستیار سمتِ راست
+                            // می‌ماند — همان چیدمانی که کاربر انتظار دارد.
+                            <div key={m.id} className="self-end max-w-[85%] px-4 py-2.5 rounded-2xl rounded-bl-md
                                                     bg-var-color-12 dark:bg-var-color-44 text-[13.5px] leading-7
                                                     text-var-color-06 dark:text-var-color-01 whitespace-pre-wrap wrap-break-word">
                                 {m.body}
                             </div>
                         ) : (
-                            <AssistantMessage key={m.id} message={m} onSuggestion={runSuggestion}/>
+                            <AssistantMessage key={m.id} message={m}/>
                         ))}
 
                         {/* پاسخی که همین حالا نوشته می‌شود. همان قالبِ بالا را
@@ -251,11 +239,16 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
 
             {/* ── کامپوزر ── */}
             <div className="shrink-0 px-4 pb-4 pt-2">
-                <div className="max-w-3xl mx-auto rounded-3xl p-2
+                {/* کادرِ نوشتن — گرد و جادار، با هالهٔ آبیِ کم‌رنگ روی فوکوس.
+                    رنگ‌ها از همان پالتِ پروژه‌اند نه یک بنفشِ وارداتی، وگرنه
+                    این کادر تنها چیزِ ناهماهنگِ صفحه می‌شد. */}
+                <div className="max-w-3xl mx-auto rounded-[26px] p-2.5
                                 bg-var-color-00 dark:bg-var-color-37
                                 border border-var-color-02 dark:border-var-color-38
-                                focus-within:border-var-color-14 dark:focus-within:border-var-color-16
-                                shadow-[0_2px_10px_rgba(15,23,42,0.05)] dark:shadow-none transition-colors duration-200">
+                                focus-within:border-var-color-15
+                                focus-within:shadow-[0_0_0_3px_var(--color-var-color-63)]
+                                shadow-[0_2px_10px_rgba(15,23,42,0.05)] dark:shadow-none
+                                transition-all duration-200">
                     <textarea ref={taRef} rows={1} value={draft} onKeyDown={keyDown}
                               onChange={(e) => {
                                   setDraft(e.target.value);
@@ -292,6 +285,29 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                         </span>
                     </div>
                 </div>
+                {/* ⚠️ پیشنهادها **زیرِ کادرِ نوشتن**اند نه چسبیده به پاسخ: قدمِ
+                    بعدی‌اند، پس جایشان کنارِ همان‌جایی است که کاربر قدمِ بعدی را
+                    برمی‌دارد. چسبیده به پیام، هر پاسخِ قدیمی هم دکمه‌های خودش
+                    را نگه می‌داشت و صفحه پر از دکمهٔ منقضی می‌شد.
+                    فقط پیشنهادهای **آخرین** پاسخ نشان داده می‌شوند. */}
+                {suggestions.length > 0 && !pending && (
+                    <div className="max-w-3xl mx-auto mt-3 flex flex-row flex-wrap justify-center gap-2">
+                        {suggestions.map((item) => (
+                            <button key={item.action} type="button"
+                                    onClick={() => runSuggestion(item)}
+                                    className="inline-flex flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full
+                                               cursor-pointer text-[12px] transition-colors duration-200
+                                               text-var-color-06 dark:text-var-color-39
+                                               bg-var-color-01 dark:bg-var-color-40
+                                               border border-var-color-02 dark:border-var-color-38
+                                               hover:text-var-color-15 hover:border-var-color-15">
+                                {item.label}
+                                <FiArrowLeft className="w-3.5 h-3.5"/>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 {/* دستیار حالا به دفتر وصل است، ولی فقط می‌خواند. این خط همان
                     مرز را می‌گوید تا کاربر انتظارِ اشتباه نداشته باشد. */}
                 <p className="m-0 mt-2 text-center text-[10.5px] text-var-color-04 dark:text-var-color-39">

@@ -4,6 +4,7 @@
 جایگزین می‌شود. تستی که مدلِ محلی را صدا بزند چند دقیقه طول می‌کشد و روی ماشینی
 که اولاما بالا نباشد بی‌دلیل قرمز می‌شود.
 """
+import io
 import json
 from unittest.mock import patch
 
@@ -12,9 +13,9 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from chat.engine import MAX_STEPS, _merge_tool_deltas, answer_stream
+from chat.engine import MAX_STEPS, _merge_tool_deltas, _stream_model, answer_stream
 from chat.models import Conversation
-from chat.suggestions import build_suggestion
+from chat.suggestions import MAX_SUGGESTIONS, build_suggestions
 from home.tests.factories import make_customer, make_owner, make_transaction
 
 # ⚠️ آدرسِ بی‌اسکیما عمدی است: `requests` **بی‌درنگ** ردش می‌کند، پس هر
@@ -22,6 +23,8 @@ from home.tests.factories import make_customer, make_owner, make_transaction
 # زنده وصل می‌شد و ۱۷۰ ثانیه طول می‌کشید بی‌آنکه کسی بفهمد چرا؛ حتی پورتِ بسته
 # هم جواب نداد، چون در WSL اتصال به پورتِ خالی رد نمی‌شود بلکه معلق می‌ماند.
 LLM = {"LLM_BASE_URL": "بدون-اسکیما", "LLM_API_KEY": "x", "LLM_MODEL": "test"}
+# برای تستی که خودِ `requests.post` را ماک می‌کند و به آدرسِ معتبر نیاز دارد
+LLM_REAL = {**LLM, "LLM_BASE_URL": "http://x/v1"}
 
 
 def stream_of(*pieces, tool_calls=None):
@@ -110,6 +113,39 @@ class StreamLoopTests(APITestCase):
         self.assertEqual(events[-1][0], "done")
 
 
+class StreamEncodingTests(APITestCase):
+    """قرارداد: جریان همیشه UTF-8 خوانده می‌شود.
+
+    ⚠️ اولاما `text/event-stream` را بدونِ charset می‌فرستد و `requests` برای
+    `text/*`ِ بی‌charset به ISO-8859-1 برمی‌گردد. بدونِ تعیینِ صریحِ encoding،
+    کلِ پاسخِ فارسی به‌هم‌ریخته می‌رسد — و چون خطایی پرتاب نمی‌شود، تنها راهِ
+    فهمیدنش نگاه کردن به صفحه است.
+    """
+
+    @override_settings(**LLM_REAL)
+    def test_utf8_is_forced_on_the_response(self):
+        import requests
+
+        # مرزِ رویدادهای SSE دو خطِ خالی است؛ با chr(10) نوشته می‌شود تا
+        # اسکیپ‌های تودرتو خواناییِ تست را از بین نبرند
+        sep = chr(10) * 2
+        body = (
+            'data: {"choices":[{"delta":{"content":"بدهکار"}}]}' + sep
+            + 'data: [DONE]' + sep
+        ).encode("utf-8")
+
+        fake = requests.Response()
+        fake.status_code = 200
+        fake.raw = io.BytesIO(body)
+        # همان چیزی که اولاما می‌دهد: بدونِ charset
+        fake.headers["Content-Type"] = "text/event-stream"
+
+        with patch("chat.engine.requests.post", return_value=fake):
+            pieces = list(_stream_model([{"role": "user", "content": "x"}]))
+
+        self.assertEqual(pieces, ["بدهکار"])
+
+
 class ToolDeltaMergeTests(APITestCase):
     """تکه‌های `tool_calls` در استریم باید بر اساسِ `index` جمع شوند نه ترتیبِ ورود."""
 
@@ -144,25 +180,40 @@ class ToolDeltaMergeTests(APITestCase):
 
 class SuggestionTests(APITestCase):
     def test_no_tools_means_no_suggestion(self):
-        """دستیاری که فقط سلام کرده، پیشنهادِ چسبانده مزاحمت است نه کمک."""
-        self.assertIsNone(build_suggestion([]))
+        """دستیاری که فقط سلام کرده، ردیفِ دکمه‌های چسبانده مزاحمت است نه کمک."""
+        self.assertEqual(build_suggestions([]), [])
 
-    def test_last_tool_wins(self):
+    def test_specific_tool_comes_first(self):
         """مسیرِ گفتگو از کلی به جزئی می‌رود؛ آخرین قدم همان چیزی است که دنبالش بود."""
-        suggestion = build_suggestion(["overview", "debtors"])
-        self.assertEqual(suggestion["action"], "debt_reminder")
+        out = build_suggestions(["overview", "debtors"])
+        self.assertEqual(out[0]["action"], "debt_reminder")
+
+    def test_never_more_than_the_cap(self):
+        """با بیشتر از سه‌تا، ردیفِ پیشنهادها می‌شکند و شلوغی می‌شود."""
+        out = build_suggestions(["overview", "customer_summary", "transaction_summary", "debtors"])
+        self.assertLessEqual(len(out), MAX_SUGGESTIONS)
+
+    def test_general_options_fill_the_row(self):
+        """یک ابزار یک پیشنهاد می‌دهد؛ بقیه با مقصدهای عمومی پر می‌شود."""
+        out = build_suggestions(["debtors"])
+        self.assertGreater(len(out), 1)
+        self.assertEqual(out[0]["action"], "debt_reminder")
+
+    def test_no_duplicate_destinations(self):
+        actions = [item["action"] for item in build_suggestions(["customer_summary"])]
+        self.assertEqual(len(actions), len(set(actions)))
 
     def test_customer_ledger_needs_an_id(self):
         """دکمه‌ای که مقصد ندارد نباید ساخته شود."""
-        without = build_suggestion(["find_customer", "customer_ledger"])
-        self.assertEqual(without["action"], "customers")   # به فهرست برمی‌گردد
+        without = [i["action"] for i in build_suggestions(["find_customer", "customer_ledger"])]
+        self.assertNotIn("customer_ledger", without)
 
-        with_id = build_suggestion(["find_customer", "customer_ledger"], {"customer_id": 7})
-        self.assertEqual(with_id["action"], "customer_ledger")
-        self.assertEqual(with_id["customer_id"], 7)
+        with_id = build_suggestions(["find_customer", "customer_ledger"], {"customer_id": 7})
+        self.assertEqual(with_id[0]["action"], "customer_ledger")
+        self.assertEqual(with_id[0]["customer_id"], 7)
 
     def test_unknown_tool_is_skipped(self):
-        self.assertIsNone(build_suggestion(["something_new"]))
+        self.assertEqual(build_suggestions(["something_new"]), [])
 
 
 @override_settings(**LLM)
@@ -213,7 +264,8 @@ class StreamEndpointTests(APITestCase):
         saved = next(p["assistantMessage"] for n, p in events if n == "done")
         self.assertEqual(saved["body"], "یک نفر.")
         self.assertEqual(saved["tools_used"], ["debtors"])
-        self.assertEqual(saved["suggestion"]["action"], "debt_reminder")
+        self.assertEqual(saved["suggestion"][0]["action"], "debt_reminder")
+        self.assertLessEqual(len(saved["suggestion"]), 3)
         self.assertEqual(self.conversation.messages.count(), 2)
 
     def test_headers_prevent_buffering(self):

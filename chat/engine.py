@@ -161,6 +161,15 @@ def _stream_model(messages):
     if response.status_code != 200:
         raise EngineError(f"مدل خطا داد ({response.status_code}): {response.text[:200]}")
 
+    # ⚠️ **بدونِ این خط، کلِ پاسخِ فارسی به‌هم‌ریخته می‌رسد.**
+    #
+    # اولاما هدرِ `text/event-stream` را **بدونِ charset** می‌فرستد، و `requests`
+    # طبق استانداردِ HTTP برای `text/*`ِ بی‌charset به ISO-8859-1 برمی‌گردد. پس
+    # `decode_unicode=True` بایت‌های UTF-8 را لاتین-۱ می‌خواند و «بدهکار» به
+    # «Ø¨Ø¯ÙÚ©Ø§Ø±» تبدیل می‌شود. مسیرِ غیراستریم این مشکل را ندارد چون
+    # `response.json()` همیشه UTF-8 فرض می‌کند.
+    response.encoding = "utf-8"
+
     content = []
     tool_buffer = {}
     try:

@@ -11,7 +11,7 @@ from core.permissions import IsOwner
 
 from .engine import EngineError, EngineNotConfigured, answer, answer_stream, is_configured
 from .models import Conversation
-from .suggestions import build_suggestion
+from .suggestions import build_suggestions
 from .serializers import ConversationDetailSerializer, ConversationSerializer, MessageSerializer
 
 logger = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
                 text, used = answer(request.user, conversation)
                 assistant = conversation.messages.create(
                     role="assistant", body=text, tools_used=used,
-                    suggestion=build_suggestion(used),
+                    suggestion=build_suggestions(used),
                 )
             except EngineNotConfigured as exc:
                 error = str(exc)
@@ -179,7 +179,7 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
                     text, used, context = payload
                     assistant = conversation.messages.create(
                         role="assistant", body=text, tools_used=used,
-                        suggestion=build_suggestion(used, context),
+                        suggestion=build_suggestions(used, context),
                     )
                     yield _sse("done", {"assistantMessage": MessageSerializer(assistant).data})
         except EngineNotConfigured as exc:
