@@ -49,6 +49,7 @@ chat_patterns = [
     path("chat/conversations/", chat_views.ConversationListCreateView.as_view(), name="conversations"),
     path("chat/conversations/<int:pk>/", chat_views.ConversationDetailView.as_view(), name="conversation_detail"),
     path("chat/conversations/<int:pk>/messages/", chat_views.MessageCreateView.as_view(), name="conversation_messages"),
+    path("chat/conversations/<int:pk>/stream/", chat_views.MessageStreamView.as_view(), name="conversation_stream"),
 ]
 
 # عمومی

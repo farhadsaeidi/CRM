@@ -15,7 +15,11 @@ from chat.models import Conversation
 from chat.tools import run_tool, tool_schemas
 from home.tests.factories import make_customer, make_owner, make_transaction
 
-LLM = {"LLM_BASE_URL": "http://127.0.0.1:11434/v1", "LLM_API_KEY": "x", "LLM_MODEL": "test"}
+# ⚠️ آدرسِ بی‌اسکیما عمدی است: `requests` **بی‌درنگ** ردش می‌کند، پس هر
+# فراخوانیِ ماک‌نشده فوراً لو می‌رود. با آدرسِ واقعی، یک تستِ جاافتاده به مدلِ
+# زنده وصل می‌شد و ۱۷۰ ثانیه طول می‌کشید بی‌آنکه کسی بفهمد چرا؛ حتی پورتِ بسته
+# هم جواب نداد، چون در WSL اتصال به پورتِ خالی رد نمی‌شود بلکه معلق می‌ماند.
+LLM = {"LLM_BASE_URL": "بدون-اسکیما", "LLM_API_KEY": "x", "LLM_MODEL": "test"}
 
 
 def say(text):

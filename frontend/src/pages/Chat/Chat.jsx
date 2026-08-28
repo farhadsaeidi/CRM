@@ -5,6 +5,7 @@ import Sidebar from "../../components/common/Sidebar.jsx";
 import ChatSidebar from "./components/ChatSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
 import {chatApi} from "../../api/chat.js";
+import {streamMessage} from "../../api/chatStream.js";
 import {errorMessage} from "../../lib/apiError.js";
 import {notify} from "../../lib/notify.jsx";
 import {CHAT_PATH} from "../../lib/paths.js";
@@ -30,6 +31,12 @@ const Chat = () => {
     const [loading, setLoading] = useState(true);
     // خطای موتور — پاسخ نیامده ولی پیامِ کاربر سرِ جایش است
     const [engineError, setEngineError] = useState(null);
+    // پاسخی که همین حالا در حالِ نوشته شدن است. جدا از `messages` نگه داشته
+    // می‌شود تا با هر حرفِ تازه کلِ فهرست دوباره رندر نشود.
+    const [streamingText, setStreamingText] = useState(null);
+    // ابزاری که همین حالا اجرا می‌شود — بینِ سوال و اولین حرفِ جواب، روی CPU
+    // چند دقیقه سکوت است و کاربر باید بداند چه خبر است
+    const [runningTool, setRunningTool] = useState(null);
 
     const active = conversations.find((c) => c.id === activeId) ?? null;
 
@@ -71,6 +78,8 @@ const Chat = () => {
         setLastActiveId(activeId);
         setMessages([]);
         setEngineError(null);
+        setStreamingText(null);
+        setRunningTool(null);
     }
 
     // پیام‌های گفتگوی باز
@@ -120,22 +129,40 @@ const Chat = () => {
         const optimistic = {id: `tmp-${Date.now()}`, role: "user", body, created: null};
         setMessages((prev) => [...prev, optimistic]);
         setEngineError(null);
+        setStreamingText(null);
+        setRunningTool(null);
 
         try {
-            const res = await chatApi.send(activeId, body);
-            setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? res.userMessage : m)));
-            if (res.assistantMessage) {
-                setMessages((prev) => [...prev, res.assistantMessage]);
-            }
-            // ⚠️ خطای موتور با شکستِ درخواست فرق دارد: پیامِ کاربر ذخیره شده و
-            // باید بماند؛ فقط پاسخی نیامده. پس به‌جای دور ریختنِ پیام، دلیل را
-            // زیرِ همان گفتگو نشان می‌دهیم.
-            if (res.error) setEngineError(res.error);
-            // عنوان را سرور می‌سازد (از اولین پیام)، پس از همان‌جا خوانده می‌شود
-            setConversations((prev) => prev.map((c) =>
-                (c.id === activeId ? {...c, title: res.title} : c)));
+            await streamMessage(activeId, body, {
+                onStart: (payload) => {
+                    setMessages((prev) => prev.map((m) =>
+                        (m.id === optimistic.id ? payload.userMessage : m)));
+                    setConversations((prev) => prev.map((c) =>
+                        (c.id === activeId ? {...c, title: payload.title} : c)));
+                },
+                onTool: (name) => setRunningTool(name),
+                onDelta: (text) => {
+                    setRunningTool(null);
+                    setStreamingText((prev) => (prev ?? "") + text);
+                },
+                // متنِ خامِ یک فراخوانیِ ابزار روی صفحه رفته بود — دور ریخته شود
+                onReset: () => setStreamingText(null),
+                onDone: (message) => {
+                    setStreamingText(null);
+                    setRunningTool(null);
+                    if (message) setMessages((prev) => [...prev, message]);
+                },
+                onError: (text) => {
+                    setStreamingText(null);
+                    setRunningTool(null);
+                    setEngineError(text);
+                },
+            });
         } catch (err) {
+            // شکستِ خودِ درخواست — برخلافِ خطای موتور، پیامِ کاربر ذخیره نشده
             setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+            setStreamingText(null);
+            setRunningTool(null);
             notify(errorMessage(err, "ارسال پیام ناموفق بود."), "error");
         }
     }, [activeId]);
@@ -160,6 +187,7 @@ const Chat = () => {
                     <Breadcrumb items={[{label: "گفتگو", to: CHAT_PATH, icon: FiMessageSquare}]}/>
                 </div>
                 <ChatPane key={activeId} conversation={active} messages={messages}
+                          streamingText={streamingText} runningTool={runningTool}
                           engineError={engineError} onSend={sendMessage}/>
             </div>
         </section>

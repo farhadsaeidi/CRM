@@ -95,6 +95,99 @@ def _call_model(messages):
         raise EngineError(f"پاسخِ مدل قابلِ خواندن نبود: {error}") from error
 
 
+def _merge_tool_deltas(buffer, deltas):
+    """تکه‌های `tool_calls` که در استریم قطعه‌قطعه می‌آیند را کنارِ هم می‌چیند.
+
+    ⚠️ در استریم، نامِ ابزار و آرگومان‌هایش در چند تکه می‌رسند و `index` تنها
+    چیزی است که می‌گوید هر تکه به کدام فراخوانی تعلق دارد — `id` معمولاً فقط
+    در تکهٔ اول می‌آید. جمع کردنشان با ترتیبِ ورود اشتباه است، چون مدل می‌تواند
+    چند ابزار را هم‌زمان بسازد.
+    """
+    for delta in deltas:
+        index = delta.get("index", 0)
+        slot = buffer.setdefault(index, {"id": "", "type": "function",
+                                         "function": {"name": "", "arguments": ""}})
+        if delta.get("id"):
+            slot["id"] = delta["id"]
+        function = delta.get("function") or {}
+        if function.get("name"):
+            slot["function"]["name"] = function["name"]
+        # آرگومان‌ها رشته‌اند و باید **به هم چسبانده** شوند، نه جایگزین
+        if function.get("arguments"):
+            slot["function"]["arguments"] += function["arguments"]
+
+
+def _stream_model(messages):
+    """یک رفت‌وبرگشت با مدل، به‌صورت استریم.
+
+    ژنراتوری که تکه‌های متن را حین رسیدن بیرون می‌دهد و در پایان پیامِ کاملِ
+    سرِ هم شده را با `StopIteration.value` برمی‌گرداند.
+
+    ⚠️ **همهٔ قدم‌ها استریم می‌شوند، نه فقط آخری.** از قبل نمی‌دانیم کدام قدم
+    جوابِ نهایی است؛ اگر ابزارها را بی‌استریم اجرا کنیم و بعد برای متن دوباره
+    بپرسیم، روی CPU چند دقیقه به هر پاسخ اضافه می‌شود. قدم‌هایی که به ابزار
+    ختم می‌شوند متنی ندارند، پس چیزی هم بیرون نمی‌دهند.
+    """
+    url = f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions"
+    try:
+        response = requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {settings.LLM_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": settings.LLM_MODEL,
+                "messages": messages,
+                "tools": tool_schemas(),
+                "temperature": 0.2,
+                "stream": True,
+            },
+            timeout=TIMEOUT_SECONDS,
+            stream=True,
+            proxies={"http": None, "https": None},
+        )
+    except requests.RequestException as error:
+        raise EngineError(f"ارتباط با مدل برقرار نشد: {error}") from error
+
+    if response.status_code != 200:
+        raise EngineError(f"مدل خطا داد ({response.status_code}): {response.text[:200]}")
+
+    content = []
+    tool_buffer = {}
+    try:
+        for line in response.iter_lines(decode_unicode=True):
+            if not line or not line.startswith("data:"):
+                continue
+            payload = line[5:].strip()
+            if payload == "[DONE]":
+                break
+            try:
+                chunk = json.loads(payload)
+            except ValueError:
+                continue
+
+            choices = chunk.get("choices") or []
+            if not choices:
+                continue
+            delta = choices[0].get("delta") or {}
+
+            piece = delta.get("content")
+            if piece:
+                content.append(piece)
+                yield piece
+
+            if delta.get("tool_calls"):
+                _merge_tool_deltas(tool_buffer, delta["tool_calls"])
+    finally:
+        response.close()
+
+    message = {"role": "assistant", "content": "".join(content)}
+    if tool_buffer:
+        message["tool_calls"] = [tool_buffer[i] for i in sorted(tool_buffer)]
+    return message
+
+
 def _rescue_tool_calls(message):
     """درخواستِ ابزاری که به‌جای فیلدِ ساختاریافته در متن آمده.
 
@@ -230,3 +323,96 @@ def answer(user, conversation):
     # به سقف خوردیم: مدل نتوانست جمع‌بندی کند
     logger.warning("chat loop hit MAX_STEPS with tools=%s", used)
     return "نتوانستم به جمع‌بندی برسم. لطفاً سوال را ساده‌تر بپرسید.", used
+
+
+def answer_stream(user, conversation):
+    """همان حلقهٔ `answer` ولی تکه‌تکه.
+
+    رویدادهایی که بیرون می‌دهد:
+        ("tool",  نامِ ابزار)   — پیش از اجرای هر ابزار
+        ("delta", تکهٔ متن)      — حینِ نوشتنِ جواب
+        ("done",  (متن, ابزارها, زمینه))
+
+    ⚠️ چرا رویدادِ `tool` هم بیرون می‌رود؟ چون بینِ سوال و اولین حرفِ جواب،
+    ابزار اجرا می‌شود و روی CPU همین چند دقیقه طول می‌کشد. بدونِ این رویداد
+    کاربر فقط سکوت می‌بیند و فکر می‌کند چیزی کار نمی‌کند.
+    """
+    if not is_configured():
+        raise EngineNotConfigured(
+            "دستیار پیکربندی نشده است. مقادیر LLM_BASE_URL و LLM_MODEL را در .env بگذارید."
+        )
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        *_history(conversation),
+    ]
+    used = []
+    # شناسه‌هایی که دکمهٔ پیشنهاد به آن‌ها نیاز دارد (مثلاً کدام مشتری)
+    context = {}
+    text_parts = []
+
+    for _step in range(MAX_STEPS):
+        text_parts = []
+        stream = _stream_model(messages)
+        while True:
+            try:
+                piece = next(stream)
+            except StopIteration as stop:
+                message = stop.value or {"role": "assistant", "content": ""}
+                break
+            text_parts.append(piece)
+            yield ("delta", piece)
+
+        calls = message.get("tool_calls") or []
+        if not calls:
+            rescued = _rescue_tool_calls(message)
+            if rescued:
+                logger.info("chat rescued tool call from content: %s",
+                            rescued[0]["function"]["name"])
+                calls = rescued
+                # ⚠️ متنِ خامِ فراخوانی روی صفحه رفته بود. با این رویداد به
+                # فرانت می‌گوییم آنچه تا حالا نوشته را دور بریزد، وگرنه کاربر
+                # JSONِ داخلیِ مدل را به‌عنوان جواب می‌بیند.
+                if "".join(text_parts).strip():
+                    yield ("reset", None)
+                message = {"role": "assistant", "content": "", "tool_calls": calls}
+                text_parts = []
+
+        if not calls:
+            text = "".join(text_parts).strip()
+            if not text:
+                text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
+                yield ("delta", text)
+            yield ("done", (text, used, context))
+            return
+
+        messages.append(message)
+        for call in calls:
+            function = call.get("function") or {}
+            name = function.get("name", "")
+            raw = function.get("arguments") or "{}"
+            try:
+                arguments = json.loads(raw) if isinstance(raw, str) else raw
+            except ValueError:
+                arguments = {}
+
+            yield ("tool", name)
+            result = run_tool(user, name, arguments)
+            if name and name not in used:
+                used.append(name)
+            # شناسهٔ مشتری برای مقصدِ دکمهٔ پیشنهاد
+            if isinstance(arguments, dict) and arguments.get("customer_id"):
+                context["customer_id"] = arguments["customer_id"]
+            logger.info("chat tool %s(%s) -> %s", name, arguments, str(result)[:200])
+
+            messages.append({
+                "role": "tool",
+                "tool_call_id": call.get("id", ""),
+                "name": name,
+                "content": json.dumps(result, ensure_ascii=False, default=str),
+            })
+
+    logger.warning("chat stream hit MAX_STEPS with tools=%s", used)
+    fallback = "نتوانستم به جمع‌بندی برسم. لطفاً سوال را ساده‌تر بپرسید."
+    yield ("delta", fallback)
+    yield ("done", (fallback, used, context))
