@@ -3,6 +3,9 @@
 قراردادی که این فایل قفل می‌کند: گفتگو خصوصی‌ترین محتوای مالک است. شناسهٔ مالکِ
 دیگر ۴۰۴ می‌گیرد نه ۴۰۳ — همان قاعدهٔ `home/tests/test_scoping.py`.
 """
+from unittest.mock import patch
+
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -45,6 +48,10 @@ class ConversationCrudTests(APITestCase):
         self.assertFalse(Conversation.objects.exists())
 
 
+# ⚠️ موتور در این کلاس عمداً **پیکربندی‌نشده** است. بدونِ این، هر تست به مدلِ
+# واقعی وصل می‌شد: کند (یک اجرا ۱۰ دقیقه شد)، و روی هر ماشینی که اولاما بالا
+# نباشد قرمز — در حالی که موضوعِ این تست‌ها ماندگاریِ پیام است نه کیفیتِ پاسخ.
+@override_settings(LLM_BASE_URL="", LLM_MODEL="")
 class MessageTests(APITestCase):
     def setUp(self):
         self.owner = make_owner()
@@ -58,14 +65,41 @@ class MessageTests(APITestCase):
         self.assertEqual(response.json()["userMessage"]["body"], "بدهکارانم چند نفرند؟")
         self.assertEqual(self.conversation.messages.count(), 1)
 
-    def test_no_fabricated_answer_before_the_engine_exists(self):
-        """قرارداد: تا وقتی موتور وصل نشده، پاسخِ ساختگی تولید نمی‌شود.
+    def test_no_fabricated_answer_when_the_engine_is_off(self):
+        """قرارداد: بدونِ موتورِ پیکربندی‌شده، پاسخِ ساختگی تولید نمی‌شود.
 
         یک جملهٔ عمومیِ خوش‌ظاهر بدتر از نبودنِ جواب است — کاربر فکر می‌کند
-        دستیار کار می‌کند و به حرفش اعتماد می‌کند.
+        دستیار کار می‌کند و به حرفش اعتماد می‌کند. به‌جایش `error` می‌آید.
         """
-        response = self.client.post(self.url, {"body": "سلام"}, format="json")
-        self.assertIsNone(response.json()["assistantMessage"])
+        body = self.client.post(self.url, {"body": "سلام"}, format="json").json()
+        self.assertIsNone(body["assistantMessage"])
+        self.assertTrue(body["error"])
+        self.assertEqual(self.conversation.messages.count(), 1)   # فقط پیامِ کاربر
+
+    @override_settings(LLM_BASE_URL="http://x/v1", LLM_MODEL="m")
+    def test_assistant_reply_is_stored_with_its_tools(self):
+        """پاسخِ موتور ذخیره می‌شود، همراه با نامِ ابزارهایی که ساختنش را ممکن کردند."""
+        with patch("chat.views.answer", return_value=("پنج نفر بدهکارند.", ["debtors"])):
+            body = self.client.post(self.url, {"body": "بدهکارانم؟"}, format="json").json()
+
+        self.assertEqual(body["assistantMessage"]["body"], "پنج نفر بدهکارند.")
+        self.assertEqual(body["assistantMessage"]["tools_used"], ["debtors"])
+        self.assertIsNone(body["error"])
+        self.assertEqual(self.conversation.messages.count(), 2)
+
+    @override_settings(LLM_BASE_URL="http://x/v1", LLM_MODEL="m")
+    def test_engine_failure_keeps_the_user_message(self):
+        """قرارداد: اگر مدل نگیرد، حرفِ کاربر پاک نمی‌شود.
+
+        او پیامش را فرستاده و باید ببیندش؛ فقط پاسخ نیامده، که صریح گفته می‌شود.
+        """
+        from chat.engine import EngineError
+        with patch("chat.views.answer", side_effect=EngineError("مدل پاسخ نداد")):
+            body = self.client.post(self.url, {"body": "سلام"}, format="json").json()
+
+        self.assertIsNone(body["assistantMessage"])
+        self.assertIn("مدل", body["error"])
+        self.assertEqual(self.conversation.messages.count(), 1)
 
     def test_first_message_becomes_the_title(self):
         self.client.post(self.url, {"body": "وضعیت حسابِ رضا"}, format="json")

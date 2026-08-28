@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics, status
@@ -5,8 +7,11 @@ from rest_framework.response import Response
 
 from core.permissions import IsOwner
 
+from .engine import EngineError, EngineNotConfigured, answer, is_configured
 from .models import Conversation
 from .serializers import ConversationDetailSerializer, ConversationSerializer, MessageSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class OwnerScopedMixin:
@@ -49,9 +54,9 @@ class ConversationDetailView(OwnerScopedMixin, generics.RetrieveUpdateDestroyAPI
 class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
     """ارسالِ پیامِ کاربر و گرفتنِ پاسخِ دستیار.
 
-    ⚠️ فعلاً فقط پیامِ کاربر ذخیره می‌شود و پاسخی تولید نمی‌گردد — موتورِ
-    پاسخ‌گویی در فاز بعد می‌آید. عمداً پاسخِ ساختگی برنمی‌گردانیم تا با دستیارِ
-    واقعی اشتباه گرفته نشود.
+    ⚠️ پاسخ **همزمان** ساخته می‌شود، نه در صف. مدلِ محلی روی CPU چند ده ثانیه
+    طول می‌کشد و کلاینت منتظر می‌ماند؛ برای یک کاربرِ تنها قابلِ قبول است و
+    استریم کردنش کارِ فاز بعد است. با چند کاربرِ همزمان باید به صف برود.
     """
     serializer_class = ConversationDetailSerializer
 
@@ -72,9 +77,28 @@ class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
         conversation.updated = timezone.now()
         conversation.save(update_fields=fields)
 
+        assistant = None
+        error = None
+        if is_configured():
+            try:
+                text, used = answer(request.user, conversation)
+                assistant = conversation.messages.create(
+                    role="assistant", body=text, tools_used=used,
+                )
+            except EngineNotConfigured as exc:
+                error = str(exc)
+            except EngineError as exc:
+                # ⚠️ پیامِ کاربر پاک نمی‌شود: او حرفش را زده و باید ببیندش.
+                # فقط پاسخ نیامده، که خودش را صریح می‌گوییم.
+                logger.exception("chat engine failed")
+                error = str(exc)
+        else:
+            error = "دستیار هنوز پیکربندی نشده است."
+
         return Response(
             {"userMessage": MessageSerializer(user_message).data,
-             "assistantMessage": None,
+             "assistantMessage": MessageSerializer(assistant).data if assistant else None,
+             "error": error,
              "title": conversation.title},
             status=status.HTTP_201_CREATED,
         )
