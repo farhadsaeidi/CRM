@@ -123,15 +123,26 @@ const ChatSidebar = ({conversations, activeId, loading = false,
                     )}
                     {/* ⚠️ دکمه تا وقتی منویش باز است دیده می‌شود، وگرنه با رفتنِ
                         موس روی خودِ منو `group-hover` می‌رفت و دکمه زیرِ منوی
-                        بازِ خودش ناپدید می‌شد. */}
+                        بازِ خودش ناپدید می‌شد. همان حالت پس‌زمینه‌اش را هم نگه
+                        می‌دارد تا پیدا باشد منو مالِ کدام ردیف است.
+
+                        ⚠️ پس‌زمینهٔ هاور یک پله **جلوتر** از پس‌زمینهٔ ردیف است
+                        (۰۲ و ۴۱، نه ۰۱ و ۴۰). این دکمه فقط وقتی دیده می‌شود که
+                        موس روی ردیف باشد، یعنی ردیف از قبل رنگِ هاورِ خودش را
+                        دارد؛ با همان رنگ، هاورِ دکمه اصلاً دیده نمی‌شد. روی
+                        ردیفِ فعال (۱۲ و ۴۴) هم همین دو رنگ جدا می‌مانند. */}
                     <button type="button" aria-label={`عملیات گفتگوی ${c.title}`}
                             aria-haspopup="menu" aria-expanded={menu?.id === c.id}
                             onClick={(event) => openMenu(c.id, event)}
                             className={`shrink-0 w-7 h-7 ml-1 rounded-full items-center justify-center
                                         cursor-pointer transition-colors
                                         text-var-color-04 hover:text-var-color-06
-                                        dark:hover:text-var-color-01 ${
-                                menu?.id === c.id ? "flex" : "hidden group-hover:flex"}`}>
+                                        dark:hover:text-var-color-01
+                                        hover:bg-var-color-02 dark:hover:bg-var-color-41 ${
+                                menu?.id === c.id
+                                    ? "flex bg-var-color-02 dark:bg-var-color-41 " +
+                                      "text-var-color-06 dark:text-var-color-01"
+                                    : "hidden group-hover:flex"}`}>
                         <FiMoreVertical className="w-4 h-4"/>
                     </button>
                 </div>

@@ -13,7 +13,7 @@ import personImage from "/images/person2.png";
 import {useAuth} from "../../context/AuthContext.js";
 import {authApi} from "../../api/auth.js";
 import {notify} from "../../lib/notify.jsx";
-import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH, PROFILE_PATH, STATEMENT_PATH} from "../../lib/paths.js";
+import {ALL_TRANSACTIONS_PATH, CHAT_PATH, CUSTOMERS_PATH, CUSTOMER_LEDGER_PATTERN, HOME_PATH, PROFILE_PATH, STATEMENT_PATH} from "../../lib/paths.js";
 import {excelExportUrl} from "../../api/reports.js";
 import {
     OPEN_BUSINESS_NAME_EVENT,
@@ -74,9 +74,14 @@ const Footer = () => {
     const isCustomerLedger = Boolean(useMatch(CUSTOMER_LEDGER_PATTERN));
     const isTransactionsView = isCustomerLedger || location.pathname === ALL_TRANSACTIONS_PATH;
 
-    // داشبورد جستجو ندارد: نه فهرستی روی صفحه هست که محدود شود و نه تاریخی که
-    // جستجو شود؛ کادرِ بی‌اثر فقط کاربر را گمراه می‌کند.
-    const showSearchBox = location.pathname !== HOME_PATH;
+    // داشبورد و صفحهٔ گفتگو جستجو ندارند: نه فهرستی روی صفحه هست که محدود شود و
+    // نه تاریخی که جستجو شود؛ کادرِ بی‌اثر فقط کاربر را گمراه می‌کند.
+    //
+    // ⚠️ در گفتگو این کادر **بدتر از بی‌اثر** بود: کاربر وسطِ نوشتنِ سوال یک
+    // کادرِ نوشتنِ دوم پایینِ صفحه می‌دید و تایپ در آن، او را به صفحهٔ مشتریان
+    // پرت می‌کرد. جستجوی همان صفحه کارِ خودِ دستیار است.
+    const showSearchBox = location.pathname !== HOME_PATH
+        && location.pathname !== CHAT_PATH;
 
     const startBtnRef = useRef(null);
     const startPanelRef = useRef(null);
