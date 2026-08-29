@@ -145,6 +145,21 @@ const Chat = () => {
         }
     };
 
+    const renameConversation = async (id, title) => {
+        // ⚠️ خوش‌بینانه: نامِ تازه بلافاصله می‌نشیند و در صورتِ شکست برمی‌گردد.
+        // انتظار برای رفت‌وبرگشتِ شبکه روی یک ویرایشِ درجا، تایپ را کند نشان
+        // می‌دهد و کاربر فکر می‌کند کلیدش نگرفته.
+        const previous = conversations.find((c) => c.id === id)?.title;
+        setConversations((prev) => prev.map((c) => (c.id === id ? {...c, title} : c)));
+        try {
+            await chatApi.rename(id, title);
+        } catch {
+            setConversations((prev) => prev.map((c) =>
+                (c.id === id ? {...c, title: previous} : c)));
+            notify("تغییر نام گفتگو ناموفق بود.", "error");
+        }
+    };
+
     const deleteConversation = async (id) => {
         try {
             await chatApi.remove(id);
@@ -227,7 +242,8 @@ const Chat = () => {
                 <ChatSidebar conversations={conversations} activeId={activeId}
                              loading={loading}
                              onBack={goBack} onNew={createConversation}
-                             onSelect={setActiveId} onDelete={deleteConversation}/>
+                             onSelect={setActiveId} onDelete={deleteConversation}
+                             onRename={renameConversation}/>
             </Sidebar>
 
             <div className="flex-1 min-w-0 flex flex-col rounded-[18px] overflow-hidden

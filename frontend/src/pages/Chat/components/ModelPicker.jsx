@@ -1,6 +1,7 @@
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useRef, useState} from "react";
 import {FiChevronDown, FiCheck} from "react-icons/fi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
+import {useDismiss} from "../../../lib/useDismiss.js";
 
 /**
  * کشوی انتخابِ مدلِ زبانی، کنارِ دکمهٔ گفتار در نوارِ ابزارِ کادرِ نوشتن.
@@ -19,23 +20,11 @@ const ModelPicker = ({models, value, onChange, disabled = false}) => {
     const [open, setOpen] = useState(false);
     const boxRef = useRef(null);
 
-    // بستن با کلیکِ بیرون و Esc. هر دو روی document می‌نشینند چون پنل داخلِ
-    // همین درخت است و رویدادِ بیرون به آن نمی‌رسد.
-    useEffect(() => {
-        if (!open) return undefined;
-        const onDown = (event) => {
-            if (!boxRef.current?.contains(event.target)) setOpen(false);
-        };
-        const onKey = (event) => {
-            if (event.key === "Escape") setOpen(false);
-        };
-        document.addEventListener("mousedown", onDown);
-        document.addEventListener("keydown", onKey);
-        return () => {
-            document.removeEventListener("mousedown", onDown);
-            document.removeEventListener("keydown", onKey);
-        };
-    }, [open]);
+    // بستن با کلیکِ بیرون و Esc — همان هوکی که منوی سه‌نقطهٔ سایدبار هم
+    // استفاده می‌کند. اینجا `onScroll` لازم نیست: پنل `absolute` است و با
+    // دکمه‌اش جابه‌جا می‌شود.
+    const close = useCallback(() => setOpen(false), []);
+    useDismiss(open, close, boxRef);
 
     if (!models.length) return null;
 

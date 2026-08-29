@@ -43,6 +43,38 @@ class ConversationCrudTests(APITestCase):
                  [row["title"] for row in body]
         self.assertEqual(titles, ["مالِ من"])
 
+    def test_renaming(self):
+        """تغییرِ نام از منوی سه‌نقطهٔ سایدبار — یک PATCH ساده روی عنوان."""
+        conversation = Conversation.objects.create(owner=self.owner, title="گفتگوی جدید")
+        response = self.client.patch(
+            reverse("api:conversation_detail", args=[conversation.id]),
+            {"title": "بدهکاران"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        conversation.refresh_from_db()
+        self.assertEqual(conversation.title, "بدهکاران")
+
+    def test_an_empty_title_is_rejected(self):
+        """⚠️ ردیفِ بی‌برچسب از بقیه تشخیص داده نمی‌شود.
+
+        فرانت هم جلویش را می‌گیرد، ولی تکیه بر کلاینت یعنی یک `curl` کافی است.
+        """
+        conversation = Conversation.objects.create(owner=self.owner, title="گفتگوی جدید")
+        response = self.client.patch(
+            reverse("api:conversation_detail", args=[conversation.id]),
+            {"title": ""}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        conversation.refresh_from_db()
+        self.assertEqual(conversation.title, "گفتگوی جدید")
+
+    def test_renaming_leaves_the_chosen_model_alone(self):
+        """PATCHِ جزئی نباید ستون‌های دیگر را پاک کند."""
+        conversation = Conversation.objects.create(
+            owner=self.owner, title="قدیم", model="openai/gpt-4o-mini")
+        self.client.patch(reverse("api:conversation_detail", args=[conversation.id]),
+                          {"title": "جدید"}, format="json")
+        conversation.refresh_from_db()
+        self.assertEqual(conversation.model, "openai/gpt-4o-mini")
+
     def test_deleting(self):
         conversation = Conversation.objects.create(owner=self.owner)
         url = reverse("api:conversation_detail", args=[conversation.id])
