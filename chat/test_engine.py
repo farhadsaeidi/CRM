@@ -142,6 +142,41 @@ class EngineLoopTests(APITestCase):
         self.assertEqual(text, "انجام شد.")
         self.assertEqual(used, ["debtors"])
 
+    def test_numbers_without_a_tool_get_a_second_chance(self):
+        """قرارداد: عددِ بی‌پشتوانه پذیرفته نمی‌شود.
+
+        ⚠️ مدل گاهی بدونِ صدا زدنِ ابزار جواب می‌دهد و رقم‌ها را از خودش می‌سازد —
+        در دفترِ حساب بدترین خروجیِ ممکن. `tool_choice: "required"` راهِ
+        استانداردش است ولی **اولاما نادیده‌اش می‌گیرد** (آزموده شد)، پس اجبار در
+        حلقهٔ خودمان انجام می‌شود: یک تذکر، و یک تلاشِ دوباره.
+        """
+        replies = [say("شما ۱۲ مشتری دارید."), call("customer_summary"), say("۳۳ مشتری دارید.")]
+        with patch("chat.engine._call_model", side_effect=replies) as mock:
+            text, used = answer(self.owner, self.conversation)
+
+        self.assertEqual(used, ["customer_summary"])
+        self.assertEqual(text, "۳۳ مشتری دارید.")
+
+        # دورِ دوم باید تذکر را دیده باشد
+        second = mock.call_args_list[1][0][0]
+        self.assertTrue(any("ساختگی" in (m.get("content") or "") for m in second))
+
+    def test_an_answer_without_numbers_is_left_alone(self):
+        """«سلام» ابزار لازم ندارد؛ تذکر روی آن فقط وقت تلف کردن است."""
+        with patch("chat.engine._call_model", return_value=say("سلام! چطور کمکتان کنم؟")) as mock:
+            text, used = answer(self.owner, self.conversation)
+        self.assertEqual(mock.call_count, 1)
+        self.assertEqual(used, [])
+        self.assertIn("سلام", text)
+
+    def test_the_nudge_happens_only_once(self):
+        """هر تلاش روی CPU چند دقیقه است؛ حلقهٔ تذکر نباید باز شود."""
+        with patch("chat.engine._call_model", return_value=say("۱۲ مشتری.")) as mock:
+            text, used = answer(self.owner, self.conversation)
+        self.assertEqual(mock.call_count, 2)
+        self.assertEqual(used, [])
+        self.assertEqual(text, "۱۲ مشتری.")
+
     def test_empty_content_is_not_shown_as_a_blank_reply(self):
         with patch("chat.engine._call_model", return_value=say("")):
             text, _ = answer(self.owner, self.conversation)

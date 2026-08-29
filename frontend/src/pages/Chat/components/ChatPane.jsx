@@ -1,8 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {FiAlertTriangle, FiArrowLeft, FiArrowUp, FiCpu, FiMic, FiPlus} from "react-icons/fi";
-import {useNavigate} from "react-router";
-import {OPEN_DEBT_REMINDER_EVENT} from "../../../lib/events.js";
-import {ALL_TRANSACTIONS_PATH, CUSTOMERS_PATH, HOME_PATH, customerLedgerPath} from "../../../lib/paths.js";
+import {FiAlertTriangle, FiArrowUp, FiCpu, FiMic, FiPlus} from "react-icons/fi";
 import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentReport} from "react-icons/hi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
@@ -79,17 +76,32 @@ const AssistantMessage = ({message, streaming = false}) => (
 
 const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,
                   engineError = null, onSend}) => {
-    const navigate = useNavigate();
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
     const taRef = useRef(null);
 
-    // چسبیدن به انتهای گفتگو با هر پیام تازه
+    // ⚠️ **با هر تکهٔ استریم هم اسکرول می‌کند، نه فقط با پیامِ تازه.**
+    //
+    // جوابِ دستیار حرف‌به‌حرف بلند می‌شود؛ با وابستگیِ `messages.length` فقط یک
+    // بار در آغاز اسکرول می‌شد و بعد خطوطِ تازه زیرِ کادرِ نوشتن پنهان می‌شدند.
+    //
+    // ولی **فقط وقتی کاربر خودش ته است**: اگر بالا رفته و دارد چیزی می‌خواند،
+    // پریدن به پایین آزاردهنده است. آستانهٔ ۸۰ پیکسل کمی لقی می‌دهد تا اسکرولِ
+    // نرمِ مرورگر آن را «بالا رفته» حساب نکند.
+    const stick = () => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+        if (atBottom) el.scrollTop = el.scrollHeight;
+    };
+
     useEffect(() => {
         const el = scrollRef.current;
         if (el) el.scrollTop = el.scrollHeight;
-    }, [messages.length, pending]);
+    }, [messages.length]);
+
+    useEffect(stick, [streamingText, runningTool, pending]);
 
     // ارتفاعِ خودکارِ کادر نوشتن، با سقف
     const autoGrow = (el) => {
@@ -118,36 +130,23 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
         }
     };
 
-    // مقصدِ هر پیشنهاد. مسیرها از `lib/paths.js` می‌آیند و مودالِ یادآوری با
-    // همان رویدادی باز می‌شود که منوی فوتر استفاده می‌کند — نه یک راهِ دوم.
-    const runSuggestion = (suggestion) => {
-        if (!suggestion) return;
-        switch (suggestion.action) {
-            case "debt_reminder":
-                window.dispatchEvent(new CustomEvent(OPEN_DEBT_REMINDER_EVENT));
-                break;
-            case "customer_ledger":
-                navigate(customerLedgerPath(suggestion.customer_id));
-                break;
-            case "customers":
-                navigate(CUSTOMERS_PATH);
-                break;
-            case "transactions":
-                navigate(ALL_TRANSACTIONS_PATH);
-                break;
-            case "dashboard":
-                navigate(HOME_PATH);
-                break;
-            default:
-                break;
-        }
+    // ⚠️ پیشنهاد یک **سوال** است، نه لینک: با کلیک به‌جای کاربر فرستاده می‌شود
+    // و دستیار جوابش را می‌دهد. کاربر در گفتگو نشسته و می‌خواهد بیشتر بپرسد،
+    // نه اینکه از گفتگو بیرون پرت شود.
+    const runSuggestion = (question) => {
+        if (!question || pending) return;
+        send(question);
     };
 
     // پیشنهادهای آخرین پاسخِ دستیار. فیلد در دیتابیس JSON است و روزگاری یک
     // شیء بود، پس هر دو شکل پذیرفته می‌شود تا گفتگوهای قدیمی نشکنند.
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    // پیشنهادها حالا رشته‌اند. گفتگوهای ذخیره‌شدهٔ قبلی شیءِ `{label, action}`
+    // دارند؛ برچسبشان برداشته می‌شود تا نشکنند، هرچند دیگر جایی نمی‌برند.
     const raw = lastAssistant?.suggestion;
-    const suggestions = Array.isArray(raw) ? raw : (raw?.label ? [raw] : []);
+    const suggestions = (Array.isArray(raw) ? raw : [])
+        .map((item) => (typeof item === "string" ? item : item?.label))
+        .filter(Boolean);
 
     const empty = messages.length === 0;
 
@@ -310,9 +309,9 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                     فقط پیشنهادهای **آخرین** پاسخ نشان داده می‌شوند. */}
                 {suggestions.length > 0 && !pending && (
                     <div className="max-w-3xl mx-auto mt-3 flex flex-row flex-wrap justify-center gap-2">
-                        {suggestions.map((item) => (
-                            <button key={item.action} type="button"
-                                    onClick={() => runSuggestion(item)}
+                        {suggestions.map((question) => (
+                            <button key={question} type="button"
+                                    onClick={() => runSuggestion(question)}
                                     // ⚠️ هاور فقط پس‌زمینه را کمی روشن می‌کند. بوردر
                                     // عمداً ثابت می‌ماند: این‌ها پیشنهادند نه دکمهٔ
                                     // اقدام، و برجسته شدنشان توجه را از خودِ گفتگو
@@ -323,8 +322,7 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                                bg-var-color-01 dark:bg-var-color-40
                                                border border-var-color-02 dark:border-var-color-38
                                                hover:bg-var-color-02 dark:hover:bg-var-color-44">
-                                {item.label}
-                                <FiArrowLeft className="w-3.5 h-3.5"/>
+                                {question}
                             </button>
                         ))}
                     </div>

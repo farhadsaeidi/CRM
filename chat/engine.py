@@ -17,6 +17,7 @@
 """
 import json
 import logging
+import re
 
 import requests
 from django.conf import settings
@@ -36,6 +37,29 @@ MAX_STEPS = 5
 # TCP فوراً می‌فهمد، و با یک عددِ مشترک کاربر پنج دقیقه منتظرِ خطایی می‌ماند که
 # در ده ثانیه معلوم بود. یک بار همین اتفاق افتاد و تشخیصش را کند کرد.
 TIMEOUT_SECONDS = (10, 300)
+
+# ⚠️ **اجبارِ ابزار، در حلقهٔ خودمان.**
+#
+# مدل گاهی بدونِ صدا زدنِ هیچ ابزاری جواب می‌دهد و عددها را از خودش می‌سازد —
+# در دفترِ حساب بدترین خروجیِ ممکن. `tool_choice: "required"` راهِ استانداردش
+# است ولی **اولاما آن را نادیده می‌گیرد** (آزموده شد: متن برگرداند نه فراخوانی).
+#
+# پس خودمان اجبار می‌کنیم: اگر جوابِ نهایی عدد داشت ولی هیچ ابزاری اجرا نشده
+# بود، یک تذکر به گفتگو اضافه می‌شود و مدل دوباره تلاش می‌کند. یک بار — نه
+# بیشتر، چون هر تلاش روی CPU چند دقیقه است.
+GROUNDING_RETRIES = 1
+
+GROUNDING_NUDGE = (
+    "تو بدونِ صدا زدنِ هیچ ابزاری عدد نوشتی. آن عددها ساختگی‌اند و اجازه نداری "
+    "چنین جوابی بدهی. همین حالا ابزارِ مناسب را صدا بزن و از روی خروجیِ آن جواب بده."
+)
+
+# ارقامِ لاتین، فارسی و عربی — عددی که ابزاری پشتش نیست، ساختهٔ مدل است
+_DIGITS = re.compile(r"[0-9۰-۹٠-٩]")
+
+
+def _has_numbers(text):
+    return bool(_DIGITS.search(text or ""))
 
 SYSTEM_PROMPT = """تو دستیارِ سامانهٔ «مدیریت مشتریان» هستی؛ یک دفترِ حسابِ نسیه و پرداختی.
 
@@ -295,6 +319,7 @@ def answer(user, conversation):
         *_history(conversation),
     ]
     used = []
+    nudges_left = GROUNDING_RETRIES
 
     for step in range(MAX_STEPS):
         message = _call_model(messages)
@@ -311,6 +336,16 @@ def answer(user, conversation):
 
         if not calls:
             text = (message.get("content") or "").strip()
+
+            # عددِ بی‌پشتوانه: یک بار تذکر می‌دهیم و دوباره می‌پرسیم — همان
+            # قاعدهٔ `answer_stream`. هر دو مسیر زنده‌اند، پس هر دو باید امن باشند.
+            if not used and nudges_left > 0 and _has_numbers(text):
+                nudges_left -= 1
+                logger.warning("chat answered with numbers and no tool; nudging")
+                messages.append({"role": "assistant", "content": text})
+                messages.append({"role": "user", "content": GROUNDING_NUDGE})
+                continue
+
             if not text:
                 text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
             return text, used
@@ -372,6 +407,7 @@ def answer_stream(user, conversation):
     # شناسه‌هایی که دکمهٔ پیشنهاد به آن‌ها نیاز دارد (مثلاً کدام مشتری)
     context = {}
     text_parts = []
+    nudges_left = GROUNDING_RETRIES
 
     for _step in range(MAX_STEPS):
         text_parts = []
@@ -402,6 +438,18 @@ def answer_stream(user, conversation):
 
         if not calls:
             text = "".join(text_parts).strip()
+
+            # عددِ بی‌پشتوانه: یک بار تذکر می‌دهیم و دوباره می‌پرسیم
+            if not used and nudges_left > 0 and _has_numbers(text):
+                nudges_left -= 1
+                logger.warning("chat answered with numbers and no tool; nudging")
+                if text:
+                    # آنچه نوشته شده ساختگی است و نباید روی صفحه بماند
+                    yield ("reset", None)
+                messages.append({"role": "assistant", "content": text})
+                messages.append({"role": "user", "content": GROUNDING_NUDGE})
+                continue
+
             if not text:
                 text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
                 yield ("delta", text)
