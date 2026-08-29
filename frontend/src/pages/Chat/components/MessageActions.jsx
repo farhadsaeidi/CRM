@@ -69,16 +69,19 @@ const MessageActions = ({created, body, onCopy, onRewind, onFork}) => {
                 `default` است، ولی این نوار قبلاً `pointer` داشت و نبودِ کلاس
                 یعنی روزی کسی دوباره اضافه‌اش می‌کند.
 
-                فاصلهٔ دو رنگ عمداً زیاد است (۰۴ در حالتِ عادی، ۰۶/۰۱ با هاور):
-                این آیکون‌ها باید محو باشند تا از خودِ گفتگو توجه ندزدند و با
-                هاور روشن شوند. جفتِ نزدیکِ قبلی (۴۶ و ۰۱) اختلافش با چشم دیده
-                نمی‌شد. */}
+                فاصلهٔ دو رنگ عمداً زیاد است: این آیکون‌ها باید محو باشند تا از
+                خودِ گفتگو توجه ندزدند و با هاور روشن شوند. جفتِ نزدیکِ قبلی
+                (۴۶ و ۰۱) اختلافش با چشم دیده نمی‌شد.
+
+                ⚠️ حالتِ عادی در دو تم **یکی نیست**: ۰۵ در روشن و ۰۴ در تیره.
+                یک خاکستریِ مشترک روی پس‌زمینهٔ سفید بیش از حد محو می‌شد، چون
+                کنتراستِ یک رنگِ ثابت با زمینهٔ روشن و تیره برابر نیست. */}
             {actions.map(({key, tip: text, onClick, icon: Icon, spin = false}) => (
                 <button key={key} type="button" aria-label={text} onClick={onClick}
                         onMouseEnter={show(text)} onMouseLeave={hide} onBlur={hide}
                         className="w-6.5 h-6.5 rounded-full flex items-center justify-center
                                    cursor-default transition-all duration-200 active:scale-90
-                                   text-var-color-04
+                                   text-var-color-05 dark:text-var-color-04
                                    hover:bg-var-color-01 dark:hover:bg-var-color-40
                                    hover:text-var-color-06 dark:hover:text-var-color-01">
                     <Icon className={`w-3.5 h-3.5 ${spin ? "rotate-90" : ""}`}/>
