@@ -139,7 +139,7 @@ const ChatSidebar = ({conversations, activeId, loading = false,
                     <button type="button" aria-label={`عملیات گفتگوی ${c.title}`}
                             aria-haspopup="menu" aria-expanded={menu?.id === c.id}
                             onClick={(event) => openMenu(c.id, event)}
-                            className={`shrink-0 w-7 h-7 ml-1 rounded-lg items-center justify-center
+                            className={`shrink-0 w-7 h-7 ml-1 rounded-full items-center justify-center
                                         cursor-pointer transition-all duration-200 active:scale-90
                                         text-var-color-05 dark:text-var-color-46
                                         hover:bg-var-color-01 dark:hover:bg-var-color-40
