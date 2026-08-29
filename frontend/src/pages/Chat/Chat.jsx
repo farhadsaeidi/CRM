@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {FiMessageSquare} from "react-icons/fi";
 import Breadcrumb from "../../components/common/Breadcrumb.jsx";
 import Sidebar from "../../components/common/Sidebar.jsx";
@@ -31,6 +31,8 @@ const Chat = () => {
     const [loading, setLoading] = useState(true);
     // خطای موتور — پاسخ نیامده ولی پیامِ کاربر سرِ جایش است
     const [engineError, setEngineError] = useState(null);
+    // کنترلرِ درخواستِ در جریان — برای دکمهٔ توقف
+    const abortRef = useRef(null);
     // پاسخی که همین حالا در حالِ نوشته شدن است. جدا از `messages` نگه داشته
     // می‌شود تا با هر حرفِ تازه کلِ فهرست دوباره رندر نشود.
     const [streamingText, setStreamingText] = useState(null);
@@ -132,6 +134,9 @@ const Chat = () => {
         setStreamingText(null);
         setRunningTool(null);
 
+        const controller = new AbortController();
+        abortRef.current = controller;
+
         try {
             await streamMessage(activeId, body, {
                 onStart: (payload) => {
@@ -157,15 +162,30 @@ const Chat = () => {
                     setRunningTool(null);
                     setEngineError(text);
                 },
-            });
+            }, controller.signal);
         } catch (err) {
-            // شکستِ خودِ درخواست — برخلافِ خطای موتور، پیامِ کاربر ذخیره نشده
-            setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
             setStreamingText(null);
             setRunningTool(null);
+
+            // ⚠️ توقف خطا نیست. کاربر خودش گفته بس است، پس نه پیغامِ قرمزی
+            // لازم است نه پاک کردنِ پیامش — سوالش پرسیده شده و سرِ جایش می‌ماند.
+            if (err?.name === "AbortError") return;
+
+            // شکستِ خودِ درخواست — برخلافِ خطای موتور، پیامِ کاربر ذخیره نشده
+            setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
             notify(errorMessage(err, "ارسال پیام ناموفق بود."), "error");
+        } finally {
+            abortRef.current = null;
         }
     }, [activeId]);
+
+    // ⚠️ با قطعِ اتصال، ژنراتورِ سرور هم بسته می‌شود و پاسخِ نیمه‌کاره **ذخیره
+    // نمی‌شود** — چون ذخیره در همان ژنراتور اتفاق می‌افتد نه در تردِ تولید.
+    // یعنی توقف واقعاً یعنی توقف، نه پنهان کردنِ چیزی که پشتِ صحنه تمام می‌شود.
+    const stopStreaming = useCallback(() => {
+        abortRef.current?.abort();
+        abortRef.current = null;
+    }, []);
 
     return (
         <section className="h-full min-h-0 flex flex-col md:flex-row gap-3 2xs:gap-4">
@@ -188,7 +208,8 @@ const Chat = () => {
                 </div>
                 <ChatPane key={activeId} conversation={active} messages={messages}
                           streamingText={streamingText} runningTool={runningTool}
-                          engineError={engineError} onSend={sendMessage}/>
+                          engineError={engineError} onSend={sendMessage}
+                          onStop={stopStreaming}/>
             </div>
         </section>
     );

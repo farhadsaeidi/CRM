@@ -1,5 +1,8 @@
 import {useEffect, useRef, useState} from "react";
-import {FiAlertTriangle, FiArrowUp, FiCpu, FiMic, FiPlus} from "react-icons/fi";
+import {FiAlertTriangle, FiArrowUp, FiMic, FiPlus, FiSquare} from "react-icons/fi";
+// آیکونِ دستیار. تراشه سخت‌افزار را می‌گفت نه دستیار را؛ درخشش امروز
+// نشانهٔ شناخته‌شدهٔ پاسخِ هوش مصنوعی است.
+import {HiOutlineSparkles} from "react-icons/hi2";
 import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentReport} from "react-icons/hi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
@@ -50,7 +53,7 @@ const AssistantMessage = ({message, streaming = false}) => (
     <div className="flex gap-2.5">
         <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
                          bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-            <FiCpu className="w-4 h-4 text-var-color-15"/>
+            <HiOutlineSparkles className="w-4 h-4 text-var-color-15"/>
         </span>
         <div className="min-w-0">
             <p className="m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
@@ -75,7 +78,7 @@ const AssistantMessage = ({message, streaming = false}) => (
 
 
 const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,
-                  engineError = null, onSend}) => {
+                  engineError = null, onSend, onStop}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
@@ -164,7 +167,7 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                   className="absolute inset-0 -z-10 blur-2xl rounded-full bg-var-color-13"/>
                             <span className="w-14 h-14 rounded-2xl flex items-center justify-center
                                              bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-                                <FiCpu className="w-7 h-7 text-var-color-15"/>
+                                <HiOutlineSparkles className="w-7 h-7 text-var-color-15"/>
                             </span>
                         </div>
                         <h2 className="m-0 text-[26px] 2xs:text-[30px] font-IRANSansXFaNumDemiBold tracking-tightest
@@ -231,7 +234,7 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                             <div className="flex gap-2.5 items-center">
                                 <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
                                                  bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-                                    <FiCpu className="w-4 h-4 text-var-color-15"/>
+                                    <HiOutlineSparkles className="w-4 h-4 text-var-color-15"/>
                                 </span>
                                 {/* ⚠️ فقط سه نقطه کافی نیست: مدلِ محلی روی CPU
                                     چند دقیقه طول می‌کشد و کاربر بی‌متن فکر می‌کند
@@ -290,15 +293,30 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                                hover:bg-var-color-01 dark:hover:bg-var-color-40 transition-colors">
                                 <FiMic className="w-4 h-4"/>
                             </button>
-                            {/* enabled: لازم است چون :hover روی دکمهٔ disabled هم اعمال می‌شود */}
-                            <button type="button" aria-label="ارسال" disabled={!draft.trim() || pending}
-                                    onClick={() => send()}
-                                    className="w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all duration-200
-                                               bg-var-color-15 text-var-color-11
-                                               enabled:hover:brightness-110 enabled:active:scale-90
-                                               disabled:opacity-35 disabled:cursor-default cursor-pointer">
-                                <FiArrowUp className="w-4.5 h-4.5"/>
-                            </button>
+                            {/* ⚠️ حینِ پاسخ، همین دکمه «توقف» می‌شود.
+                                جای دکمهٔ دوم را نمی‌گیرد چون در هر لحظه فقط یکی
+                                از این دو کار ممکن است، و روی CPU پاسخ چند دقیقه
+                                طول می‌کشد — بدونِ راهِ توقف، کاربر گروگانِ آن است.
+                                enabled: لازم است چون :hover روی دکمهٔ disabled هم می‌نشیند. */}
+                            {pending ? (
+                                <button type="button" aria-label="توقف پاسخ" onClick={onStop}
+                                        className="w-8.5 h-8.5 rounded-full flex items-center justify-center
+                                                   transition-all duration-200 cursor-pointer
+                                                   bg-var-color-56 text-var-color-55
+                                                   border border-var-color-55
+                                                   hover:brightness-110 active:scale-90">
+                                    <FiSquare className="w-3.5 h-3.5" fill="currentColor"/>
+                                </button>
+                            ) : (
+                                <button type="button" aria-label="ارسال" disabled={!draft.trim()}
+                                        onClick={() => send()}
+                                        className="w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all duration-200
+                                                   bg-var-color-15 text-var-color-11
+                                                   enabled:hover:brightness-110 enabled:active:scale-90
+                                                   disabled:opacity-35 disabled:cursor-default cursor-pointer">
+                                    <FiArrowUp className="w-4.5 h-4.5"/>
+                                </button>
+                            )}
                         </span>
                     </div>
                 </div>
