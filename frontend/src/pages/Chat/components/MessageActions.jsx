@@ -90,10 +90,15 @@ const MessageActions = ({created, body, onCopy, onRewind, onFork}) => {
 
             {/* زمانِ نسبی، با تاریخِ کاملِ شمسی در تولتیپ. خودش دکمه نیست، پس
                 `span` می‌ماند و فقط تولتیپ می‌گیرد. آخرین عنصرِ DOM است تا در
-                RTL چپ‌ترین دیده شود. */}
+                RTL چپ‌ترین دیده شود.
+
+                ⚠️ **دقیقاً همان جفتِ رنگیِ حالتِ عادیِ آیکون‌هاست.** پیش‌تر
+                جفتِ جدایی داشت (۰۴ و ۳۹) و در هر دو تم یک پله از آیکون‌های
+                کنارش فاصله می‌گرفت — در تمِ روشن محسوس‌تر. اگر روزی رنگِ
+                آیکون‌ها عوض شد، این هم باید با آن برود. */}
             <span onMouseEnter={show(fullDateTime(created))} onMouseLeave={hide}
                   className="px-1.5 text-[10.5px] whitespace-nowrap cursor-default
-                             text-var-color-04 dark:text-var-color-39">
+                             text-var-color-05 dark:text-var-color-04">
                 {relativeTime(created)}
             </span>
 
