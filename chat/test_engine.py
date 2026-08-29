@@ -12,7 +12,8 @@ from rest_framework.test import APITestCase
 
 from chat.engine import MAX_STEPS, EngineNotConfigured, answer
 from chat.models import Conversation
-from chat.tools import run_tool, tool_schemas
+from chat.tools import has_data, run_tool, tool_schemas
+from home.dashboard import JALALI_MONTHS
 from home.tests.factories import make_customer, make_owner, make_transaction
 
 # ⚠️ آدرسِ بی‌اسکیما عمدی است: `requests` **بی‌درنگ** ردش می‌کند، پس هر
@@ -76,6 +77,50 @@ class ToolScopingTests(APITestCase):
 
     def test_unknown_tool_returns_an_error_not_a_crash(self):
         self.assertIn("خطا", run_tool(self.owner, "drop_database", {}))
+
+    def test_recent_transactions_sees_only_my_ledger(self):
+        """⚠️ سوالی که هیچ ابزاری نداشت و مدل جوابش را از خودش ساخت.
+
+        تا امروز «آخرین تراکنش کدام است؟» با هیچ ابزاری قابلِ جواب نبود، پس
+        مدل `find_customer` را با عبارتِ «آخرین تراکنش» صدا می‌زد و بعد نام و
+        تاریخ می‌ساخت. حالا ابزارش هست.
+        """
+        result = run_tool(self.owner, "recent_transactions", {})
+        names = [row["مشتری"] for row in result["تراکنش‌ها"]]
+        self.assertEqual(names, ["رضا احمدی"])
+        self.assertNotIn("غریبه", str(result))
+
+    def test_recent_transactions_carry_the_date_in_both_ready_made_shapes(self):
+        """⚠️ هر تبدیلی که به مدل سپرده شود، جایی اشتباه می‌شود.
+
+        مسیرِ این باگ سه پله بود:
+        ۱. سه ستونِ `year/month/day` جدا می‌رفت و مدل سرِ هم می‌کرد.
+        ۲. رشتهٔ آمادهٔ `1405/02/20` ساخته شد — ولی مدل **باز هم** تبدیل کرد و
+           روی صفحهٔ کاربر نوشت «۲۰ فروردین ۱۴۰۵»، در حالی که ماهِ ۰۲
+           اردیبهشت است.
+        ۳. حالا نامِ ماه هم در خروجی هست و کارِ مدل فقط کپی کردن است.
+        """
+        row = run_tool(self.owner, "recent_transactions", {})["تراکنش‌ها"][0]
+        self.assertRegex(row["تاریخ_شمسی"], r"^\d{4}/\d{2}/\d{2}$")
+
+        year, month, day = row["تاریخ_شمسی"].split("/")
+        spelled = row["تاریخ_به_حروف"]
+        self.assertIn(JALALI_MONTHS[int(month) - 1], spelled)
+        self.assertIn(year, spelled)
+        self.assertIn(str(int(day)), spelled)
+
+    def test_customer_transactions_of_another_owner_are_refused(self):
+        result = run_tool(self.owner, "customer_transactions",
+                          {"customer_id": self.theirs.id})
+        self.assertIn("خطا", result)
+        self.assertNotIn("9000000", str(result))
+
+    def test_has_data_separates_a_result_from_an_excuse(self):
+        """پایهٔ گاردِ موتور: «پیدا نشد» پشتوانه نیست، «صفر نفر» هست."""
+        self.assertFalse(has_data(run_tool(self.owner, "find_customer", {"query": "غریبه"})))
+        self.assertFalse(has_data(run_tool(self.owner, "customer_ledger", {"customer_id": 0})))
+        self.assertTrue(has_data(run_tool(self.owner, "debtors", {})))
+        self.assertTrue(has_data(run_tool(self.owner, "customer_summary", {})))
 
     def test_unexpected_arguments_are_dropped(self):
         """مدل گاهی کلیدِ اضافه می‌فرستد؛ نباید TypeError بدهد."""
@@ -172,10 +217,47 @@ class EngineLoopTests(APITestCase):
     def test_the_nudge_happens_only_once(self):
         """هر تلاش روی CPU چند دقیقه است؛ حلقهٔ تذکر نباید باز شود."""
         with patch("chat.engine._call_model", return_value=say("۱۲ مشتری.")) as mock:
-            text, used = answer(self.owner, self.conversation)
+            _, used = answer(self.owner, self.conversation)
         self.assertEqual(mock.call_count, 2)
         self.assertEqual(used, [])
-        self.assertEqual(text, "۱۲ مشتری.")
+
+    def test_an_ungrounded_number_is_refused_not_displayed(self):
+        """قرارداد: عددِ بی‌پشتوانه **نمایش داده نمی‌شود**.
+
+        ⚠️ پیش‌تر بعد از تذکرِ ناموفق همان جمله روی صفحه می‌نشست و فقط یک خطِ
+        هشدارِ ریز زیرش می‌آمد. کاربر عدد را می‌خواند و هشدار را نه. در دفترِ
+        حساب «نمی‌دانم» بی‌ضرر است و عددِ ساختگی نیست.
+        """
+        with patch("chat.engine._call_model", return_value=say("۱۲ مشتری.")):
+            text, _ = answer(self.owner, self.conversation)
+        self.assertNotIn("۱۲", text)
+        self.assertIn("نتوانستم", text)
+
+    def test_a_tool_that_found_nothing_is_not_grounding(self):
+        """⚠️ همان باگی که روی صفحهٔ کاربر دیده شد.
+
+        مدل `find_customer` را با عبارتی بی‌ربط صدا زد، ابزار «پیدا نشد»
+        برگرداند، و مدل نام و تاریخِ ساختگی نوشت — در حالی که گاردِ قدیمی
+        راضی بود چون «ابزاری اجرا شده بود». اجرا شدن پشتوانه نیست.
+        """
+        replies = [call("find_customer", '{"query": "آخرین تراکنش"}'),
+                   say('آخرین تراکنش مربوط به "محمدرضا نصیری" در ۱۳۹۹/۰۶/۰۵ است.'),
+                   say("باز هم نمی‌دانم ۱۲۳.")]
+        with patch("chat.engine._call_model", side_effect=replies):
+            text, used = answer(self.owner, self.conversation)
+
+        self.assertEqual(used, [])                 # هیچ ابزاری داده نداد
+        self.assertNotIn("نصیری", text)            # نامِ ساختگی نشان داده نشد
+        self.assertNotIn("۱۳۹۹", text)
+
+    def test_a_tool_that_found_something_is_grounding(self):
+        """روی دیگرِ سکه: پیدا شدن یعنی مدل حق دارد جواب بدهد."""
+        replies = [call("find_customer", '{"query": "رضا"}'), say("رضا احمدی پیدا شد، ۱ نفر.")]
+        with patch("chat.engine._call_model", side_effect=replies) as mock:
+            text, used = answer(self.owner, self.conversation)
+        self.assertEqual(used, ["find_customer"])
+        self.assertEqual(mock.call_count, 2)
+        self.assertIn("رضا احمدی", text)
 
     def test_empty_content_is_not_shown_as_a_blank_reply(self):
         with patch("chat.engine._call_model", return_value=say("")):

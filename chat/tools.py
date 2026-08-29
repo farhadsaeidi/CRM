@@ -17,13 +17,15 @@ from django.db.models import Q
 
 from home.dashboard import (
     DEFAULT_PERIOD,
+    JALALI_MONTHS,
+    LIST_SIZE,
     PERIODS,
     build_customer_stats,
     build_dashboard,
     build_ledger_stats,
     build_transaction_stats,
 )
-from home.models import Customer
+from home.models import Customer, Transaction
 from home.reminders import build_debtor_list
 
 # سقفِ ردیف‌هایی که در پاسخِ هر ابزار برمی‌گردد
@@ -32,6 +34,60 @@ MAX_ROWS = 10
 
 def _customers_of(user):
     return Customer.objects.filter(owners=user)
+
+
+def _clamp(limit):
+    return max(1, min(int(limit or MAX_ROWS), MAX_ROWS))
+
+
+def _jalali(row):
+    """تاریخِ شمسیِ یک تراکنش، در دو شکلِ آماده — تا مدل هیچ‌چیز *تبدیل* نکند.
+
+    ⚠️ **هر تبدیلی که به مدل بسپاری، جایی اشتباه می‌شود.**
+
+    اول سه ستونِ `year/month/day` جدا می‌رفت و مدل خودش سرِ هم می‌کرد. رشتهٔ
+    آمادهٔ `1405/02/20` که ساخته شد، مدل **باز هم** تبدیل کرد و نوشت «۲۰ فروردین
+    ۱۴۰۵» — ماهِ ۰۲ اردیبهشت است. مدل شمارهٔ ماه را به نام برمی‌گرداند چون
+    فارسی‌زبان این‌طور حرف می‌زند، و در همان یک قدم اشتباه می‌کند.
+
+    پس نامِ ماه را هم خودمان می‌دهیم. حالا هر دو شکلی که ممکن است لازم شود در
+    خروجی هست و کارِ مدل فقط کپی کردن است.
+    """
+    if not (row.year and row.month and row.day):
+        return None, None
+    numeric = f"{row.year}/{row.month:02d}/{row.day:02d}"
+    return numeric, f"{row.day} {JALALI_MONTHS[row.month - 1]} {row.year}"
+
+
+def _transaction_row(row):
+    numeric, spelled = _jalali(row)
+    return {
+        "مشتری": row.customer.fullname,
+        "شناسه_مشتری": row.customer_id,
+        "تاریخ_شمسی": numeric,
+        "تاریخ_به_حروف": spelled,
+        "نسیه": row.debt,
+        "پرداختی": row.paid,
+    }
+
+
+# کلیدهایی که یعنی «ابزار اجرا شد ولی دادهٔ دفتری برنگشت».
+# ⚠️ فهرستِ خالی جزوِ این‌ها **نیست**: «هیچ بدهکاری ندارید» خودش یک واقعیتِ
+# دفتری است و مدل حق دارد رویش جواب بسازد.
+_EMPTY_KEYS = {"خطا", "نتیجه"}
+
+
+def has_data(result):
+    """آیا خروجیِ این ابزار پشتوانهٔ عددیِ جواب هست؟
+
+    ⚠️ **این تابع سوراخِ اصلیِ گاردِ قبلی را می‌بندد.** تا امروز موتور فقط
+    می‌پرسید «ابزاری اجرا شد؟» — و مدل با یک `find_customer("آخرین تراکنش")` که
+    هیچ‌چی پیدا نمی‌کرد، مجوزِ ساختنِ نام و تاریخ می‌گرفت. اجرا شدنِ ابزار
+    پشتوانه نیست؛ **برگشتنِ داده** پشتوانه است.
+    """
+    if not isinstance(result, dict) or not result:
+        return False
+    return any(key not in _EMPTY_KEYS for key in result)
 
 
 # ------------------------------------------------------------------ ابزارها
@@ -69,7 +125,7 @@ def tool_transaction_summary(user):
 def tool_debtors(user, limit=MAX_ROWS):
     """بدهکاران، از بیشترین بدهی."""
     data = build_debtor_list(user)
-    limit = max(1, min(int(limit or MAX_ROWS), MAX_ROWS))
+    limit = _clamp(limit)
     return {
         "تعداد_بدهکاران": data["total"]["count"],
         "مجموع_طلب": data["total"]["amount"],
@@ -115,6 +171,68 @@ def tool_customer_ledger(user, customer_id):
 
     stats = build_ledger_stats(user, customer)
     return {"نام": customer.fullname, "شماره": customer.phone, **stats}
+
+
+
+def tool_recent_transactions(user, limit=MAX_ROWS):
+    """تازه‌ترین تراکنش‌های کلِ دفتر، از جدید به قدیم."""
+    rows = (Transaction.objects.filter(owner=user)
+            .select_related("customer")
+            .order_by("-created", "-id")[:_clamp(limit)])
+    if not rows:
+        return {"نتیجه": "هنوز هیچ تراکنشی در دفترِ شما ثبت نشده است."}
+    return {
+        "ترتیب": "از جدیدترین به قدیمی‌ترین",
+        "تراکنش‌ها": [_transaction_row(row) for row in rows],
+    }
+
+
+def tool_customer_transactions(user, customer_id, limit=MAX_ROWS):
+    """تازه‌ترین تراکنش‌های یک مشتریِ مشخص."""
+    try:
+        customer = _customers_of(user).get(pk=int(customer_id))
+    except (Customer.DoesNotExist, TypeError, ValueError):
+        return {"خطا": "مشتری‌ای با این شناسه در دفترِ شما نیست."}
+
+    rows = (Transaction.objects.filter(owner=user, customer=customer)
+            .select_related("customer")
+            .order_by("-created", "-id")[:_clamp(limit)])
+    if not rows:
+        return {"نتیجه": f"برای {customer.fullname} هیچ تراکنشی ثبت نشده است."}
+    return {
+        "مشتری": customer.fullname,
+        "ترتیب": "از جدیدترین به قدیمی‌ترین",
+        "تراکنش‌ها": [_transaction_row(row) for row in rows],
+    }
+
+
+def tool_best_payers(user):
+    """خوش‌حساب‌ترین مشتریان — بیشترین نسبتِ پرداخت به نسیه."""
+    rows = build_dashboard(user)["best_payers"]
+    if not rows:
+        return {"نتیجه": "هنوز هیچ مشتری‌ای نسیه نگرفته، پس خوش‌حسابی معنا ندارد."}
+    return {"فهرست": [
+        {"شناسه": r["id"], "نام": r["fullname"], "درصد_پرداخت": r["ratio"],
+         "کل_پرداختی": r["paid"], "کل_نسیه": r["debt"]}
+        for r in rows
+    ]}
+
+
+def tool_dormant_customers(user):
+    """مشتریانِ نیازمندِ پیگیری — مدت‌هاست تراکنشی نداشته‌اند."""
+    data = build_dashboard(user)
+    rows = data["dormant"]
+    if not rows:
+        return {"نتیجه": "همهٔ مشتریان به‌تازگی تراکنش داشته‌اند."}
+    return {
+        "تعداد_کل": data["dormant_total"],
+        "فهرست": [
+            {"شناسه": r["id"], "نام": r["fullname"],
+             "روز_از_آخرین_تراکنش": r["days"],
+             "هرگز_تراکنش_نداشته": r["never"]}
+            for r in rows
+        ],
+    }
 
 
 # ---------------------------------------------------- تعریفِ ابزارها برای مدل
@@ -191,6 +309,49 @@ TOOLS = [
             },
             "required": ["customer_id"],
         },
+    },
+    {
+        "name": "recent_transactions",
+        "func": tool_recent_transactions,
+        "description": "آخرین تراکنش‌های ثبت‌شده در کل دفتر، از جدید به قدیم، "
+                       "همراه نام مشتری و تاریخ شمسی و مبلغ. برای هر سوالی درباره "
+                       "«آخرین تراکنش»، «تازه‌ترین خرید»، «جدیدترین ثبت» یا "
+                       "«اخیرا چه شده».",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "limit": {"type": "integer", "description": f"چند تراکنش (تا {MAX_ROWS})"},
+            },
+        },
+    },
+    {
+        "name": "customer_transactions",
+        "func": tool_customer_transactions,
+        "description": "تراکنش‌های یک مشتری مشخص با تاریخ و مبلغ، از جدید به قدیم. "
+                       "شناسه را اول با find_customer بگیرید. برای سوال‌هایی مثل "
+                       "«فلانی کی خرید کرد» یا «تراکنش‌های فلانی را بگو».",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "customer_id": {"type": "integer", "description": "شناسه مشتری از find_customer"},
+                "limit": {"type": "integer", "description": f"چند تراکنش (تا {MAX_ROWS})"},
+            },
+            "required": ["customer_id"],
+        },
+    },
+    {
+        "name": "best_payers",
+        "func": tool_best_payers,
+        "description": f"خوش‌حساب‌ترین مشتریان (تا {LIST_SIZE} نفر): کسانی که نسیه "
+                       "گرفته‌اند و بیشترین نسبت پرداخت به نسیه را دارند.",
+        "parameters": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "dormant_customers",
+        "func": tool_dormant_customers,
+        "description": f"مشتریان نیازمند پیگیری (تا {LIST_SIZE} نفر): کسانی که "
+                       "مدت‌هاست تراکنشی نداشته‌اند یا هرگز تراکنشی نداشته‌اند.",
+        "parameters": {"type": "object", "properties": {}},
     },
 ]
 

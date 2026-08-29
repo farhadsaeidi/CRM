@@ -182,6 +182,16 @@ class ToolDeltaMergeTests(APITestCase):
 class SuggestionTests(APITestCase):
     """پیشنهادها سوالِ بعدی‌اند، نه لینک."""
 
+    def test_every_tool_has_follow_up_questions(self):
+        """⚠️ ابزارِ تازه بدونِ پیشنهاد یعنی ردیفِ پیشنهادها بی‌صدا خالی می‌ماند.
+
+        `build_suggestions` برای ابزارِ ناشناخته عمداً چیزی برنمی‌گرداند، پس
+        این نقص خطا نمی‌دهد و فقط یک قابلیت خاموش می‌شود. تست جلویش را می‌گیرد.
+        """
+        from chat.tools import TOOLS
+        missing = [tool["name"] for tool in TOOLS if tool["name"] not in FOLLOW_UPS]
+        self.assertEqual(missing, [])
+
     def test_no_tools_means_no_suggestion(self):
         """دستیاری که فقط سلام کرده، ردیفِ سوال‌های چسبانده مزاحمت است نه کمک."""
         self.assertEqual(build_suggestions([]), [])

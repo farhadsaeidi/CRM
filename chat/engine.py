@@ -22,7 +22,7 @@ import re
 import requests
 from django.conf import settings
 
-from .tools import TOOLS, run_tool, tool_schemas
+from .tools import TOOLS, has_data, run_tool, tool_schemas
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,16 @@ TIMEOUT_SECONDS = (10, 300)
 # بود، یک تذکر به گفتگو اضافه می‌شود و مدل دوباره تلاش می‌کند. یک بار — نه
 # بیشتر، چون هر تلاش روی CPU چند دقیقه است.
 GROUNDING_RETRIES = 1
+
+# ⚠️ **وقتی تذکر هم جواب نداد، جوابِ مدل نشان داده نمی‌شود.**
+#
+# پیش‌تر بعد از تذکرِ ناموفق همان متنِ بی‌پشتوانه روی صفحه می‌نشست و فقط یک خطِ
+# هشدارِ کوچک زیرش می‌آمد. برای دفترِ حساب کافی نیست: کاربر عدد را می‌خواند و
+# هشدار را نه. «نمی‌دانم» در بدترین حالت ناقص است؛ عددِ ساختگی غلط است.
+GROUNDING_REFUSAL = (
+    "این را نتوانستم از دفترِ شما بخوانم، و بدونِ دادهٔ دفتر عددی نمی‌گویم. "
+    "لطفاً سوال را کمی روشن‌تر بپرسید یا نامِ مشتری را بنویسید."
+)
 
 GROUNDING_NUDGE = (
     "تو بدونِ صدا زدنِ هیچ ابزاری عدد نوشتی. آن عددها ساختگی‌اند و اجازه نداری "
@@ -78,8 +88,13 @@ SYSTEM_PROMPT = """تو دستیارِ سامانهٔ «مدیریت مشتری�
 
 قواعدِ کارت:
 - همیشه فارسی و کوتاه جواب بده، مثلِ یک حسابدارِ کاربلد نه یک ربات.
-- هیچ عددی از خودت نساز. هر رقمی که می‌گویی باید از خروجیِ **همین گفتگو** و از
-  ابزاری که تازه صدا زده‌ای آمده باشد.
+- هیچ **عدد، نامِ مشتری، یا تاریخی** از خودت نساز. هر کدام باید عیناً در خروجیِ
+  ابزاری که در **همین گفتگو** تازه صدا زده‌ای آمده باشد. نامِ آدم‌ها را کپی کن،
+  از حافظه ننویس.
+- **تاریخ را تبدیل نکن.** خروجیِ ابزار هم شکلِ عددی دارد هم شکلِ حروفی؛ یکی از
+  همان دو را عیناً بنویس. هرگز خودت شمارهٔ ماه را به نامِ ماه برنگردان.
+- اگر ابزار «پیدا نشد» یا خطا برگرداند، آن یعنی **داده‌ای نداری** — نه اینکه
+  اجازه داری خودت جواب بسازی. در آن حالت بگو پیدا نکردی.
 - برای **هر** سوالِ تازه که به عدد نیاز دارد، دوباره ابزار را صدا بزن — حتی اگر
   چند لحظه پیش سوالِ شبیهی پرسیده شده. اعداد ممکن است عوض شده باشند و جوابِ
   حفظی همیشه غلط است.
@@ -87,8 +102,16 @@ SYSTEM_PROMPT = """تو دستیارِ سامانهٔ «مدیریت مشتری�
 - اگر برای جواب دادن به داده نیاز داری، اول ابزارِ مناسب را صدا بزن.
 - اگر ابزار خطا برگرداند یا داده‌ای نبود، صادقانه بگو نمی‌دانی. حدس نزن.
 - مبلغ‌ها به تومان‌اند. آن‌ها را با جداکنندهٔ سه‌رقمی بنویس.
-- برای یافتنِ یک مشتریِ خاص، اول find_customer را صدا بزن تا شناسه‌اش را بگیری،
-  بعد customer_ledger را با همان شناسه.
+- کدام ابزار برای کدام سوال:
+  • «آخرین/تازه‌ترین تراکنش»، «اخیراً چه شده» → recent_transactions
+  • «تراکنش‌های فلانی»، «فلانی کِی خرید کرد» → اول find_customer، بعد customer_transactions
+  • «حسابِ فلانی»، «فلانی چقدر بدهکار است» → اول find_customer، بعد customer_ledger
+  • «چه کسانی بدهکارند» → debtors
+  • «خوش‌حساب‌ترین» → best_payers
+  • «چه کسی را پیگیری کنم»، «کی مدت‌هاست نیامده» → dormant_customers
+  • «وضعیت کلی»، «این ماه چطور بود» → overview
+- نامِ مشتری را هرگز مستقیم به customer_ledger یا customer_transactions نده؛
+  آن‌ها فقط شناسهٔ عددی می‌گیرند و شناسه از find_customer می‌آید.
 - «مانده منفی» یعنی مشتری بدهکار است و تو طلبکاری. «مانده مثبت» یعنی برعکس.
 
 تو فقط می‌خوانی و توضیح می‌دهی. هیچ‌وقت چیزی ثبت، ویرایش یا حذف نمی‌کنی و پیامکی
@@ -413,15 +436,6 @@ def answer(user, conversation):
         if not calls:
             text = (message.get("content") or "").strip()
 
-            # عددِ بی‌پشتوانه: یک بار تذکر می‌دهیم و دوباره می‌پرسیم — همان
-            # قاعدهٔ `answer_stream`. هر دو مسیر زنده‌اند، پس هر دو باید امن باشند.
-            if not used and nudges_left > 0 and _has_numbers(text):
-                nudges_left -= 1
-                logger.warning("chat answered with numbers and no tool; nudging")
-                messages.append({"role": "assistant", "content": text})
-                messages.append({"role": "user", "content": GROUNDING_NUDGE})
-                continue
-
             # شکلِ ناشناختهٔ یک فراخوانی: نه نجات داده شد نه جواب است.
             # یک بار دوباره می‌پرسیم، و اگر باز هم همان بود متنِ خام را
             # **نشان نمی‌دهیم** — دیدنِ JSONِ داخلی از هیچ‌چیز بهتر نیست.
@@ -433,6 +447,20 @@ def answer(user, conversation):
                     messages.append({"role": "user", "content": FORMAT_NUDGE})
                     continue
                 text = ""
+
+            # عددِ بی‌پشتوانه: یک بار تذکر می‌دهیم و دوباره می‌پرسیم — همان
+            # قاعدهٔ `answer_stream`. هر دو مسیر زنده‌اند، پس هر دو باید امن باشند.
+            if not used and nudges_left > 0 and _has_numbers(text):
+                nudges_left -= 1
+                logger.warning("chat answered with numbers and no tool; nudging")
+                messages.append({"role": "assistant", "content": text})
+                messages.append({"role": "user", "content": GROUNDING_NUDGE})
+                continue
+
+            # تذکر خرج شده و مدل هنوز بی‌پشتوانه عدد می‌گوید — نشانش نمی‌دهیم
+            if not used and _has_numbers(text):
+                logger.warning("chat refused an ungrounded numeric answer")
+                return GROUNDING_REFUSAL, used
 
             if not text:
                 text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
@@ -452,7 +480,12 @@ def answer(user, conversation):
                 arguments = {}
 
             result = run_tool(user, name, arguments)
-            if name and name not in used:
+            # ⚠️ **فقط ابزاری که واقعاً داده برگرداند اینجا ثبت می‌شود.**
+            # `used` معنایش «جواب بر چه چیزی سوار است» است، نه «چه چیزی اجرا
+            # شد». یک `find_customer` که چیزی پیدا نمی‌کند هیچ پشتوانه‌ای
+            # نساخته — و دقیقاً همین بود که به مدل اجازه داد نام و تاریخِ
+            # ساختگی بنویسد در حالی که گارد راضی بود.
+            if name and name not in used and has_data(result):
                 used.append(name)
             logger.info("chat tool %s(%s) -> %s", name, arguments, str(result)[:200])
 
@@ -529,6 +562,17 @@ def answer_stream(user, conversation):
         if not calls:
             text = "".join(text_parts).strip()
 
+            # همان گاردِ `answer` — هر دو مسیر زنده‌اند، پس هر دو باید امن باشند
+            if _looks_machine(text):
+                logger.warning("chat produced machine output: %s", text[:200])
+                yield ("reset", None)
+                if retries_left > 0:
+                    retries_left -= 1
+                    messages.append({"role": "assistant", "content": text})
+                    messages.append({"role": "user", "content": FORMAT_NUDGE})
+                    continue
+                text = ""
+
             # عددِ بی‌پشتوانه: یک بار تذکر می‌دهیم و دوباره می‌پرسیم
             if not used and nudges_left > 0 and _has_numbers(text):
                 nudges_left -= 1
@@ -540,16 +584,14 @@ def answer_stream(user, conversation):
                 messages.append({"role": "user", "content": GROUNDING_NUDGE})
                 continue
 
-            # همان گاردِ `answer` — هر دو مسیر زنده‌اند، پس هر دو باید امن باشند
-            if _looks_machine(text):
-                logger.warning("chat produced machine output: %s", text[:200])
-                yield ("reset", None)
-                if retries_left > 0:
-                    retries_left -= 1
-                    messages.append({"role": "assistant", "content": text})
-                    messages.append({"role": "user", "content": FORMAT_NUDGE})
-                    continue
-                text = ""
+            # همان امتناعِ `answer` — و متنِ نوشته‌شده از صفحه پاک می‌شود
+            if not used and _has_numbers(text):
+                logger.warning("chat refused an ungrounded numeric answer")
+                if text:
+                    yield ("reset", None)
+                yield ("delta", GROUNDING_REFUSAL)
+                yield ("done", (GROUNDING_REFUSAL, used, context))
+                return
 
             if not text:
                 text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
@@ -569,7 +611,8 @@ def answer_stream(user, conversation):
 
             yield ("tool", name)
             result = run_tool(user, name, arguments)
-            if name and name not in used:
+            # همان قاعدهٔ `answer`: پشتوانه یعنی دادهٔ برگشته، نه اجرای ابزار
+            if name and name not in used and has_data(result):
                 used.append(name)
             # شناسهٔ مشتری برای مقصدِ دکمهٔ پیشنهاد
             if isinstance(arguments, dict) and arguments.get("customer_id"):

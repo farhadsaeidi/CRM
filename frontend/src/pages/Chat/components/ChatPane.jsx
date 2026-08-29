@@ -298,14 +298,15 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                 از این دو کار ممکن است، و روی CPU پاسخ چند دقیقه
                                 طول می‌کشد — بدونِ راهِ توقف، کاربر گروگانِ آن است.
                                 enabled: لازم است چون :hover روی دکمهٔ disabled هم می‌نشیند.
-                                رنگش همان رنگِ بوردرِ باکسِ چت است: «توقف» هشدار نیست،
-                                یک کنترلِ عادی است و نباید بیشتر از خودِ جواب به چشم بیاید. */}
+                                پس‌زمینه‌اش رنگِ بوردرِ باکسِ چت است و مربعِ داخلش
+                                هم‌رنگِ دکمهٔ پلاسِ همین نوار: «توقف» هشدار نیست، یک
+                                کنترلِ عادی است و نباید بیشتر از خودِ جواب به چشم بیاید. */}
                             {pending ? (
                                 <button type="button" aria-label="توقف پاسخ" onClick={onStop}
                                         className="w-8.5 h-8.5 rounded-full flex items-center justify-center
                                                    transition-all duration-200 cursor-pointer
                                                    bg-var-color-02 dark:bg-var-color-38
-                                                   text-var-color-06 dark:text-var-color-01
+                                                   text-var-color-05 dark:text-var-color-39
                                                    hover:brightness-95 dark:hover:brightness-125
                                                    active:scale-90">
                                     <FiSquare className="w-3.5 h-3.5" fill="currentColor"/>
