@@ -14,7 +14,8 @@ from rest_framework.views import APIView
 from core.permissions import IsOwner
 
 from .catalog import choices as model_choices, default_model, resolve as resolve_model
-from .engine import EngineError, EngineNotConfigured, answer, answer_stream, is_configured
+from .engine import (EngineError, EngineNotConfigured, answer, answer_stream,
+                     is_configured, is_fallback)
 from .models import Conversation, Message
 from .suggestions import build_suggestions
 from .serializers import ConversationDetailSerializer, ConversationSerializer, MessageSerializer
@@ -120,7 +121,7 @@ class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
                 text, used = answer(request.user, conversation)
                 assistant = conversation.messages.create(
                     role="assistant", body=text, tools_used=used,
-                    suggestion=build_suggestions(used),
+                    suggestion=build_suggestions(used, answered=not is_fallback(text)),
                 )
             except EngineNotConfigured as exc:
                 error = str(exc)
@@ -333,6 +334,7 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
                 text, used, context = data
                 assistant = conversation.messages.create(
                     role="assistant", body=text, tools_used=used,
-                    suggestion=build_suggestions(used, context),
+                    suggestion=build_suggestions(used, context,
+                                                 answered=not is_fallback(text)),
                 )
                 yield _sse("done", {"assistantMessage": MessageSerializer(assistant).data})

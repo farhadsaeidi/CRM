@@ -51,6 +51,12 @@ TIMEOUT_SECONDS = (10, 300)
 # بیشتر، چون هر تلاش روی CPU چند دقیقه است.
 GROUNDING_RETRIES = 1
 
+# پیام‌هایی که یعنی «نتوانستم»، نه یک جوابِ واقعی. یک‌جا تعریف می‌شوند چون
+# بیرون از این فایل هم لازم‌اند: ردیفِ پیشنهادها نباید زیرِ یک شکست بنشیند.
+NO_OUTPUT = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
+NO_SUMMARY = "نتوانستم به جمع‌بندی برسم. لطفاً سوال را ساده‌تر بپرسید."
+
+
 # ⚠️ **وقتی تذکر هم جواب نداد، جوابِ مدل نشان داده نمی‌شود.**
 #
 # پیش‌تر بعد از تذکرِ ناموفق همان متنِ بی‌پشتوانه روی صفحه می‌نشست و فقط یک خطِ
@@ -76,6 +82,18 @@ FORMAT_NUDGE = (
     "اگر به ابزاری نیاز داری، آن را از راهِ رسمیِ tool calling صدا بزن و هیچ‌وقت "
     "نامِ ابزار یا JSON را داخلِ متن ننویس. اگر نیازی نیست، فقط به فارسیِ ساده جواب بده."
 )
+
+FALLBACKS = (GROUNDING_REFUSAL, NO_OUTPUT, NO_SUMMARY)
+
+
+def is_fallback(text):
+    """آیا این متن یکی از پیام‌های «نتوانستم» است؟
+
+    مقایسهٔ دقیق و نه «شامل بودن»: جوابِ واقعی هم ممکن است چنین جمله‌ای را نقل
+    کند، و آن وقت یک پاسخِ سالم به اشتباه شکست شمرده می‌شد.
+    """
+    return (text or "").strip() in FALLBACKS
+
 
 # ارقامِ لاتین، فارسی و عربی — عددی که ابزاری پشتش نیست، ساختهٔ مدل است
 _DIGITS = re.compile(r"[0-9۰-۹٠-٩]")
@@ -495,7 +513,7 @@ def answer(user, conversation):
                 return GROUNDING_REFUSAL, used
 
             if not text:
-                text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
+                text = NO_OUTPUT
             return text, used
 
         # مدل خواسته ابزار صدا زده شود — پیامِ خودش باید در تاریخچه بماند،
@@ -532,7 +550,7 @@ def answer(user, conversation):
 
     # به سقف خوردیم: مدل نتوانست جمع‌بندی کند
     logger.warning("chat loop hit MAX_STEPS with tools=%s", used)
-    return "نتوانستم به جمع‌بندی برسم. لطفاً سوال را ساده‌تر بپرسید.", used
+    return NO_SUMMARY, used
 
 
 def answer_stream(user, conversation):
@@ -630,7 +648,7 @@ def answer_stream(user, conversation):
                 return
 
             if not text:
-                text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
+                text = NO_OUTPUT
                 yield ("delta", text)
             yield ("done", (text, used, context))
             return
@@ -663,6 +681,6 @@ def answer_stream(user, conversation):
             })
 
     logger.warning("chat stream hit MAX_STEPS with tools=%s", used)
-    fallback = "نتوانستم به جمع‌بندی برسم. لطفاً سوال را ساده‌تر بپرسید."
+    fallback = NO_SUMMARY
     yield ("delta", fallback)
     yield ("done", (fallback, used, context))

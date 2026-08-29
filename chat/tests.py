@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from chat.catalog import choices, resolve
-from chat.engine import answer as engine_answer
+from chat.engine import GROUNDING_REFUSAL, answer as engine_answer
 from chat.models import Conversation
 from home.tests.factories import make_owner
 
@@ -120,6 +120,24 @@ class MessageTests(APITestCase):
         self.assertEqual(body["assistantMessage"]["tools_used"], ["debtors"])
         self.assertIsNone(body["error"])
         self.assertEqual(self.conversation.messages.count(), 2)
+
+    @override_settings(LLM_BASE_URL="http://x/v1", LLM_MODEL="m")
+    def test_a_conversational_answer_still_gets_suggestions(self):
+        """پاسخِ بی‌ابزار هم پیشنهاد می‌گیرد — گزارشِ صاحبِ پروژه."""
+        with patch("chat.views.answer", return_value=("بله، تحلیل هم می‌کنم.", [])):
+            response = self.client.post(self.url, {"body": "تحلیل هم می‌کنی؟"}, format="json")
+        self.assertTrue(response.json()["assistantMessage"]["suggestion"])
+
+    @override_settings(LLM_BASE_URL="http://x/v1", LLM_MODEL="m")
+    def test_a_refusal_gets_no_suggestions(self):
+        """⚠️ اتصالِ `is_fallback` به ویو — بدونِ این تست بی‌صدا می‌شکند.
+
+        `build_suggestions` خودش تستِ واحد دارد، ولی اگر ویو `answered` را پاس
+        ندهد هیچ‌چیز قرمز نمی‌شود و زیرِ «نتوانستم» سه سوال می‌نشیند.
+        """
+        with patch("chat.views.answer", return_value=(GROUNDING_REFUSAL, [])):
+            response = self.client.post(self.url, {"body": "آخرین تراکنش؟"}, format="json")
+        self.assertEqual(response.json()["assistantMessage"]["suggestion"], [])
 
     @override_settings(LLM_BASE_URL="http://x/v1", LLM_MODEL="m")
     def test_engine_failure_keeps_the_user_message(self):

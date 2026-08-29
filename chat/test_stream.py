@@ -16,7 +16,7 @@ from rest_framework.test import APITestCase
 
 from chat.engine import MAX_STEPS, _merge_tool_deltas, _stream_model, answer_stream
 from chat.models import Conversation
-from chat.suggestions import FOLLOW_UPS, MAX_SUGGESTIONS, build_suggestions
+from chat.suggestions import FOLLOW_UPS, GENERAL, MAX_SUGGESTIONS, build_suggestions
 from home.tests.factories import make_customer, make_owner, make_transaction
 
 # ⚠️ آدرسِ بی‌اسکیما عمدی است: `requests` **بی‌درنگ** ردش می‌کند، پس هر
@@ -192,9 +192,23 @@ class SuggestionTests(APITestCase):
         missing = [tool["name"] for tool in TOOLS if tool["name"] not in FOLLOW_UPS]
         self.assertEqual(missing, [])
 
-    def test_no_tools_means_no_suggestion(self):
-        """دستیاری که فقط سلام کرده، ردیفِ سوال‌های چسبانده مزاحمت است نه کمک."""
-        self.assertEqual(build_suggestions([]), [])
+    def test_no_tools_falls_back_to_general_questions(self):
+        """⚠️ قرارداد **عوض شد** — و علتش گزارشِ خودِ صاحبِ پروژه بود.
+
+        نسخهٔ اول با `tools_used` خالی دست خالی برمی‌گشت. ولی پاسخِ گفتگویی
+        («تحلیل هم می‌کنی؟») هیچ ابزاری صدا نمی‌زند، و آنجا ردیفِ پیشنهادها
+        خالی می‌ماند — دقیقاً جایی که کاربر بیشتر از همیشه راهنما لازم دارد.
+        """
+        self.assertEqual(build_suggestions([]), GENERAL[:MAX_SUGGESTIONS])
+
+    def test_a_failed_answer_still_gets_no_suggestion(self):
+        """ولی زیرِ «نتوانستم» چیزی نمی‌نشیند.
+
+        دستیاری که تازه گفته نمی‌داند و بعد سه سوالِ تازه جلوی کاربر می‌گذارد،
+        راهنمایی نمی‌کند — بی‌اعتنایی می‌کند.
+        """
+        self.assertEqual(build_suggestions(["debtors"], answered=False), [])
+        self.assertEqual(build_suggestions([], answered=False), [])
 
     def test_suggestions_are_questions_not_destinations(self):
         """قرارداد: خروجی متنِ سوال است — همان چیزی که با کلیک فرستاده می‌شود.
@@ -224,5 +238,6 @@ class SuggestionTests(APITestCase):
         out = build_suggestions(["find_customer", "overview"])
         self.assertEqual(len(out), len(set(out)))
 
-    def test_unknown_tool_is_skipped(self):
-        self.assertEqual(build_suggestions(["something_new"]), [])
+    def test_unknown_tool_falls_back_to_general(self):
+        """ابزارِ ناشناخته یعنی موضوع را نمی‌دانیم، نه اینکه جوابی داده نشده."""
+        self.assertEqual(build_suggestions(["something_new"]), GENERAL[:MAX_SUGGESTIONS])
