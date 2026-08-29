@@ -231,8 +231,16 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                             // نوارِ زیرش هم بخشی از ناحیهٔ هاور باشد؛ وگرنه با
                             // بردنِ موس روی خودِ دکمه‌ها، نوار ناپدید می‌شد.
                             <div key={m.id} className="group self-end max-w-[85%] flex flex-col items-end">
+                                {/* ⚠️ در تمِ تیره همان رنگِ داخلِ کادرِ نوشتن است (۳۷)،
+                                    تا حبابِ سوال و جایی که سوال تایپ می‌شود یکی
+                                    دیده شوند.
+
+                                    در تمِ روشن ولی ۰۱ است نه ۰۰: رنگِ داخلیِ کادر
+                                    آنجا سفیدِ خالص است و پس‌زمینهٔ خودِ پنلِ گفتگو هم
+                                    همان، پس حباب کاملاً ناپدید می‌شد. همان انحرافی
+                                    که ردیفِ فعالِ سایدبار هم دارد. */}
                                 <div className="px-4 py-2.5 rounded-2xl rounded-bl-md
-                                                bg-var-color-12 dark:bg-var-color-44 text-[13.5px] leading-7
+                                                bg-var-color-01 dark:bg-var-color-37 text-[13.5px] leading-7
                                                 text-var-color-06 dark:text-var-color-01
                                                 whitespace-pre-wrap wrap-break-word">
                                     {m.body}
