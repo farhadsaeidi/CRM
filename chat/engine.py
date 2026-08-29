@@ -22,7 +22,7 @@ import re
 import requests
 from django.conf import settings
 
-from .tools import run_tool, tool_schemas
+from .tools import TOOLS, run_tool, tool_schemas
 
 logger = logging.getLogger(__name__)
 
@@ -279,16 +279,55 @@ def _rescue_tool_calls(message):
             continue
 
         arguments = payload.get("arguments", payload.get("parameters", {}))
-        # ⚠️ `arguments` باید **رشتهٔ JSON** باشد نه شیء. این پیام دوباره به مدل
-        # فرستاده می‌شود و سرور با شیء، درخواست را ۴۰۰ می‌کند:
-        #   cannot unmarshal object into ... arguments of type string
-        if not isinstance(arguments, str):
-            arguments = json.dumps(arguments, ensure_ascii=False)
-        return [{
-            "id": f"rescued_{name}",
-            "type": "function",
-            "function": {"name": name, "arguments": arguments},
-        }]
+        return [_rescued(name, arguments)]
+
+    return None
+
+
+def _rescue_bare_call(content):
+    """شکلِ دومِ نشتی: نامِ ابزار **بیرونِ** JSON.
+
+    ⚠️ دیده شد که مدل این را به‌عنوان متن می‌نویسد:
+
+        find_customer{"query": "آخرین تراکنش"}
+
+    اینجا هیچ کلیدِ `name`ی وجود ندارد، پس `_rescue_tool_calls` پیدایش نمی‌کند و
+    همین رشته به‌عنوان جوابِ نهایی روی صفحه می‌نشست.
+
+    نام از **فهرستِ ابزارهای خودمان** تشخیص داده می‌شود نه با الگوی عمومی: هر
+    کلمه‌ای که قبلِ یک آکولاد بیاید ابزار نیست، و ساختنِ فراخوانی از یک نامِ
+    ناشناخته یعنی خطای بعدی به‌جای رفعِ این یکی.
+
+    آکولاد باید **بلافاصله** بعدِ نام بیاید (حداکثر با یک `:` یا `(` وسط).
+    وگرنه جوابِ سالمی که اسمِ ابزاری را در متن آورده و جای دیگری آکولاد دارد
+    هم به اشتباه «فراخوانی» شمرده می‌شد.
+    """
+    decoder = json.JSONDecoder()
+    for name in sorted({tool["name"] for tool in TOOLS}, key=len, reverse=True):
+        for match in re.finditer(rf"{re.escape(name)}\s*[:(=]?\s*(\{{)", content):
+            try:
+                payload, _ = decoder.raw_decode(content, match.start(1))
+            except ValueError:
+                continue
+            if isinstance(payload, dict):
+                return [_rescued(name, payload)]
+    return None
+
+
+def _rescued(name, arguments):
+    """یک فراخوانیِ نجات‌یافته، به شکلی که سرور می‌پذیرد.
+
+    ⚠️ `arguments` باید **رشتهٔ JSON** باشد نه شیء. این پیام دوباره به مدل
+    فرستاده می‌شود و سرور با شیء، درخواست را ۴۰۰ می‌کند:
+      cannot unmarshal object into ... arguments of type string
+    """
+    if not isinstance(arguments, str):
+        arguments = json.dumps(arguments, ensure_ascii=False)
+    return {
+        "id": f"rescued_{name}",
+        "type": "function",
+        "function": {"name": name, "arguments": arguments},
+    }
 
 
 def _history(conversation, limit=10):
@@ -327,7 +366,8 @@ def answer(user, conversation):
 
         # مدل ابزار خواسته ولی سرور از متن بیرونش نکشیده — نجاتش می‌دهیم
         if not calls:
-            rescued = _rescue_tool_calls(message)
+            rescued = (_rescue_tool_calls(message)
+                       or _rescue_bare_call((message.get("content") or "").strip()))
             if rescued:
                 logger.info("chat rescued tool call from content: %s", rescued[0]["function"]["name"])
                 calls = rescued
@@ -423,7 +463,8 @@ def answer_stream(user, conversation):
 
         calls = message.get("tool_calls") or []
         if not calls:
-            rescued = _rescue_tool_calls(message)
+            rescued = (_rescue_tool_calls(message)
+                       or _rescue_bare_call((message.get("content") or "").strip()))
             if rescued:
                 logger.info("chat rescued tool call from content: %s",
                             rescued[0]["function"]["name"])

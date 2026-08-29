@@ -197,6 +197,68 @@ class EngineLoopTests(APITestCase):
         self.assertEqual(sent[0]["role"], "system")
 
 
+@override_settings(**LLM)
+class RescueTests(APITestCase):
+    """قرارداد: فراخوانیِ ابزاری که به‌صورت **متن** آمده، جواب نیست.
+
+    ⚠️ `qwen2.5:7b` گاهی به‌جای فیلدِ `tool_calls`، خودِ فراخوانی را داخلِ متن
+    می‌نویسد — و هر بار به شکلی دیگر. اگر نجاتش ندهیم، همان رشته به‌عنوان
+    پاسخِ نهایی روی صفحهٔ کاربر می‌نشیند. هر شکلی که در عمل دیده شده اینجا یک
+    تست دارد؛ اگر روزی شکلِ تازه‌ای دیدید، یک تستِ تازه هم اضافه کنید.
+    """
+
+    def setUp(self):
+        self.owner = make_owner()
+        customer = make_customer(self.owner, "رضا احمدی", phone="09121110001")
+        make_transaction(self.owner, customer, debt=500_000)
+        self.conversation = Conversation.objects.create(owner=self.owner)
+        self.conversation.messages.create(role="user", body="بدهکارانم چند نفرند؟")
+
+    def run_with(self, leaked):
+        replies = [say(leaked), say("یک نفر بدهکار است.")]
+        with patch("chat.engine._call_model", side_effect=replies):
+            return answer(self.owner, self.conversation)
+
+    def test_name_inside_the_json(self):
+        text, used = self.run_with('{"name": "debtors", "arguments": {}}')
+        self.assertEqual(used, ["debtors"])
+        self.assertEqual(text, "یک نفر بدهکار است.")
+
+    def test_name_before_a_bare_object(self):
+        """شکلی که در عمل روی صفحهٔ کاربر دیده شد: `find_customer{...}`."""
+        text, used = self.run_with('find_customer{"query": "رضا"}')
+        self.assertEqual(used, ["find_customer"])
+        self.assertEqual(text, "یک نفر بدهکار است.")
+
+    def test_name_before_an_object_with_a_separator(self):
+        text, used = self.run_with('debtors: {"limit": 5}')
+        self.assertEqual(used, ["debtors"])
+
+    def test_wrapped_in_a_tool_call_tag(self):
+        leaked = '<tool_call>{"name": "customer_summary", "arguments": {}}</tool_call>'
+        _, used = self.run_with(leaked)
+        self.assertEqual(used, ["customer_summary"])
+
+    def test_plain_prose_is_not_mistaken_for_a_call(self):
+        """متنِ سالم نباید «نجات» شود.
+
+        اسمِ ابزار ممکن است در جوابِ فارسی هم بیاید؛ فقط وقتی فراخوانی است که
+        آکولاد بلافاصله بعدش باشد.
+        """
+        with patch("chat.engine._call_model", return_value=say(
+                "برای دیدن بدهکاران debtors را می‌خوانم. {توضیح}")) as mock:
+            text, used = answer(self.owner, self.conversation)
+        self.assertEqual(used, [])
+        self.assertEqual(mock.call_count, 1)
+        self.assertIn("بدهکاران", text)
+
+    def test_an_unknown_name_is_not_rescued(self):
+        """`drop_database{...}` ابزار نیست و نباید ساخته شود."""
+        with patch("chat.engine._call_model", return_value=say('drop_database{"x": 1}')):
+            _, used = answer(self.owner, self.conversation)
+        self.assertEqual(used, [])
+
+
 class NotConfiguredTests(APITestCase):
     @override_settings(LLM_BASE_URL="", LLM_MODEL="")
     def test_missing_settings_raise_a_clear_error(self):
