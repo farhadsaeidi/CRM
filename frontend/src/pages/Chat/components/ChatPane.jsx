@@ -261,11 +261,14 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
             <div className="shrink-0 px-4 pb-4 pt-2">
                 {/* کادرِ نوشتن — گرد و جادار، با هالهٔ آبیِ کم‌رنگ روی فوکوس.
                     رنگ‌ها از همان پالتِ پروژه‌اند نه یک بنفشِ وارداتی، وگرنه
-                    این کادر تنها چیزِ ناهماهنگِ صفحه می‌شد. */}
+                    این کادر تنها چیزِ ناهماهنگِ صفحه می‌شد.
+
+                    بوردر روی فوکوس فقط یک تهِ رنگ می‌گیرد (آبیِ ۲۰٪): به کلیک
+                    جواب می‌دهد ولی به چشم نمی‌آید. */}
                 <div className="max-w-3xl mx-auto rounded-[26px] p-2.5
                                 bg-var-color-00 dark:bg-var-color-37
                                 border border-var-color-02 dark:border-var-color-38
-                                focus-within:border-var-color-64
+                                focus-within:border-var-color-13
                                 shadow-[0_2px_10px_rgba(15,23,42,0.05)] dark:shadow-none
                                 transition-colors duration-200">
                     <textarea ref={taRef} rows={1} value={draft} onKeyDown={keyDown}
