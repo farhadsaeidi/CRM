@@ -49,9 +49,10 @@ const isUngrounded = (message) =>
 
 const AssistantMessage = ({message, streaming = false}) => (
     <div className="flex gap-2.5">
-        <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
-                         bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-            <AgentIcon className="w-4 h-4 text-var-color-15"/>
+        {/* بدونِ قاب: خودِ شکلِ پیکسلی به‌اندازهٔ کافی مشخص است و کادرِ دورش
+            فقط یک مربعِ اضافه کنارِ متن می‌شد */}
+        <span className="shrink-0 w-7 h-7 flex items-center justify-center">
+            <AgentIcon className="w-5 h-5 text-var-color-15"/>
         </span>
         <div className="min-w-0">
             <p className="m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
@@ -163,9 +164,8 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                             {/* هالهٔ ملایم پشت نشان، برای عمق دادن به فضای خالی */}
                             <span aria-hidden="true"
                                   className="absolute inset-0 -z-10 blur-2xl rounded-full bg-var-color-13"/>
-                            <span className="w-14 h-14 rounded-2xl flex items-center justify-center
-                                             bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-                                <AgentIcon className="w-7 h-7 text-var-color-15"/>
+                            <span className="w-14 h-14 flex items-center justify-center">
+                                <AgentIcon className="w-12 h-12 text-var-color-15"/>
                             </span>
                         </div>
                         <h2 className="m-0 text-[26px] 2xs:text-[30px] font-IRANSansXFaNumDemiBold tracking-tightest
@@ -230,9 +230,8 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                         )}
                         {pending && streamingText === null && (
                             <div className="flex gap-2.5 items-center">
-                                <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
-                                                 bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-                                    <AgentIcon className="w-4 h-4 text-var-color-15"/>
+                                <span className="shrink-0 w-7 h-7 flex items-center justify-center">
+                                    <AgentIcon className="w-5 h-5 text-var-color-15"/>
                                 </span>
                                 {/* ⚠️ فقط سه نقطه کافی نیست: مدلِ محلی روی CPU
                                     چند دقیقه طول می‌کشد و کاربر بی‌متن فکر می‌کند
