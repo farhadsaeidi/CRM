@@ -1,5 +1,7 @@
 import {useState} from "react";
-import {FiCheck, FiCopy, FiGitBranch, FiRotateCcw} from "react-icons/fi";
+import {FiRotateCcw} from "react-icons/fi";
+import {IoCheckmarkOutline, IoCopyOutline} from "react-icons/io5";
+import {TbArrowFork} from "react-icons/tb";
 import CustomTooltip from "../../../components/common/CustomTooltip.jsx";
 import {fullDateTime, relativeTime} from "../../../lib/datetime.js";
 
@@ -37,11 +39,19 @@ const MessageActions = ({created, body, onCopy, onRewind, onFork}) => {
         }
     };
 
+    // ⚠️ ترتیب **برعکسِ** چیزی است که دیده می‌شود. در RTL اولین فرزند
+    // راست‌ترین است، پس برای اینکه از چپ به راست «زمان، کپی، بازگشت، انشعاب»
+    // دیده شود، باید از انتها شروع کرد: انشعاب، بازگشت، کپی — و زمان آخرین
+    // عنصرِ DOM باشد.
     const actions = [
-        {key: "copy", tip: copied ? "کپی شد" : "کپی", onClick: copy,
-         icon: copied ? FiCheck : FiCopy},
+        // ⚠️ `rotate-90` بخشی از خودِ آیکون است نه تزئین: `TbArrowFork` شاخه را
+        // رو به بالا می‌کشد و اینجا باید افقی باشد تا «انشعاب از این نقطه» را
+        // برساند، نه «بالا رفتن».
+        {key: "fork", tip: "انشعاب از اینجا", onClick: onFork,
+         icon: TbArrowFork, spin: true},
         {key: "rewind", tip: "بازگشت به اینجا", onClick: onRewind, icon: FiRotateCcw},
-        {key: "fork", tip: "انشعاب از اینجا", onClick: onFork, icon: FiGitBranch},
+        {key: "copy", tip: copied ? "کپی شد" : "کپی", onClick: copy,
+         icon: copied ? IoCheckmarkOutline : IoCopyOutline},
     ];
 
     return (
@@ -53,15 +63,7 @@ const MessageActions = ({created, body, onCopy, onRewind, onFork}) => {
                         transition-opacity duration-200
                         group-hover:opacity-100 group-hover:pointer-events-auto
                         focus-within:opacity-100 focus-within:pointer-events-auto">
-            {/* زمانِ نسبی، با تاریخِ کاملِ شمسی در تولتیپ. خودش دکمه نیست، پس
-                `span` می‌ماند و فقط تولتیپ می‌گیرد. */}
-            <span onMouseEnter={show(fullDateTime(created))} onMouseLeave={hide}
-                  className="px-1.5 text-[10.5px] whitespace-nowrap cursor-default
-                             text-var-color-04 dark:text-var-color-39">
-                {relativeTime(created)}
-            </span>
-
-            {actions.map(({key, tip: text, onClick, icon: Icon}) => (
+            {actions.map(({key, tip: text, onClick, icon: Icon, spin = false}) => (
                 <button key={key} type="button" aria-label={text} onClick={onClick}
                         onMouseEnter={show(text)} onMouseLeave={hide} onBlur={hide}
                         className="w-6.5 h-6.5 rounded-full flex items-center justify-center
@@ -69,9 +71,18 @@ const MessageActions = ({created, body, onCopy, onRewind, onFork}) => {
                                    text-var-color-05 dark:text-var-color-46
                                    hover:bg-var-color-01 dark:hover:bg-var-color-40
                                    hover:text-var-color-06 dark:hover:text-var-color-01">
-                    <Icon className="w-3.5 h-3.5"/>
+                    <Icon className={`w-3.5 h-3.5 ${spin ? "rotate-90" : ""}`}/>
                 </button>
             ))}
+
+            {/* زمانِ نسبی، با تاریخِ کاملِ شمسی در تولتیپ. خودش دکمه نیست، پس
+                `span` می‌ماند و فقط تولتیپ می‌گیرد. آخرین عنصرِ DOM است تا در
+                RTL چپ‌ترین دیده شود. */}
+            <span onMouseEnter={show(fullDateTime(created))} onMouseLeave={hide}
+                  className="px-1.5 text-[10.5px] whitespace-nowrap cursor-default
+                             text-var-color-04 dark:text-var-color-39">
+                {relativeTime(created)}
+            </span>
 
             <CustomTooltip text={tip.text} pos={tip.pos} visible={Boolean(tip.pos)}/>
         </div>
