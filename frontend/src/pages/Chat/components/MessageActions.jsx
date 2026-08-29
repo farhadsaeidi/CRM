@@ -63,12 +63,22 @@ const MessageActions = ({created, body, onCopy, onRewind, onFork}) => {
                         transition-opacity duration-200
                         group-hover:opacity-100 group-hover:pointer-events-auto
                         focus-within:opacity-100 focus-within:pointer-events-auto">
+            {/* ⚠️ کامنت بالای عنصر است نه بینِ صفت‌ها — قاعدهٔ همین پروژه.
+
+                `cursor-default` صریح نوشته شده: خودِ `button` در مرورگر
+                `default` است، ولی این نوار قبلاً `pointer` داشت و نبودِ کلاس
+                یعنی روزی کسی دوباره اضافه‌اش می‌کند.
+
+                فاصلهٔ دو رنگ عمداً زیاد است (۰۴ در حالتِ عادی، ۰۶/۰۱ با هاور):
+                این آیکون‌ها باید محو باشند تا از خودِ گفتگو توجه ندزدند و با
+                هاور روشن شوند. جفتِ نزدیکِ قبلی (۴۶ و ۰۱) اختلافش با چشم دیده
+                نمی‌شد. */}
             {actions.map(({key, tip: text, onClick, icon: Icon, spin = false}) => (
                 <button key={key} type="button" aria-label={text} onClick={onClick}
                         onMouseEnter={show(text)} onMouseLeave={hide} onBlur={hide}
                         className="w-6.5 h-6.5 rounded-full flex items-center justify-center
-                                   cursor-pointer transition-all duration-200 active:scale-90
-                                   text-var-color-05 dark:text-var-color-46
+                                   cursor-default transition-all duration-200 active:scale-90
+                                   text-var-color-04
                                    hover:bg-var-color-01 dark:hover:bg-var-color-40
                                    hover:text-var-color-06 dark:hover:text-var-color-01">
                     <Icon className={`w-3.5 h-3.5 ${spin ? "rotate-90" : ""}`}/>
