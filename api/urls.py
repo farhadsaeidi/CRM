@@ -51,6 +51,8 @@ chat_patterns = [
     path("chat/conversations/<int:pk>/", chat_views.ConversationDetailView.as_view(), name="conversation_detail"),
     path("chat/conversations/<int:pk>/messages/", chat_views.MessageCreateView.as_view(), name="conversation_messages"),
     path("chat/conversations/<int:pk>/stream/", chat_views.MessageStreamView.as_view(), name="conversation_stream"),
+    path("chat/conversations/<int:pk>/rewind/", chat_views.MessageRewindView.as_view(), name="conversation_rewind"),
+    path("chat/conversations/<int:pk>/fork/", chat_views.MessageForkView.as_view(), name="conversation_fork"),
 ]
 
 # عمومی

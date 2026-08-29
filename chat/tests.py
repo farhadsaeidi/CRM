@@ -264,3 +264,87 @@ class ModelPickerTests(APITestCase):
         """هیچ ردیفی نباید در کشو باشد ولی سرور نپذیردش."""
         for row in choices():
             self.assertEqual(resolve(row["id"]), row["id"], row["id"])
+
+
+class RewindAndForkTests(APITestCase):
+    """«بازگشت به اینجا» و «انشعاب از اینجا» — نوارِ زیرِ پیامِ کاربر."""
+
+    def setUp(self):
+        self.owner = make_owner()
+        self.client.force_authenticate(self.owner)
+        self.conversation = Conversation.objects.create(owner=self.owner, title="اولی")
+        self.q1 = self.conversation.messages.create(role="user", body="سوال یک")
+        self.a1 = self.conversation.messages.create(role="assistant", body="جواب یک")
+        self.q2 = self.conversation.messages.create(role="user", body="سوال دو")
+        self.a2 = self.conversation.messages.create(role="assistant", body="جواب دو")
+
+    def rewind(self, message_id, conversation=None):
+        return self.client.post(
+            reverse("api:conversation_rewind", args=[(conversation or self.conversation).id]),
+            {"message_id": message_id}, format="json")
+
+    def fork(self, message_id, conversation=None):
+        return self.client.post(
+            reverse("api:conversation_fork", args=[(conversation or self.conversation).id]),
+            {"message_id": message_id}, format="json")
+
+    def test_rewind_drops_the_message_and_everything_after(self):
+        response = self.rewind(self.q2.id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        bodies = list(self.conversation.messages.values_list("body", flat=True))
+        self.assertEqual(bodies, ["سوال یک", "جواب یک"])
+
+    def test_rewind_returns_the_text_so_it_can_be_edited(self):
+        """کاربر برای عوض کردنِ سوالش برگشته؛ دوباره تایپ کردنش کارِ بیهوده است."""
+        self.assertEqual(self.rewind(self.q2.id).json()["body"], "سوال دو")
+
+    def test_rewind_refuses_an_assistant_message(self):
+        """بازگشت به یک پاسخ یعنی سوالی که جوابش پاک شده — حالتی بی‌معنا."""
+        self.assertEqual(self.rewind(self.a1.id).status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(self.conversation.messages.count(), 4)
+
+    def test_fork_copies_history_up_to_that_point(self):
+        response = self.fork(self.q2.id)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        fork = Conversation.objects.get(pk=response.json()["id"])
+        self.assertEqual(list(fork.messages.values_list("body", flat=True)),
+                         ["سوال یک", "جواب یک", "سوال دو"])
+
+    def test_fork_leaves_the_original_untouched(self):
+        """تفاوتِ انشعاب با بازگشت دقیقاً همین است."""
+        self.fork(self.q2.id)
+        self.assertEqual(self.conversation.messages.count(), 4)
+
+    def test_fork_carries_the_chosen_model(self):
+        self.conversation.model = "openai/gpt-4o-mini"
+        self.conversation.save(update_fields=["model"])
+        fork_id = self.fork(self.q2.id).json()["id"]
+        self.assertEqual(Conversation.objects.get(pk=fork_id).model, "openai/gpt-4o-mini")
+
+    def test_a_message_of_another_conversation_is_refused(self):
+        """⚠️ **هر دو شناسه** اسکوپ می‌شوند، نه فقط گفتگو.
+
+        بدونِ این، شناسهٔ پیامی از گفتگوی دیگر — حتی مالِ مالکِ دیگر — می‌توانست
+        اینجا اثر بگذارد.
+        """
+        other = Conversation.objects.create(owner=self.owner)
+        stranger_message = other.messages.create(role="user", body="جای دیگر")
+        self.assertEqual(self.rewind(stranger_message.id).status_code,
+                         status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.fork(stranger_message.id).status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_another_owner_gets_404(self):
+        theirs = Conversation.objects.create(owner=make_owner())
+        message = theirs.messages.create(role="user", body="مالِ دیگری")
+        self.assertEqual(self.rewind(message.id, theirs).status_code,
+                         status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.fork(message.id, theirs).status_code,
+                         status.HTTP_404_NOT_FOUND)
+        self.assertEqual(theirs.messages.count(), 1)
+
+    def test_a_guest_gets_nothing(self):
+        self.client.force_authenticate(None)
+        self.assertEqual(self.rewind(self.q2.id).status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.fork(self.q2.id).status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.conversation.messages.count(), 4)

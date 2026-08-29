@@ -15,7 +15,7 @@ from core.permissions import IsOwner
 
 from .catalog import choices as model_choices, default_model, resolve as resolve_model
 from .engine import EngineError, EngineNotConfigured, answer, answer_stream, is_configured
-from .models import Conversation
+from .models import Conversation, Message
 from .suggestions import build_suggestions
 from .serializers import ConversationDetailSerializer, ConversationSerializer, MessageSerializer
 
@@ -139,6 +139,76 @@ class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
              "title": conversation.title},
             status=status.HTTP_201_CREATED,
         )
+
+
+class MessageActionMixin(OwnerScopedMixin):
+    """پیدا کردنِ یک پیامِ کاربر در گفتگوی مالک.
+
+    ⚠️ **هر دو شناسه اسکوپ می‌شوند، نه فقط گفتگو.** اگر `message_id` را بی‌قید
+    می‌گرفتیم، شناسهٔ پیامی از گفتگوی مالکِ دیگر می‌توانست اینجا اثر بگذارد.
+    """
+    serializer_class = ConversationDetailSerializer
+
+    def target(self, request, pk):
+        conversation = get_object_or_404(self.owner_conversations(), pk=pk)
+        message = get_object_or_404(
+            Message.objects.filter(conversation=conversation),
+            pk=request.data.get("message_id"),
+        )
+        return conversation, message
+
+
+# noinspection PyMethodMayBeStatic
+class MessageRewindView(MessageActionMixin, generics.GenericAPIView):
+    """«بازگشت به اینجا» — این پیام و هرچه بعدش آمده حذف می‌شود.
+
+    متنِ همان پیام برگردانده می‌شود تا فرانت آن را در کادرِ نوشتن بگذارد: کاربر
+    برای **عوض کردنِ** سوالش برگشته، پس دوباره تایپ کردنش کارِ بیهوده است.
+
+    ⚠️ فقط از روی پیامِ **کاربر** کار می‌کند. بازگشت به یک پاسخِ دستیار یعنی
+    نگه‌داشتنِ سوالی که جوابش پاک شده — حالتی که هیچ‌کس نمی‌خواهد.
+    """
+
+    def post(self, request, pk):
+        conversation, message = self.target(request, pk)
+        if message.role != Message.Role.USER:
+            return Response({"message": "بازگشت فقط از روی پیام خودتان ممکن است."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # شناسه‌ها در یک گفتگو صعودی‌اند و `ordering` هم روی (created, id) است،
+        # پس «از اینجا به بعد» با یک شرطِ ساده به دست می‌آید.
+        conversation.messages.filter(id__gte=message.id).delete()
+        conversation.touch()
+        return Response({"body": message.body,
+                         "conversation": self.get_serializer(conversation).data})
+
+
+# noinspection PyMethodMayBeStatic
+class MessageForkView(MessageActionMixin, generics.GenericAPIView):
+    """«انشعاب از اینجا» — گفتگوی تازه‌ای با تاریخچه تا همین پیام.
+
+    گفتگوی اصلی **دست نمی‌خورد**. فرقش با «بازگشت» همین است: آنجا مسیر را عوض
+    می‌کنی، اینجا مسیرِ دومی باز می‌کنی و اولی سرِ جایش می‌ماند.
+    """
+
+    def post(self, request, pk):
+        conversation, message = self.target(request, pk)
+        rows = list(conversation.messages.filter(id__lte=message.id))
+
+        fork = Conversation.objects.create(
+            owner=request.user,
+            title=conversation.title,
+            # مدلِ انتخاب‌شده هم می‌آید: انشعاب یعنی ادامهٔ همان گفتگو در مسیرِ
+            # دیگر، و با مدلِ دیگر دیگر مقایسه‌پذیر نیست.
+            model=conversation.model,
+        )
+        Message.objects.bulk_create([
+            Message(conversation=fork, role=row.role, body=row.body,
+                    tools_used=row.tools_used, suggestion=row.suggestion,
+                    created=row.created)
+            for row in rows
+        ])
+        return Response(self.get_serializer(fork).data, status=status.HTTP_201_CREATED)
 
 
 # ⚠️ **ضربانِ نگه‌دارندهٔ اتصال.**

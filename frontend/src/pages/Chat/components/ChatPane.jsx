@@ -4,6 +4,7 @@ import AgentIcon from "../../../components/common/AgentIcon.jsx";
 import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentReport} from "react-icons/hi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import ModelPicker from "./ModelPicker.jsx";
+import MessageActions from "./MessageActions.jsx";
 
 // پیشنهادهای شروع — متناسب با دامنهٔ همین سامانه (دفترِ حساب مشتریان)
 const SUGGESTIONS = [
@@ -79,7 +80,8 @@ const AssistantMessage = ({message, streaming = false}) => (
 
 const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,
                   engineError = null, onSend, onStop,
-                  models = [], model = "", onModelChange}) => {
+                  models = [], model = "", onModelChange,
+                  onRewind, onFork}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
@@ -145,6 +147,23 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
     // پیشنهادهای آخرین پاسخِ دستیار. فیلد در دیتابیس JSON است و روزگاری یک
     // شیء بود، پس هر دو شکل پذیرفته می‌شود تا گفتگوهای قدیمی نشکنند.
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    // «بازگشت به اینجا»: سرور پیام‌ها را پاک می‌کند و متنِ همان پیام را
+    // برمی‌گرداند، و اینجا در کادرِ نوشتن می‌نشیند.
+    //
+    // ⚠️ فراخوانی در `Chat.jsx` است ولی نشاندنِ متن اینجا، چون `draft` مالِ
+    // همین کامپوننت است. اگر متن را از بیرون پراپ می‌کردیم، یک stateِ مشتق از
+    // props می‌شد و آن الگو در این پروژه دردسرِ خودش را دارد.
+    const rewind = async (messageId) => {
+        const text = await onRewind?.(messageId);
+        if (typeof text !== "string") return;
+        setDraft(text);
+        const box = taRef.current;
+        if (box) {
+            box.focus();
+            autoGrow(box);
+        }
+    };
+
     // پیشنهادها حالا رشته‌اند. گفتگوهای ذخیره‌شدهٔ قبلی شیءِ `{label, action}`
     // دارند؛ برچسبشان برداشته می‌شود تا نشکنند، هرچند دیگر جایی نمی‌برند.
     const raw = lastAssistant?.suggestion;
@@ -204,13 +223,27 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                     // ── گفتگو: پیام کاربر حباب‌دار، پاسخ دستیار تمام‌عرض (مثل چت مدل‌های زبانی) ──
                     <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-5">
                         {messages.map((m) => m.role === "user" ? (
-                            // ⚠️ در RTL «انتهای خط» چپ است، پس `self-end` حبابِ
+                            // ⚠️ در RTL «انتهای خط» چپ است، پس `items-end` حبابِ
                             // کاربر را سمتِ چپ می‌برد و پاسخِ دستیار سمتِ راست
                             // می‌ماند — همان چیدمانی که کاربر انتظار دارد.
-                            <div key={m.id} className="self-end max-w-[85%] px-4 py-2.5 rounded-2xl rounded-bl-md
-                                                    bg-var-color-12 dark:bg-var-color-44 text-[13.5px] leading-7
-                                                    text-var-color-06 dark:text-var-color-01 whitespace-pre-wrap wrap-break-word">
-                                {m.body}
+                            //
+                            // `group` روی همین بستهٔ بیرونی است نه روی حباب، تا
+                            // نوارِ زیرش هم بخشی از ناحیهٔ هاور باشد؛ وگرنه با
+                            // بردنِ موس روی خودِ دکمه‌ها، نوار ناپدید می‌شد.
+                            <div key={m.id} className="group self-end max-w-[85%] flex flex-col items-end">
+                                <div className="px-4 py-2.5 rounded-2xl rounded-bl-md
+                                                bg-var-color-12 dark:bg-var-color-44 text-[13.5px] leading-7
+                                                text-var-color-06 dark:text-var-color-01
+                                                whitespace-pre-wrap wrap-break-word">
+                                    {m.body}
+                                </div>
+                                {/* پیامِ خوش‌بینانه هنوز شناسهٔ سرور ندارد؛ تا
+                                    وقتی نیامده «بازگشت» و «انشعاب» مقصدی ندارند. */}
+                                {typeof m.id === "number" && (
+                                    <MessageActions created={m.created} body={m.body}
+                                                    onRewind={() => rewind(m.id)}
+                                                    onFork={() => onFork?.(m.id)}/>
+                                )}
                             </div>
                         ) : (
                             <AssistantMessage key={m.id} message={m}/>

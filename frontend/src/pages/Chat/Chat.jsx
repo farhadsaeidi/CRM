@@ -145,6 +145,36 @@ const Chat = () => {
         }
     };
 
+    // «بازگشت به اینجا» — این پیام و بعدی‌ها حذف می‌شوند و متنش برمی‌گردد تا
+    // کاربر همان سوال را ویرایش کند. متن برگردانده می‌شود نه ست؛ کادرِ نوشتن
+    // مالِ ChatPane است.
+    const rewindTo = useCallback(async (messageId) => {
+        if (activeId === null) return undefined;
+        try {
+            const res = await chatApi.rewind(activeId, messageId);
+            setMessages(res?.conversation?.messages ?? []);
+            setEngineError(null);
+            return res?.body;
+        } catch (err) {
+            notify(errorMessage(err, "بازگشت به این نقطه ناموفق بود."), "error");
+            return undefined;
+        }
+    }, [activeId]);
+
+    // «انشعاب از اینجا» — گفتگوی اصلی دست نمی‌خورد و شاخهٔ تازه باز می‌شود.
+    // تعویضِ `activeId` خودش پیام‌های شاخه را می‌آورد.
+    const forkFrom = useCallback(async (messageId) => {
+        if (activeId === null) return;
+        try {
+            const fresh = await chatApi.fork(activeId, messageId);
+            setConversations((prev) => [fresh, ...prev]);
+            setActiveId(fresh.id);
+            notify("گفتگوی تازه از همین نقطه ساخته شد.");
+        } catch (err) {
+            notify(errorMessage(err, "انشعاب از این نقطه ناموفق بود."), "error");
+        }
+    }, [activeId]);
+
     const renameConversation = async (id, title) => {
         // ⚠️ خوش‌بینانه: نامِ تازه بلافاصله می‌نشیند و در صورتِ شکست برمی‌گردد.
         // انتظار برای رفت‌وبرگشتِ شبکه روی یک ویرایشِ درجا، تایپ را کند نشان
@@ -260,7 +290,8 @@ const Chat = () => {
                           streamingText={streamingText} runningTool={runningTool}
                           engineError={engineError} onSend={sendMessage}
                           onStop={stopStreaming}
-                          models={models} model={model} onModelChange={changeModel}/>
+                          models={models} model={model} onModelChange={changeModel}
+                          onRewind={rewindTo} onFork={forkFrom}/>
             </div>
         </section>
     );
