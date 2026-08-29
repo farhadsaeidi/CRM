@@ -299,6 +299,14 @@ SMS_TEMPLATE_DEBT_REMINDER = config("SMS_TEMPLATE_DEBT_REMINDER", default="crm-d
 LLM_BASE_URL = config("LLM_BASE_URL", default="")
 LLM_API_KEY = config("LLM_API_KEY", default="")
 LLM_MODEL = config("LLM_MODEL", default="")
+# ⚠️ **پراکسی نمی‌تواند یک تصمیمِ ثابت باشد.**
+#
+# مدلِ محلی روی 127.0.0.1 است و **نباید** از پراکسی رد شود؛ مدلِ ابری در برخی
+# شبکه‌ها **فقط** از پراکسی در دسترس است. پیش‌تر این تصمیم در کد ثابت بود
+# (`proxies={"http": None, "https": None}`) و یعنی راهی برای حالت دوم نبود.
+#
+# خالی = تصمیمِ خودکار: میزبانِ محلی بدونِ پراکسی، بقیه از متغیرهای محیط.
+LLM_PROXY = config("LLM_PROXY", default="")
 KAVENEGAR_API_KEY = config("KAVENEGAR_API_KEY", default="")
 # این خط حقوقیه و خدماتی نشده. برای خدماتی شدن باید حقوقی بود مثلا باید شرکت ثبت شده داشت
 # بنابراین با این حال از این خط فقط برای پیام های تبلیغاتی (مسیج بدون توکن) میشه استفاده کرد

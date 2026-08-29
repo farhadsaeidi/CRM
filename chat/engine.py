@@ -21,6 +21,7 @@ import re
 
 import requests
 from django.conf import settings
+from urllib.parse import urlparse
 
 from .tools import TOOLS, has_data, run_tool, tool_schemas
 
@@ -130,6 +131,33 @@ def is_configured():
     return bool(settings.LLM_BASE_URL and settings.LLM_MODEL)
 
 
+# میزبان‌هایی که «همین ماشین»‌اند و هرگز نباید از پراکسی رد شوند
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0"}
+
+
+def _proxies():
+    """پراکسیِ درخواست به مدل — وابسته به اینکه مدل کجاست.
+
+    ⚠️ **این تصمیم نمی‌تواند ثابت باشد، و یک بار همین ثابت بودن دردسر شد.**
+
+    اولامای محلی روی 127.0.0.1 است و اگر درخواستش از پراکسیِ سیستم رد شود
+    می‌شکند؛ پس در کد `proxies={"http": None, "https": None}` نوشته شده بود. ولی
+    همان خط یعنی مدلِ **ابری** هم هرگز از پراکسی رد نمی‌شود — و در شبکه‌ای که
+    دسترسیِ مستقیم ندارد، اصلاً کار نمی‌کند.
+
+    حالا `LLM_PROXY` در `.env` حرفِ آخر را می‌زند؛ اگر خالی بود میزبانِ محلی
+    بدونِ پراکسی می‌رود و بقیه به `requests` سپرده می‌شوند تا از متغیرهای محیط
+    بخواند. `None` یعنی «خودت تصمیم بگیر» — برخلافِ دیکشنری با مقدارِ None که
+    یعنی «هیچ پراکسی‌ای، هرگز».
+    """
+    if settings.LLM_PROXY:
+        return {"http": settings.LLM_PROXY, "https": settings.LLM_PROXY}
+    host = (urlparse(settings.LLM_BASE_URL).hostname or "").lower()
+    if host in _LOCAL_HOSTS:
+        return {"http": None, "https": None}
+    return None
+
+
 def _call_model(messages):
     """یک رفت‌وبرگشت با مدل، روی قراردادِ سازگار با OpenAI."""
     url = f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions"
@@ -148,8 +176,7 @@ def _call_model(messages):
                 "temperature": 0.2,
             },
             timeout=TIMEOUT_SECONDS,
-            # ⚠️ مدل روی 127.0.0.1 است و نباید از پراکسیِ سیستم رد شود
-            proxies={"http": None, "https": None},
+            proxies=_proxies(),
         )
     except requests.RequestException as error:
         raise EngineError(f"ارتباط با مدل برقرار نشد: {error}") from error
@@ -216,7 +243,7 @@ def _stream_model(messages):
             },
             timeout=TIMEOUT_SECONDS,
             stream=True,
-            proxies={"http": None, "https": None},
+            proxies=_proxies(),
         )
     except requests.RequestException as error:
         raise EngineError(f"ارتباط با مدل برقرار نشد: {error}") from error

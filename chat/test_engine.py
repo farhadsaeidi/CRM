@@ -10,7 +10,7 @@ from unittest.mock import patch
 from django.test import override_settings
 from rest_framework.test import APITestCase
 
-from chat.engine import MAX_STEPS, EngineNotConfigured, answer
+from chat.engine import MAX_STEPS, EngineNotConfigured, _proxies, answer
 from chat.models import Conversation
 from chat.tools import has_data, run_tool, tool_schemas
 from home.dashboard import JALALI_MONTHS
@@ -381,6 +381,40 @@ class MachineOutputTests(APITestCase):
             text, _ = answer(self.owner, self.conversation)
         self.assertEqual(mock.call_count, 1)
         self.assertIn("سلام", text)
+
+
+class ProxyTests(APITestCase):
+    """قرارداد: مدلِ محلی از پراکسی رد نمی‌شود، مدلِ ابری می‌تواند رد شود.
+
+    ⚠️ پیش‌تر این تصمیم در کد ثابت بود و پراکسی را برای **هر** مقصدی خاموش
+    می‌کرد. برای اولامای 127.0.0.1 لازم بود، ولی یعنی در شبکه‌ای که فقط از
+    پراکسی به اینترنت می‌رسد، هیچ مدلِ ابری‌ای کار نمی‌کرد.
+    """
+
+    @override_settings(LLM_BASE_URL="http://127.0.0.1:11434/v1", LLM_PROXY="")
+    def test_a_local_model_never_goes_through_a_proxy(self):
+        self.assertEqual(_proxies(), {"http": None, "https": None})
+
+    @override_settings(LLM_BASE_URL="http://localhost:11434/v1", LLM_PROXY="")
+    def test_localhost_by_name_counts_as_local_too(self):
+        self.assertEqual(_proxies(), {"http": None, "https": None})
+
+    @override_settings(LLM_BASE_URL="https://openrouter.ai/api/v1", LLM_PROXY="")
+    def test_a_remote_model_is_left_to_the_environment(self):
+        """`None` یعنی «خودت تصمیم بگیر» و با دیکشنریِ خالی فرق دارد."""
+        self.assertIsNone(_proxies())
+
+    @override_settings(LLM_BASE_URL="https://openrouter.ai/api/v1",
+                       LLM_PROXY="http://127.0.0.1:2081")
+    def test_an_explicit_proxy_wins(self):
+        self.assertEqual(_proxies(), {"http": "http://127.0.0.1:2081",
+                                      "https": "http://127.0.0.1:2081"})
+
+    @override_settings(LLM_BASE_URL="http://127.0.0.1:11434/v1",
+                       LLM_PROXY="http://127.0.0.1:2081")
+    def test_an_explicit_proxy_wins_even_for_a_local_model(self):
+        """اگر کسی صریح نوشته، حتماً دلیلی داشته — حدسِ ما نباید رویش بنشیند."""
+        self.assertEqual(_proxies()["https"], "http://127.0.0.1:2081")
 
 
 class NotConfiguredTests(APITestCase):
