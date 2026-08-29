@@ -95,7 +95,7 @@ const ChatSidebar = ({conversations, activeId, loading = false,
                 <div key={c.id}
                      className={`group flex items-center gap-1 rounded-xl transition-colors duration-200 ${
                          c.id === activeId
-                             ? "bg-var-color-12 dark:bg-var-color-44"
+                             ? "bg-var-color-01 dark:bg-var-color-37"
                              : "hover:bg-var-color-01 dark:hover:bg-var-color-40"}`}>
                     {renaming?.id === c.id ? (
                         <input ref={inputRef} value={renaming.draft} autoFocus
@@ -114,10 +114,9 @@ const ChatSidebar = ({conversations, activeId, loading = false,
                                           text-var-color-06 dark:text-var-color-01"/>
                     ) : (
                         <button type="button" onClick={() => onSelect(c.id)}
-                                className={`min-w-0 flex-1 text-right px-3 py-2.5 text-[12.5px] truncate cursor-pointer ${
-                                    c.id === activeId
-                                        ? "text-var-color-19 dark:text-var-color-15 font-IRANSansXFaNumMedium"
-                                        : "text-var-color-06 dark:text-var-color-01"}`}>
+                                className={`min-w-0 flex-1 text-right px-3 py-2.5 text-[12.5px] truncate
+                                             cursor-pointer text-var-color-06 dark:text-var-color-01 ${
+                                    c.id === activeId ? "font-IRANSansXFaNumMedium" : ""}`}>
                             {c.title}
                         </button>
                     )}
@@ -126,28 +125,28 @@ const ChatSidebar = ({conversations, activeId, loading = false,
                         بازِ خودش ناپدید می‌شد. همان حالت پس‌زمینه‌اش را هم نگه
                         می‌دارد تا پیدا باشد منو مالِ کدام ردیف است.
 
-                        ⚠️ رنگِ خاکستری برای پس‌زمینهٔ هاور کار نمی‌کرد: این دکمه
-                        فقط وقتی دیده می‌شود که موس روی ردیف باشد، یعنی ردیف از
-                        قبل رنگِ هاورِ خودش (۰۱ و ۴۰) را دارد و هر خاکستریِ
-                        نزدیک به آن محو می‌شد. حالا از **اکسنتِ خودِ برنامه**
-                        استفاده می‌شود: همان آبی‌ای که عنوانِ ردیفِ فعال دارد،
-                        پس دکمه با صفحه یک خانواده است نه یک وصلهٔ خاکستری.
+                        رنگ‌ها از کادرِ نوشتنِ همین صفحه قرض گرفته شده‌اند تا
+                        سایدبار و کادرِ چت یک زبان داشته باشند: پس‌زمینهٔ هاور
+                        همان پس‌زمینهٔ هاورِ دکمهٔ «+» است (۰۱ و ۴۰)، و نقطه‌ها
+                        در حالتِ عادی یک پله کم‌رنگ‌تر از متنِ ردیف‌اند و با
+                        هاور به خودِ همان رنگ می‌رسند.
 
-                        ⚠️ `var-color-13` نیمه‌شفاف است (۲۰٪ فیروزه‌ای)، پس در
-                        هر دو تم روی هر چیزی که زیرش باشد درست می‌نشیند و یک
-                        توکن برای هر دو کافی است. نقطه‌ها همان جفتِ رنگیِ ردیفِ
-                        فعال‌اند: ۱۹ در روشن و ۱۵ در تیره. */}
+                        ⚠️ **روی ردیفِ غیرفعال، پس‌زمینهٔ هاورِ این دکمه با
+                        پس‌زمینهٔ هاورِ خودِ ردیف یکی است، پس دیده نمی‌شود** —
+                        هر دو ۰۱ و ۴۰اند. نشانهٔ هاور آنجا پررنگ شدنِ نقطه‌هاست
+                        نه پس‌زمینه. عمدی است و خواستهٔ صاحبِ پروژه؛ اگر روزی
+                        باید دیده شود، رنگِ هاورِ ردیف باید عوض شود نه این. */}
                     <button type="button" aria-label={`عملیات گفتگوی ${c.title}`}
                             aria-haspopup="menu" aria-expanded={menu?.id === c.id}
                             onClick={(event) => openMenu(c.id, event)}
                             className={`shrink-0 w-7 h-7 ml-1 rounded-lg items-center justify-center
                                         cursor-pointer transition-all duration-200 active:scale-90
-                                        text-var-color-04
-                                        hover:bg-var-color-13
-                                        hover:text-var-color-19 dark:hover:text-var-color-15 ${
+                                        text-var-color-05 dark:text-var-color-46
+                                        hover:bg-var-color-01 dark:hover:bg-var-color-40
+                                        hover:text-var-color-06 dark:hover:text-var-color-01 ${
                                 menu?.id === c.id
-                                    ? "flex bg-var-color-13 " +
-                                      "text-var-color-19 dark:text-var-color-15"
+                                    ? "flex bg-var-color-01 dark:bg-var-color-40 " +
+                                      "text-var-color-06 dark:text-var-color-01"
                                     : "hidden group-hover:flex"}`}>
                         <FiMoreVertical className="w-4 h-4"/>
                     </button>
