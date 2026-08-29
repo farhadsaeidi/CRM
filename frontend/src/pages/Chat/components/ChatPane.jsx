@@ -1,8 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import {FiAlertTriangle, FiArrowUp, FiMic, FiPlus, FiSquare} from "react-icons/fi";
-// آیکونِ دستیار. تراشه سخت‌افزار را می‌گفت نه دستیار را؛ درخشش امروز
-// نشانهٔ شناخته‌شدهٔ پاسخِ هوش مصنوعی است.
-import {HiOutlineSparkles} from "react-icons/hi2";
+import AgentIcon from "../../../components/common/AgentIcon.jsx";
 import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentReport} from "react-icons/hi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
@@ -53,7 +51,7 @@ const AssistantMessage = ({message, streaming = false}) => (
     <div className="flex gap-2.5">
         <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
                          bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-            <HiOutlineSparkles className="w-4 h-4 text-var-color-15"/>
+            <AgentIcon className="w-4 h-4 text-var-color-15"/>
         </span>
         <div className="min-w-0">
             <p className="m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
@@ -167,7 +165,7 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                   className="absolute inset-0 -z-10 blur-2xl rounded-full bg-var-color-13"/>
                             <span className="w-14 h-14 rounded-2xl flex items-center justify-center
                                              bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-                                <HiOutlineSparkles className="w-7 h-7 text-var-color-15"/>
+                                <AgentIcon className="w-7 h-7 text-var-color-15"/>
                             </span>
                         </div>
                         <h2 className="m-0 text-[26px] 2xs:text-[30px] font-IRANSansXFaNumDemiBold tracking-tightest
@@ -234,7 +232,7 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                             <div className="flex gap-2.5 items-center">
                                 <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center
                                                  bg-var-color-12 dark:bg-var-color-44 border border-var-color-13 dark:border-var-color-16">
-                                    <HiOutlineSparkles className="w-4 h-4 text-var-color-15"/>
+                                    <AgentIcon className="w-4 h-4 text-var-color-15"/>
                                 </span>
                                 {/* ⚠️ فقط سه نقطه کافی نیست: مدلِ محلی روی CPU
                                     چند دقیقه طول می‌کشد و کاربر بی‌متن فکر می‌کند
@@ -267,8 +265,9 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                 <div className="max-w-3xl mx-auto rounded-[26px] p-2.5
                                 bg-var-color-00 dark:bg-var-color-37
                                 border border-var-color-02 dark:border-var-color-38
+                                focus-within:border-var-color-64
                                 shadow-[0_2px_10px_rgba(15,23,42,0.05)] dark:shadow-none
-                                transition-all duration-200">
+                                transition-colors duration-200">
                     <textarea ref={taRef} rows={1} value={draft} onKeyDown={keyDown}
                               onChange={(e) => {
                                   setDraft(e.target.value);
