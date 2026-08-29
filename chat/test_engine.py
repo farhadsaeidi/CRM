@@ -259,6 +259,48 @@ class RescueTests(APITestCase):
         self.assertEqual(used, [])
 
 
+@override_settings(**LLM)
+class MachineOutputTests(APITestCase):
+    """قرارداد: خروجیِ داخلیِ مدل هرگز به‌عنوان جواب نمایش داده نمی‌شود.
+
+    ⚠️ این تست‌ها مهم‌تر از تست‌های نجات‌اند. نجات‌دهنده‌ها هر کدام یک **شکلِ
+    شناخته‌شده** را می‌گیرند و فهرستشان هیچ‌وقت کامل نمی‌شود؛ این گارد بدونِ
+    شناختنِ شکل جلوی نشستنِ متنِ خام روی صفحه را می‌گیرد.
+    """
+
+    def setUp(self):
+        self.owner = make_owner()
+        make_customer(self.owner, "رضا احمدی", phone="09121110001")
+        self.conversation = Conversation.objects.create(owner=self.owner)
+        self.conversation.messages.create(role="user", body="سلام")
+
+    def test_an_unknown_shape_gets_one_more_try(self):
+        junk = '<|tool_call_begin|>whatever<|tool_call_end|>'
+        with patch("chat.engine._call_model", side_effect=[say(junk), say("سلام!")]) as mock:
+            text, _ = answer(self.owner, self.conversation)
+
+        self.assertEqual(text, "سلام!")
+        second = mock.call_args_list[1][0][0]
+        self.assertTrue(any("قالبش" in (m.get("content") or "") for m in second))
+
+    def test_raw_text_is_never_shown_after_the_retry(self):
+        # بدونِ رقم، تا فقط گاردِ قالب سنجیده شود نه تذکرِ عددِ بی‌پشتوانه
+        junk = '{"tool": "debtors", "parameters": {"order": "desc"}}'
+        with patch("chat.engine._call_model", return_value=say(junk)) as mock:
+            text, _ = answer(self.owner, self.conversation)
+
+        self.assertEqual(mock.call_count, 2)
+        self.assertNotIn("debtors", text)
+        self.assertNotIn("{", text)
+
+    def test_a_normal_persian_answer_is_left_alone(self):
+        """جوابِ سالم نباید قربانیِ گارد شود."""
+        with patch("chat.engine._call_model", return_value=say("سلام! چطور کمکتان کنم؟")) as mock:
+            text, _ = answer(self.owner, self.conversation)
+        self.assertEqual(mock.call_count, 1)
+        self.assertIn("سلام", text)
+
+
 class NotConfiguredTests(APITestCase):
     @override_settings(LLM_BASE_URL="", LLM_MODEL="")
     def test_missing_settings_raise_a_clear_error(self):

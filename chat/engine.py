@@ -54,6 +54,17 @@ GROUNDING_NUDGE = (
     "چنین جوابی بدهی. همین حالا ابزارِ مناسب را صدا بزن و از روی خروجیِ آن جواب بده."
 )
 
+# متنی که خروجیِ داخلیِ مدل است و نه جوابِ کاربر: یک بار دوباره می‌پرسیم.
+# بیشتر از یک بار نه — هر تلاش روی CPU چند دقیقه است و مدلی که دو بار قالب را
+# اشتباه بنویسد، بارِ سوم هم می‌نویسد.
+FORMAT_RETRIES = 1
+
+FORMAT_NUDGE = (
+    "آنچه نوشتی فراخوانیِ ابزار بود نه جوابِ کاربر، و قالبش هم درست نبود. "
+    "اگر به ابزاری نیاز داری، آن را از راهِ رسمیِ tool calling صدا بزن و هیچ‌وقت "
+    "نامِ ابزار یا JSON را داخلِ متن ننویس. اگر نیازی نیست، فقط به فارسیِ ساده جواب بده."
+)
+
 # ارقامِ لاتین، فارسی و عربی — عددی که ابزاری پشتش نیست، ساختهٔ مدل است
 _DIGITS = re.compile(r"[0-9۰-۹٠-٩]")
 
@@ -284,6 +295,30 @@ def _rescue_tool_calls(message):
     return None
 
 
+# نشانه‌های «این متن برای من نوشته نشده، برای پارسر نوشته شده».
+# هر کدام از این‌ها در عمل روی صفحهٔ کاربر دیده شده‌اند.
+_MACHINE_MARKERS = ("<tool_call>", "</tool_call>", '"arguments"', '"parameters"',
+                    "<|tool", "functools[")
+
+
+def _looks_machine(text):
+    """آیا این متن، خروجیِ داخلیِ مدل است نه جوابِ کاربر؟
+
+    ⚠️ **این گارد از همهٔ نجات‌دهنده‌ها مهم‌تر است.** هر نجات‌دهنده یک *شکلِ
+    مشخص* را می‌شناسد، و مدلِ ۷ میلیاردی هر بار شکلِ تازه‌ای می‌سازد؛ یعنی
+    فهرستشان هیچ‌وقت کامل نمی‌شود. این تابع برعکس کار می‌کند: لازم نیست شکل را
+    بشناسد، فقط می‌فهمد که جواب نیست — و جلوی نشستنش روی صفحه را می‌گیرد.
+
+    معیارها سخت‌گیرند تا جوابِ سالمِ فارسی قربانی نشود: یا نشانهٔ صریحِ
+    ابزار دارد، یا کلِ متن یک شیءِ JSON است.
+    """
+    if not text:
+        return False
+    if any(marker in text for marker in _MACHINE_MARKERS):
+        return True
+    return text.startswith("{") and text.endswith("}")
+
+
 def _rescue_bare_call(content):
     """شکلِ دومِ نشتی: نامِ ابزار **بیرونِ** JSON.
 
@@ -359,6 +394,7 @@ def answer(user, conversation):
     ]
     used = []
     nudges_left = GROUNDING_RETRIES
+    retries_left = FORMAT_RETRIES
 
     for step in range(MAX_STEPS):
         message = _call_model(messages)
@@ -385,6 +421,18 @@ def answer(user, conversation):
                 messages.append({"role": "assistant", "content": text})
                 messages.append({"role": "user", "content": GROUNDING_NUDGE})
                 continue
+
+            # شکلِ ناشناختهٔ یک فراخوانی: نه نجات داده شد نه جواب است.
+            # یک بار دوباره می‌پرسیم، و اگر باز هم همان بود متنِ خام را
+            # **نشان نمی‌دهیم** — دیدنِ JSONِ داخلی از هیچ‌چیز بهتر نیست.
+            if _looks_machine(text):
+                logger.warning("chat produced machine output: %s", text[:200])
+                if retries_left > 0:
+                    retries_left -= 1
+                    messages.append({"role": "assistant", "content": text})
+                    messages.append({"role": "user", "content": FORMAT_NUDGE})
+                    continue
+                text = ""
 
             if not text:
                 text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
@@ -448,6 +496,7 @@ def answer_stream(user, conversation):
     context = {}
     text_parts = []
     nudges_left = GROUNDING_RETRIES
+    retries_left = FORMAT_RETRIES
 
     for _step in range(MAX_STEPS):
         text_parts = []
@@ -490,6 +539,17 @@ def answer_stream(user, conversation):
                 messages.append({"role": "assistant", "content": text})
                 messages.append({"role": "user", "content": GROUNDING_NUDGE})
                 continue
+
+            # همان گاردِ `answer` — هر دو مسیر زنده‌اند، پس هر دو باید امن باشند
+            if _looks_machine(text):
+                logger.warning("chat produced machine output: %s", text[:200])
+                yield ("reset", None)
+                if retries_left > 0:
+                    retries_left -= 1
+                    messages.append({"role": "assistant", "content": text})
+                    messages.append({"role": "user", "content": FORMAT_NUDGE})
+                    continue
+                text = ""
 
             if not text:
                 text = "پاسخی تولید نشد. لطفاً سوال را طور دیگری بپرسید."
