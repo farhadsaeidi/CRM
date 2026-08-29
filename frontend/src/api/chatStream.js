@@ -19,10 +19,11 @@ const getCookie = (name) => {
 /**
  * @param id شناسهٔ گفتگو
  * @param body متنِ پیام
+ * @param model شناسهٔ مدلِ انتخاب‌شده (اختیاری)
  * @param handlers `{onStart, onDelta, onTool, onReset, onDone, onError}`
  * @param signal برای لغو از بیرون
  */
-export async function streamMessage(id, body, handlers = {}, signal) {
+export async function streamMessage(id, body, handlers = {}, signal, model) {
     const csrftoken = getCookie("csrftoken");
     const response = await fetch(`${BASE_URL}/chat/conversations/${id}/stream/`, {
         method: "POST",
@@ -31,7 +32,7 @@ export async function streamMessage(id, body, handlers = {}, signal) {
             ...(csrftoken ? {"X-CSRFToken": csrftoken} : {}),
         },
         credentials: "include",
-        body: JSON.stringify({body}),
+        body: JSON.stringify({body, model}),
         signal,
     });
 

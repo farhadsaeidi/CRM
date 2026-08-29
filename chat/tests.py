@@ -10,6 +10,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from chat.catalog import choices, resolve
+from chat.engine import answer as engine_answer
 from chat.models import Conversation
 from home.tests.factories import make_owner
 
@@ -157,3 +159,76 @@ class ScopingTests(APITestCase):
         for url in [reverse("api:conversations")] + [u for _, u in self.urls()]:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, status.HTTP_403_FORBIDDEN)
+
+
+@override_settings(LLM_MODEL="openai/gpt-4o-mini")
+class ModelPickerTests(APITestCase):
+    """قرارداد: مدل از فهرستِ سفیدِ سرور می‌آید، نه از رشتهٔ آزادِ کلاینت.
+
+    ⚠️ **این تست از جنسِ امنیت است، نه راحتی.** اگر نامِ مدل مستقیم به
+    ارائه‌دهنده می‌رفت، هر کسی با دسترسی به صفحهٔ گفتگو می‌توانست گران‌ترین
+    مدلِ فهرستِ OpenRouter را صدا بزند و صورتحسابش پای صاحبِ کلید نوشته می‌شد.
+    """
+
+    def setUp(self):
+        self.owner = make_owner()
+        self.client.force_authenticate(self.owner)
+        self.conversation = Conversation.objects.create(owner=self.owner)
+
+    def test_the_catalog_is_served_to_the_client(self):
+        response = self.client.get("/api/chat/models/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["default"], "openai/gpt-4o-mini")
+        self.assertTrue(response.json()["models"])
+
+    def test_a_guest_cannot_read_the_catalog(self):
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.get("/api/chat/models/").status_code, 403)
+
+    def test_an_allowed_model_is_stored_on_the_conversation(self):
+        with patch("chat.views.answer", return_value=("باشد", [])):
+            self.client.post(f"/api/chat/conversations/{self.conversation.id}/messages/",
+                             {"body": "سلام", "model": "z-ai/glm-5.2:free"}, format="json")
+        self.conversation.refresh_from_db()
+        self.assertEqual(self.conversation.model, "z-ai/glm-5.2:free")
+
+    def test_a_model_outside_the_catalog_falls_back_to_the_default(self):
+        """رد کردنِ کلِ پیام تنبیهِ کاربر است؛ برگشت به پیش‌فرض اصلاحِ خطاست."""
+        with patch("chat.views.answer", return_value=("باشد", [])):
+            response = self.client.post(
+                f"/api/chat/conversations/{self.conversation.id}/messages/",
+                {"body": "سلام", "model": "anthropic/claude-opus-5"}, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.conversation.refresh_from_db()
+        self.assertEqual(self.conversation.model, "openai/gpt-4o-mini")
+
+    def test_the_engine_sends_the_chosen_model_to_the_provider(self):
+        """قرارداد: انتخابِ کاربر واقعاً به ارائه‌دهنده می‌رسد.
+
+        بدونِ این تست، کشو می‌توانست چیزی نشان دهد و مدلِ دیگری جواب بدهد.
+        """
+        self.conversation.model = "z-ai/glm-5.2:free"
+        self.conversation.save(update_fields=["model"])
+        self.conversation.messages.create(role="user", body="سلام")
+
+        with patch("chat.engine._call_model", return_value={"role": "assistant",
+                                                            "content": "سلام!"}) as mock:
+            engine_answer(self.owner, self.conversation)
+        self.assertEqual(mock.call_args[0][1], "z-ai/glm-5.2:free")
+
+    def test_patching_the_conversation_cannot_bypass_the_catalog(self):
+        """⚠️ همان فهرستِ سفید، روی مسیرِ دومِ نوشتن.
+
+        `model` روی سریالایزرِ گفتگو نوشتنی است، پس بدونِ اعتبارسنجی می‌شد با
+        یک PATCH هر رشته‌ای را در ستون نشاند.
+        """
+        response = self.client.patch(f"/api/chat/conversations/{self.conversation.id}/",
+                                     {"model": "anthropic/claude-opus-5"}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.conversation.refresh_from_db()
+        self.assertEqual(self.conversation.model, "openai/gpt-4o-mini")
+
+    def test_every_catalog_entry_resolves_to_itself(self):
+        """هیچ ردیفی نباید در کشو باشد ولی سرور نپذیردش."""
+        for row in choices():
+            self.assertEqual(resolve(row["id"]), row["id"], row["id"])

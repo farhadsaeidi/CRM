@@ -3,6 +3,7 @@ import {FiAlertTriangle, FiArrowUp, FiMic, FiPlus, FiSquare} from "react-icons/f
 import AgentIcon from "../../../components/common/AgentIcon.jsx";
 import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentReport} from "react-icons/hi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
+import ModelPicker from "./ModelPicker.jsx";
 
 // پیشنهادهای شروع — متناسب با دامنهٔ همین سامانه (دفترِ حساب مشتریان)
 const SUGGESTIONS = [
@@ -77,7 +78,8 @@ const AssistantMessage = ({message, streaming = false}) => (
 
 
 const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,
-                  engineError = null, onSend, onStop}) => {
+                  engineError = null, onSend, onStop,
+                  models = [], model = "", onModelChange}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
@@ -287,6 +289,12 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                         {/* mr-auto فضای خالی را سمت راست جمع می‌کند و این گروه را به لبهٔ چپ می‌برد
                             (در RTL معادلِ «انتهای خط») */}
                         <span className="mr-auto flex items-center gap-1">
+                            {/* ⚠️ اول در DOM یعنی **راست‌ترین** در RTL، پس کشو کنارِ
+                                دکمهٔ گفتار و سمتِ راستش می‌نشیند. حین پاسخ قفل
+                                می‌شود: عوض کردنِ مدل وسطِ جوابی که مدلِ قبلی
+                                دارد می‌نویسد، فقط کاربر را گیج می‌کند. */}
+                            <ModelPicker models={models} value={model} onChange={onModelChange}
+                                         disabled={pending}/>
                             <button type="button" aria-label="گفتار"
                                     className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer
                                                text-var-color-05 dark:text-var-color-39

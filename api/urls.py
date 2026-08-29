@@ -46,6 +46,7 @@ ledger_patterns = [
 
 # دستیارِ گفتگو — اسکوپ‌شده به مالکِ درخواست، مثلِ بقیهٔ دامنه
 chat_patterns = [
+    path("chat/models/", chat_views.ModelListView.as_view(), name="chat_models"),
     path("chat/conversations/", chat_views.ConversationListCreateView.as_view(), name="conversations"),
     path("chat/conversations/<int:pk>/", chat_views.ConversationDetailView.as_view(), name="conversation_detail"),
     path("chat/conversations/<int:pk>/messages/", chat_views.MessageCreateView.as_view(), name="conversation_messages"),

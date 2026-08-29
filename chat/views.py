@@ -9,9 +9,11 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.permissions import IsOwner
 
+from .catalog import choices as model_choices, default_model, resolve as resolve_model
 from .engine import EngineError, EngineNotConfigured, answer, answer_stream, is_configured
 from .models import Conversation
 from .suggestions import build_suggestions
@@ -57,6 +59,33 @@ class ConversationDetailView(OwnerScopedMixin, generics.RetrieveUpdateDestroyAPI
 
 
 # noinspection PyMethodMayBeStatic
+class ModelListView(APIView):
+    """مدل‌هایی که کشوی صفحهٔ گفتگو نشان می‌دهد.
+
+    ⚠️ فهرست از سرور می‌آید نه از کدِ فرانت. اگر در فرانت هاردکد می‌شد، دو
+    نسخه از یک حقیقت داشتیم و روزی که مدلی از فهرستِ سفیدِ سرور برداشته شود،
+    کشو همچنان نشانش می‌داد و انتخابش بی‌صدا به پیش‌فرض برمی‌گشت.
+    """
+    permission_classes = [IsOwner]
+
+    def get(self, request):
+        return Response({"models": model_choices(), "default": default_model()})
+
+
+def _apply_model(conversation, requested, fields):
+    """مدلِ انتخاب‌شده را روی گفتگو می‌نشاند، اگر عوض شده باشد.
+
+    ⚠️ `resolve` همیشه صدا زده می‌شود، حتی وقتی کلاینت چیزی نفرستاده — همان جایی
+    است که فهرستِ سفید اعمال می‌شود و رشتهٔ دلخواهِ کلاینت رد می‌شود.
+    """
+    if requested is None:
+        return
+    chosen = resolve_model(requested)
+    if chosen != conversation.model:
+        conversation.model = chosen
+        fields.append("model")
+
+
 class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
     """ارسالِ پیامِ کاربر و گرفتنِ پاسخِ دستیار.
 
@@ -80,6 +109,7 @@ class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
         if first:
             conversation.title = body[:60]
             fields.append("title")
+        _apply_model(conversation, request.data.get("model"), fields)
         conversation.updated = timezone.now()
         conversation.save(update_fields=fields)
 
@@ -161,6 +191,7 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
         if first:
             conversation.title = body[:60]
             fields.append("title")
+        _apply_model(conversation, request.data.get("model"), fields)
         conversation.updated = timezone.now()
         conversation.save(update_fields=fields)
 

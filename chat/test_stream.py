@@ -30,7 +30,7 @@ LLM_REAL = {**LLM, "LLM_BASE_URL": "http://x/v1"}
 
 def stream_of(*pieces, tool_calls=None):
     """`_stream_model`ِ ساختگی: تکه‌ها را بیرون می‌دهد و پیامِ کامل را برمی‌گرداند."""
-    def fake(_messages):
+    def fake(_messages, _model=None):
         for piece in pieces:
             yield piece
         message = {"role": "assistant", "content": "".join(pieces)}
@@ -72,7 +72,7 @@ class StreamLoopTests(APITestCase):
         streams = [stream_of(tool_calls=tool_call("debtors")),
                    stream_of("یک", " نفر")]
         calls = iter(streams)
-        events = self.collect(lambda messages: next(calls)(messages))
+        events = self.collect(lambda messages, model=None: next(calls)(messages))
 
         kinds = [kind for kind, _ in events]
         self.assertEqual(kinds.index("tool"), 0)          # ابزار پیش از هر متنی
@@ -86,7 +86,7 @@ class StreamLoopTests(APITestCase):
         """قدمی که به ابزار ختم می‌شود نباید چیزی روی صفحه بنویسد."""
         streams = [stream_of(tool_calls=tool_call("debtors")), stream_of("تمام")]
         calls = iter(streams)
-        events = self.collect(lambda messages: next(calls)(messages))
+        events = self.collect(lambda messages, model=None: next(calls)(messages))
 
         deltas = [p for k, p in events if k == "delta"]
         self.assertEqual(deltas, ["تمام"])
@@ -100,7 +100,7 @@ class StreamLoopTests(APITestCase):
         streams = [stream_of('{"name": "debtors", "arguments": {"limit": 3}}'),
                    stream_of("سه نفر.")]
         calls = iter(streams)
-        events = self.collect(lambda messages: next(calls)(messages))
+        events = self.collect(lambda messages, model=None: next(calls)(messages))
 
         kinds = [kind for kind, _ in events]
         self.assertIn("reset", kinds)

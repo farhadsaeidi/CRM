@@ -42,6 +42,37 @@ const Chat = () => {
 
     const active = conversations.find((c) => c.id === activeId) ?? null;
 
+    // فهرستِ مدل‌ها و پیش‌فرضِ سرور — یک بار برای کلِ صفحه
+    const [models, setModels] = useState([]);
+    const [defaultModel, setDefaultModel] = useState("");
+    useEffect(() => {
+        let ignore = false;
+        chatApi.models()
+            .then((res) => {
+                if (ignore) return;
+                setModels(res?.models ?? []);
+                setDefaultModel(res?.default ?? "");
+            })
+            // ⚠️ بی‌صدا: کشو ناپدید می‌شود ولی چت با مدلِ پیش‌فرضِ سرور کار
+            // می‌کند. یک پیغامِ قرمز برای قابلیتی که جایگزینِ سالم دارد،
+            // کاربر را از کاری که آمده انجام دهد می‌ترساند.
+            .catch(() => {});
+        return () => {
+            ignore = true;
+        };
+    }, []);
+
+    // مدلِ گفتگوی باز. سرور مرجع است؛ تا پاسخِ گفتگو نیامده پیش‌فرض نشان
+    // داده می‌شود.
+    const [pendingModel, setPendingModel] = useState(null);
+    const model = pendingModel ?? active?.model ?? defaultModel;
+
+    const changeModel = useCallback((next) => {
+        setPendingModel(next);
+        setConversations((prev) => prev.map((c) =>
+            (c.id === activeId ? {...c, model: next} : c)));
+    }, [activeId]);
+
     // فهرستِ اولیه. اگر مالک هیچ گفتگویی ندارد یکی ساخته می‌شود تا صفحه با
     // حالتِ خالیِ بی‌مقصد باز نشود.
     useEffect(() => {
@@ -82,6 +113,9 @@ const Chat = () => {
         setEngineError(null);
         setStreamingText(null);
         setRunningTool(null);
+        // ⚠️ لازم است، وگرنه مدلی که برای گفتگوی قبلی انتخاب شده بود روی
+        // گفتگوی تازه می‌نشیند و کاربر فکر می‌کند این گفتگو هم همان را دارد.
+        setPendingModel(null);
     }
 
     // پیام‌های گفتگوی باز
@@ -162,7 +196,7 @@ const Chat = () => {
                     setRunningTool(null);
                     setEngineError(text);
                 },
-            }, controller.signal);
+            }, controller.signal, model);
         } catch (err) {
             setStreamingText(null);
             setRunningTool(null);
@@ -177,7 +211,7 @@ const Chat = () => {
         } finally {
             abortRef.current = null;
         }
-    }, [activeId]);
+    }, [activeId, model]);
 
     // ⚠️ با قطعِ اتصال، ژنراتورِ سرور هم بسته می‌شود و پاسخِ نیمه‌کاره **ذخیره
     // نمی‌شود** — چون ذخیره در همان ژنراتور اتفاق می‌افتد نه در تردِ تولید.
@@ -209,7 +243,8 @@ const Chat = () => {
                 <ChatPane key={activeId} conversation={active} messages={messages}
                           streamingText={streamingText} runningTool={runningTool}
                           engineError={engineError} onSend={sendMessage}
-                          onStop={stopStreaming}/>
+                          onStop={stopStreaming}
+                          models={models} model={model} onModelChange={changeModel}/>
             </div>
         </section>
     );

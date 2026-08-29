@@ -23,6 +23,7 @@ import requests
 from django.conf import settings
 from urllib.parse import urlparse
 
+from .catalog import resolve as resolve_model
 from .tools import TOOLS, has_data, run_tool, tool_schemas
 
 logger = logging.getLogger(__name__)
@@ -158,7 +159,7 @@ def _proxies():
     return None
 
 
-def _call_model(messages):
+def _call_model(messages, model=None):
     """یک رفت‌وبرگشت با مدل، روی قراردادِ سازگار با OpenAI."""
     url = f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions"
     try:
@@ -169,7 +170,7 @@ def _call_model(messages):
                 "Content-Type": "application/json",
             },
             json={
-                "model": settings.LLM_MODEL,
+                "model": model or settings.LLM_MODEL,
                 "messages": messages,
                 "tools": tool_schemas(),
                 # دمای پایین: اینجا جای خلاقیت نیست، جای گزارشِ درست است
@@ -215,7 +216,7 @@ def _merge_tool_deltas(buffer, deltas):
             slot["function"]["arguments"] += function["arguments"]
 
 
-def _stream_model(messages):
+def _stream_model(messages, model=None):
     """یک رفت‌وبرگشت با مدل، به‌صورت استریم.
 
     ژنراتوری که تکه‌های متن را حین رسیدن بیرون می‌دهد و در پایان پیامِ کاملِ
@@ -235,7 +236,7 @@ def _stream_model(messages):
                 "Content-Type": "application/json",
             },
             json={
-                "model": settings.LLM_MODEL,
+                "model": model or settings.LLM_MODEL,
                 "messages": messages,
                 "tools": tool_schemas(),
                 "temperature": 0.2,
@@ -438,6 +439,10 @@ def answer(user, conversation):
             "دستیار پیکربندی نشده است. مقادیر LLM_BASE_URL و LLM_MODEL را در .env بگذارید."
         )
 
+    # ⚠️ از `conversation.model` می‌آید نه از بدنهٔ درخواست: `resolve` فقط
+    # شناسه‌های فهرستِ سفید را می‌پذیرد، پس کلاینت نمی‌تواند مدلِ دلخواه
+    # (و گران) را به ارائه‌دهنده تحمیل کند.
+    model = resolve_model(conversation.model)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         *_history(conversation),
@@ -447,7 +452,7 @@ def answer(user, conversation):
     retries_left = FORMAT_RETRIES
 
     for step in range(MAX_STEPS):
-        message = _call_model(messages)
+        message = _call_model(messages, model)
         calls = message.get("tool_calls") or []
 
         # مدل ابزار خواسته ولی سرور از متن بیرونش نکشیده — نجاتش می‌دهیم
@@ -547,6 +552,10 @@ def answer_stream(user, conversation):
             "دستیار پیکربندی نشده است. مقادیر LLM_BASE_URL و LLM_MODEL را در .env بگذارید."
         )
 
+    # ⚠️ از `conversation.model` می‌آید نه از بدنهٔ درخواست: `resolve` فقط
+    # شناسه‌های فهرستِ سفید را می‌پذیرد، پس کلاینت نمی‌تواند مدلِ دلخواه
+    # (و گران) را به ارائه‌دهنده تحمیل کند.
+    model = resolve_model(conversation.model)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         *_history(conversation),
@@ -560,7 +569,7 @@ def answer_stream(user, conversation):
 
     for _step in range(MAX_STEPS):
         text_parts = []
-        stream = _stream_model(messages)
+        stream = _stream_model(messages, model)
         while True:
             try:
                 piece = next(stream)

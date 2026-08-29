@@ -22,6 +22,12 @@ class Conversation(models.Model):
     # مرتب شود نه تاریخِ ساخت — گفتگویی که دیروز باز شده و امروز ادامه یافته
     # باید بالای فهرست باشد.
     updated = models.DateTimeField(default=timezone.now, verbose_name="آخرین فعالیت")
+    # مدلی که کاربر برای همین گفتگو انتخاب کرده. خالی یعنی «پیش‌فرضِ `.env`».
+    #
+    # ⚠️ روی گفتگو می‌نشیند نه روی کاربر: مقایسهٔ دو مدل روی یک سوال کارِ رایجی
+    # است و با تنظیمِ سراسری یعنی هر بار عوض کردنِ یک گزینه در جای دیگر. ضمناً
+    # این‌طور با رفرشِ صفحه هم انتخاب سرِ جایش می‌ماند.
+    model = models.CharField(max_length=80, blank=True, default="", verbose_name="مدل زبانی")
 
     class Meta:
         verbose_name = "Conversation"
