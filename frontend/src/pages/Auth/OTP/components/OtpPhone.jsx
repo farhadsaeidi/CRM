@@ -9,8 +9,13 @@ import ThemeSwitcher from "../../../../components/common/ThemeSwitcher.jsx";
 import {notify, notifyLoading} from "../../../../lib/notify.jsx";
 import {sanitizePhone} from "../../../../lib/utils.js";
 import {otpPhoneSchema} from "../../../../validators/auth.js";
+import {useInputTabLoop} from "../../../../lib/useInputTabLoop.js";
 
 const OtpPhone = ({active = true}) => {
+    // Tab فقط بینِ فیلدهای همین فرم می‌چرخد — همان قاعدهٔ فرمِ ورود
+    const formRef = useRef(null);
+    useInputTabLoop(formRef, active);
+
     const navigate = useNavigate();
     const id = useId();
 
@@ -60,7 +65,8 @@ const OtpPhone = ({active = true}) => {
     };
 
     return (
-        <form className="w-100 h-84 rounded-3xl px-6 pt-6 pb-8 form-container" onSubmit={onSubmit} autoComplete="off" inert={!active}>
+        <form ref={formRef} className="w-100 h-84 rounded-3xl px-6 pt-6 pb-8 form-container"
+              onSubmit={onSubmit} autoComplete="off" inert={!active}>
             <header className="w-full py-3 flex flex-row justify-between items-center">
                 {/* در RTL آیکونِ بازگشت رو به راست است، نه چپ */}
                 <button type="button" onClick={() => navigate("/auth/login")}

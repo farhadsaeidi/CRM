@@ -9,8 +9,13 @@ import ThemeSwitcher from "../../../components/common/ThemeSwitcher.jsx";
 import {notify, notifyLoading} from "../../../lib/notify.jsx";
 import {sanitizePhone} from "../../../lib/utils.js";
 import {otpPhoneSchema} from "../../../validators/auth.js";
+import {useInputTabLoop} from "../../../lib/useInputTabLoop.js";
 
 const ForgetPassword = () => {
+    // Tab فقط بینِ فیلدهای همین فرم می‌چرخد — همان قاعدهٔ فرمِ ورود
+    const formRef = useRef(null);
+    useInputTabLoop(formRef);
+
     const navigate = useNavigate();
     const id = useId();
 
@@ -56,7 +61,8 @@ const ForgetPassword = () => {
 
     return (
         <section className="w-full min-h-screen flex flex-col justify-center items-center bg-[radial-gradient(circle_at_50%_0%,#f9fafb_0%,#f3f4f6_60%)] dark:bg-[radial-gradient(circle_at_50%_0%,#171b2b_0%,#0B0E14_60%)]">
-            <form className="w-100 max-w-[calc(100vw-2rem)] rounded-3xl px-6 pt-6 pb-8 form-container" onSubmit={onSubmit} autoComplete="off">
+            <form ref={formRef} className="w-100 max-w-[calc(100vw-2rem)] rounded-3xl px-6 pt-6 pb-8 form-container"
+                  onSubmit={onSubmit} autoComplete="off">
                 <header className="w-full py-3 flex flex-row justify-between items-center">
                     <button type="button" onClick={() => navigate("/auth/login")}
                             className="grid h-8 w-8 place-items-center rounded-lg cursor-pointer text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-04">

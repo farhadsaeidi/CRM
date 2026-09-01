@@ -9,6 +9,7 @@ import ThemeSwitcher from "../../../../components/common/ThemeSwitcher.jsx";
 import {notify, notifyLoading} from "../../../../lib/notify.jsx";
 import {toEnglishDigits} from "../../../../lib/utils.js";
 import {otpConfirmSchema} from "../../../../validators/auth.js";
+import {useInputTabLoop} from "../../../../lib/useInputTabLoop.js";
 
 const OTP_LENGTH = 5;
 const OTP_EXPIRES_SECONDS = 120;
@@ -20,6 +21,10 @@ const formatTimer = (totalSeconds) => {
 };
 
 const OtpConfirm = ({active = false}) => {
+    // Tab فقط بینِ فیلدهای همین فرم می‌چرخد — همان قاعدهٔ فرمِ ورود
+    const formRef = useRef(null);
+    useInputTabLoop(formRef, active);
+
     const {setUser} = useAuth();
     const navigate = useNavigate();
     const {state} = useLocation();
@@ -164,7 +169,8 @@ const OtpConfirm = ({active = false}) => {
     };
 
     return (
-        <form className="w-100 h-84 rounded-3xl px-6 pt-6 pb-8 form-container" onSubmit={onSubmit} autoComplete="off" inert={!active}>
+        <form ref={formRef} className="w-100 h-84 rounded-3xl px-6 pt-6 pb-8 form-container"
+              onSubmit={onSubmit} autoComplete="off" inert={!active}>
             <header className="w-full py-3 flex flex-row justify-between items-center">
                 <button type="button" onClick={() => navigate("/auth/otp/phone", {replace: true})}
                         className="grid h-8 w-8 place-items-center rounded-lg cursor-pointer text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-04">
