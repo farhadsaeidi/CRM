@@ -65,7 +65,7 @@ const ForgetPassword = () => {
                   onSubmit={onSubmit} autoComplete="off">
                 <header className="w-full py-3 flex flex-row justify-between items-center">
                     <button type="button" onClick={() => navigate("/auth/login")}
-                            className="grid h-8 w-8 place-items-center rounded-lg cursor-pointer text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-04">
+                            className="grid h-8 w-8 place-items-center rounded-full cursor-pointer transition-colors duration-200 text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-01 hover:bg-var-color-12 dark:hover:bg-var-color-13">
                         <HiOutlineArrowRight className="h-6 w-6"/>
                     </button>
                     <h2 className="text-var-color-08 dark:text-var-color-01 text-xl text-center">فراموشی رمز عبور</h2>
