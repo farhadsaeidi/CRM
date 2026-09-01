@@ -69,8 +69,8 @@ const OtpPhone = ({active = true}) => {
               onSubmit={onSubmit} autoComplete="off" inert={!active}>
             <header className="w-full py-3 flex flex-row justify-between items-center">
                 {/* در RTL آیکونِ بازگشت رو به راست است، نه چپ */}
-                <button type="button" onClick={() => navigate("/auth/login")}
-                        className="grid h-8 w-8 place-items-center rounded-lg cursor-pointer text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-04">
+                <button type="button" tabIndex={-1} aria-label="بازگشت" onClick={() => navigate("/auth/login")}
+                        className="grid h-8 w-8 place-items-center rounded-full cursor-pointer bg-transparent transition-all duration-200 ease-in-out text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-03 hover:bg-var-color-01 dark:hover:bg-var-color-65">
                     <HiOutlineArrowRight className="h-6 w-6"/>
                 </button>
                 <h2 className="text-var-color-08 dark:text-var-color-01 text-2xl text-center">ورود با پیامک</h2>

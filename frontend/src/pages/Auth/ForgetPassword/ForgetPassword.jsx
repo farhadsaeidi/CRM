@@ -64,8 +64,8 @@ const ForgetPassword = () => {
             <form ref={formRef} className="w-100 max-w-[calc(100vw-2rem)] rounded-3xl px-6 pt-6 pb-8 form-container"
                   onSubmit={onSubmit} autoComplete="off">
                 <header className="w-full py-3 flex flex-row justify-between items-center">
-                    <button type="button" onClick={() => navigate("/auth/login")}
-                            className="grid h-8 w-8 place-items-center rounded-full cursor-pointer transition-colors duration-200 text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-01 hover:bg-var-color-12 dark:hover:bg-var-color-13">
+                    <button type="button" tabIndex={-1} aria-label="بازگشت" onClick={() => navigate("/auth/login")}
+                            className="grid h-8 w-8 place-items-center rounded-full cursor-pointer bg-transparent transition-all duration-200 ease-in-out text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-03 hover:bg-var-color-01 dark:hover:bg-var-color-65">
                         <HiOutlineArrowRight className="h-6 w-6"/>
                     </button>
                     <h2 className="text-var-color-08 dark:text-var-color-01 text-xl text-center">فراموشی رمز عبور</h2>
