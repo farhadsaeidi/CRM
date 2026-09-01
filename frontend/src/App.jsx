@@ -7,7 +7,7 @@ const App = () => {
   return (
     // AuthProvider ---> وضعیت احراز هویت را در سراسر برنامه در دسترس می‌گذارد
     // RouterProvider ---> تابلوی راهنمای مسیرها
-    // Toaster ---> ظرفِ نمایش پیغام‌ها
+
     <AuthProvider>
       <RouterProvider router={router} />
       <Toaster position="top-right" containerClassName="!z-[9999]" />

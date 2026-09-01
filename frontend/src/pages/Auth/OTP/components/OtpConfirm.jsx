@@ -171,7 +171,7 @@ const OtpConfirm = ({active = false}) => {
     return (
         <form ref={formRef} className="w-100 h-84 rounded-3xl px-6 pt-6 pb-8 form-container"
               onSubmit={onSubmit} autoComplete="off" inert={!active}>
-            <header className="w-full py-3 flex flex-row justify-between items-center">
+            <header className="w-full mb-5 flex flex-row justify-between items-center">
                 <button type="button" tabIndex={-1} aria-label="بازگشت" onClick={() => navigate("/auth/otp/phone", {replace: true})}
                         className="grid h-8 w-8 place-items-center rounded-full cursor-pointer bg-transparent transition-all duration-200 ease-in-out text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-03 hover:bg-var-color-01 dark:hover:bg-var-color-65">
                     <HiOutlineArrowRight className="h-6 w-6"/>
@@ -180,13 +180,15 @@ const OtpConfirm = ({active = false}) => {
                 <ThemeSwitcher/>
             </header>
 
-            <main className="w-full mt-4">
-                <p className="text-sm leading-7 text-var-color-05 dark:text-var-color-04">
-                    کد ۵ رقمیِ ارسال‌شده به {otpPhone} را وارد کنید.
+            <main className="w-full">
+                {/* وسط‌چین و هم‌رنگِ SAM. شماره در `dir=ltr` می‌نشیند وگرنه در
+                    جملهٔ فارسی وارونه خوانده می‌شود. */}
+                <p className="w-full m-0 text-center text-var-color-06 dark:text-var-color-03">
+                    کد تایید به شماره <span dir="ltr">{otpPhone}</span> ارسال شد.
                 </p>
 
                 {/* خانه‌ها با dir=ltr چیده می‌شوند تا اولین رقم سمت چپ بنشیند، مثل خودِ عدد */}
-                <div className="flex flex-row justify-center gap-2 mt-4" dir="ltr">
+                <div className="flex flex-row justify-center items-center gap-2 mt-2" dir="ltr">
                     {digits.map((digit, index) => (
                         <input
                             key={index}
@@ -199,33 +201,48 @@ const OtpConfirm = ({active = false}) => {
                             onChange={(e) => writeDigit(index, e.target.value)}
                             onPaste={(e) => onPaste(index, e)}
                             onKeyDown={(e) => onKeyDown(index, e)}
-                            className={`w-12 h-13 text-center text-xl rounded-xl input input-bluish ${error ? "input-error" : ""}`}
+                            className={`w-10 h-10 text-center text-base rounded-xl input input-bluish ${error ? "input-error" : ""}`}
                         />
                     ))}
                 </div>
 
-                <div className="flex flex-row items-center justify-center gap-1.5 mt-4 text-sm">
-                    <FiClock className={expired ? "text-var-color-28" : "text-var-color-15"}/>
+                {/* «زمان باقیمانده:» برچسب دارد، مثل SAM — عددِ تنها نمی‌گوید
+                    چه چیزی دارد می‌شمارد. حالتِ پایانِ اعتبار مالِ CRM است و
+                    می‌ماند: بدونش کاربر نمی‌فهمد چرا دکمهٔ تایید خاموش شد. */}
+                <div className="w-full flex flex-row justify-center items-center mt-5">
+                    <FiClock className={`w-5 h-5 ml-1 ${expired ? "text-var-color-28" : "text-var-color-15"}`}/>
                     {expired ? (
-                        <span className="text-var-color-28">اعتبار کد به پایان رسید</span>
+                        <p className="m-0 ml-2 text-var-color-28 text-[14px]">اعتبار کد به پایان رسید</p>
                     ) : (
-                        <span className="text-var-color-05 dark:text-var-color-04" dir="ltr">{formatTimer(remainingSeconds)}</span>
+                        <>
+                            <p className="m-0 ml-2 text-var-color-06 dark:text-var-color-03 text-[14px]">زمان باقیمانده:</p>
+                            <p className="m-0 text-var-color-15 text-[15px]" dir="ltr">{formatTimer(remainingSeconds)}</p>
+                        </>
                     )}
                 </div>
 
-                <button type="submit" disabled={submitting || expired}
-                        className="w-full py-2.5 mt-4 rounded-xl btn btn-bluish disabled:opacity-60 disabled:cursor-not-allowed">
-                    <FiCheck className="w-5 h-5 ml-2"/>
-                    <span className="text-[17px]">{submitting ? "در حال بررسی ..." : "تایید و ورود"}</span>
-                </button>
-
-                {/* enabled: چون هاور روی دکمهٔ غیرفعال هم اعمال می‌شود */}
-                <button type="button" onClick={resend} disabled={!expired}
-                        className="w-full flex justify-center items-center gap-1.5 mt-3 text-[15px] bg-transparent border-none p-0 disabled:text-var-color-04 dark:disabled:text-var-color-05 disabled:cursor-not-allowed enabled:text-var-color-15 enabled:cursor-pointer enabled:hover:underline underline-offset-7">
-                    <FiRefreshCw className="w-4 h-4"/>
-                    ارسال دوبارهٔ کد
-                </button>
+                {/* آیکون بیرونِ دکمه است، مثل SAM: خودِ آیکون کلیک‌پذیر نیست و
+                    وقتی ارسالِ دوباره خاموش است هم رنگش عوض نمی‌شود. */}
+                <div className="w-full flex flex-row justify-center items-center mt-3">
+                    <FiRefreshCw className="w-4.5 h-4.5 ml-1.25 text-var-color-15"/>
+                    <button type="button" tabIndex={-1} onClick={resend} disabled={!expired}
+                            className={`m-0 ml-2 text-[14px] bg-transparent border-none p-0 transition-all duration-200 ease-in-out ${expired
+                                ? "text-var-color-06 hover:text-var-color-11 dark:text-var-color-03 dark:hover:text-var-color-00 cursor-pointer"
+                                : "text-var-color-04 dark:text-var-color-05 cursor-not-allowed"}`}>
+                        ارسال دوبارهٔ کد
+                    </button>
+                </div>
             </main>
+
+            {/* دکمهٔ اصلی در فوترِ خودش، مثل SAM — از بدنه جدا می‌شود و فاصلهٔ
+                بیشتری می‌گیرد. */}
+            <footer className="w-full mt-5 mb-1">
+                <button type="submit" tabIndex={-1} disabled={submitting || expired}
+                        className="w-full flex items-center justify-center py-2.5 rounded-xl btn btn-bluish disabled:opacity-60 disabled:cursor-not-allowed">
+                    <FiCheck className="w-5 h-5 ml-2"/>
+                    <h2 className="m-0 text-[17px]">{submitting ? "در حال بررسی ..." : "تایید و ورود"}</h2>
+                </button>
+            </footer>
         </form>
     );
 };
