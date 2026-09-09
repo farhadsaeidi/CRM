@@ -17,6 +17,14 @@ export default defineConfig({
     // (شبکه در حالت NAT است و یک پراکسیِ localhost روی ویندوز فعال)، پس بدون این،
     // مرورگرِ ویندوز به :5173 نمی‌رسد و باید با IPِ خودِ WSL صدا زده شود.
     host: true,
+    // ⚠️ **بدونِ این، لینکِ تونل فقط «Blocked request. This host is not allowed.»
+    // نشان می‌دهد.** از نسخهٔ ۶، Vite هر درخواستی را که `Host` ناشناخته داشته
+    // باشد رد می‌کند (محافظت در برابر DNS rebinding). آدرسِ تونل یک دامنهٔ
+    // بیرونی است، پس باید صریح مجاز شود.
+    //
+    // نقطهٔ ابتدای هر ورودی یعنی «خودش و همهٔ زیردامنه‌هایش»، پس آدرسِ تصادفیِ
+    // هر بار ساختنِ تونل هم بدونِ دست زدن به این فایل کار می‌کند.
+    allowedHosts: [".devtunnels.ms", ".trycloudflare.com", ".ngrok-free.app"],
     proxy: {
       '/api': 'http://localhost:8000',
       '/django-admin': 'http://localhost:8000',
