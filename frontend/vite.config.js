@@ -25,6 +25,16 @@ export default defineConfig({
     // نقطهٔ ابتدای هر ورودی یعنی «خودش و همهٔ زیردامنه‌هایش»، پس آدرسِ تصادفیِ
     // هر بار ساختنِ تونل هم بدونِ دست زدن به این فایل کار می‌کند.
     allowedHosts: [".devtunnels.ms", ".trycloudflare.com", ".ngrok-free.app"],
+    // ⚠️ **پشتِ تونل، HMR باید بداند روی کدام پورت صدا بزند.**
+    //
+    // کلاینتِ HMR آدرسِ وب‌سوکت را از `location.hostname` + پورتِ سرور می‌سازد،
+    // یعنی `wss://<آدرس-تونل>:5173` — ولی تونل روی ۴۴۳ سرو می‌کند و آن اتصال
+    // هرگز برقرار نمی‌شود. نتیجه‌اش اورلیِ «server connection lost» وسطِ صفحه
+    // است؛ برنامه کار می‌کند ولی بیننده یک خطای تمام‌صفحه می‌بیند.
+    //
+    // با متغیرِ محیطی سوییچ می‌شود تا توسعهٔ محلی دست نخورد:
+    //     VITE_TUNNEL=1 npm run dev
+    hmr: process.env.VITE_TUNNEL ? {clientPort: 443, protocol: "wss"} : true,
     proxy: {
       '/api': 'http://localhost:8000',
       '/django-admin': 'http://localhost:8000',
