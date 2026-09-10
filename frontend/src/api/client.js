@@ -4,7 +4,7 @@ export const BASE_URL = "/api";
 const SAFE_METHODS = ["GET", "HEAD", "OPTIONS"];
 
 // گرفتن مهر امنیتی
-function getCookie(name) {
+export function getCookie(name) {
     const match = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
     // match.pop() ---> آخرین عضو آرایه مچ
     return match ? decodeURIComponent(match.pop()) : null;

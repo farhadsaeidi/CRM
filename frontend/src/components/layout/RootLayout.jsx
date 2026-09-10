@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import {Outlet, ScrollRestoration, useMatches} from "react-router";
+import {useAuth} from "../../context/AuthContext.js";
 import Header from "../common/Header.jsx";
 import Footer from "../common/Footer.jsx";
 import CustomerModal from "../../pages/Customers/components/CustomerModal.jsx";
@@ -18,6 +19,7 @@ const DEFAULT_TITLE = "سامانه مدیریت مشتریان";
 
 const RootLayout = () => {
     const matches = useMatches();
+    const {user, loading} = useAuth();
     // مودالِ «ثبت مشتری جدید» اینجاست نه در صفحهٔ مشتریان: دکمه‌اش در هدر است و
     // در همهٔ صفحه‌ها دیده می‌شود، پس باید همان‌جا که کاربر هست باز شود و او را
     // به صفحهٔ دیگری پرت نکند.
@@ -54,7 +56,12 @@ const RootLayout = () => {
         };
     }, []);
 
-    if (!hasChrome) {
+    // ⚠️ **هدر و فوتر فقط برای کاربرِ واردشده، و فقط وقتی وضعیتِ ورود روشن شده.**
+    // روتِ ریشه (`AuthRedirect`) و مسیرهای حفاظت‌شده `chrome: false` ندارند، پس
+    // پیش‌تر تا جوابِ `me` برسد هدر و فوتر با یک مینِ خالی رندر می‌شدند و مهمان
+    // چند ثانیه «صفحهٔ اصلی» می‌دید و بعد به لاگین پرت می‌شد. مهمان هیچ‌وقت
+    // صفحه‌ای با این قالب نمی‌بیند — گاردها او را به لاگین می‌فرستند.
+    if (!hasChrome || loading || !user) {
         return (
             <>
                 <ScrollRestoration/>
