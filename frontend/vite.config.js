@@ -24,7 +24,8 @@ export default defineConfig({
     //
     // نقطهٔ ابتدای هر ورودی یعنی «خودش و همهٔ زیردامنه‌هایش»، پس آدرسِ تصادفیِ
     // هر بار ساختنِ تونل هم بدونِ دست زدن به این فایل کار می‌کند.
-    allowedHosts: [".devtunnels.ms", ".trycloudflare.com", ".ngrok-free.app"],
+    allowedHosts: [".devtunnels.ms", ".trycloudflare.com", ".ngrok-free.app",
+                   ".lhr.life", ".serveo.net"],
     // ⚠️ **پشتِ تونل، HMR باید بداند روی کدام پورت صدا بزند.**
     //
     // کلاینتِ HMR آدرسِ وب‌سوکت را از `location.hostname` + پورتِ سرور می‌سازد،
