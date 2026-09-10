@@ -91,8 +91,8 @@ const Chat = () => {
                     setActiveId(rows[0].id);
                 }
             })
-            .catch(() => {
-                if (!ignore) notify("دریافت گفتگوها ناموفق بود.", "error");
+            .catch((err) => {
+                if (!ignore) notify(errorMessage(err, "دریافت گفتگوها ناموفق بود."), "error");
             })
             .finally(() => {
                 if (!ignore) setLoading(false);
@@ -126,22 +126,35 @@ const Chat = () => {
             .then((res) => {
                 if (!ignore) setMessages(res.messages ?? []);
             })
-            .catch(() => {
-                if (!ignore) notify("خواندن این گفتگو ناموفق بود.", "error");
+            .catch((err) => {
+                if (!ignore) notify(errorMessage(err, "خواندن این گفتگو ناموفق بود."), "error");
             });
         return () => {
             ignore = true;
         };
     }, [activeId]);
 
+    // ⚠️ **خطاها دیگر با یک متنِ ثابت پوشانده نمی‌شوند.** نسخهٔ قبلیِ این
+    // هندلرها `catch {}` بی‌پارامتر داشت، پس ۵۰۳ِ رلهٔ تونل، ۴۰۳ِ CSRF و ۵۰۰ِ
+    // سرور هر سه همان «ناموفق بود» را نشان می‌دادند و علت نه برای کاربر
+    // پیدا بود نه برای عیب‌یابی. `errorMessage` پیامِ خودِ سرور یا وضعیتِ HTTP
+    // را برمی‌گرداند و متنِ قبلی فقط وقتی می‌آید که هیچ‌کدام نباشد.
     const createConversation = async () => {
         try {
             const fresh = await chatApi.create();
+            // وضعیتِ موفق با بدنهٔ خالی/ناقص هم ممکن است (پاسخِ نیمه‌کاره از
+            // پشتِ رله). بدونِ این بررسی `fresh.id` یک TypeError می‌داد که از
+            // خطای سرور قابلِ تشخیص نبود.
+            if (!fresh?.id) {
+                throw Object.assign(new Error("empty response"),
+                    {data: {message: "پاسخِ سرور ناقص رسید؛ دوباره تلاش کنید."}});
+            }
             setConversations((prev) => [fresh, ...prev]);
             setActiveId(fresh.id);
             setMessages([]);
-        } catch {
-            notify("ساختِ گفتگوی تازه ناموفق بود.", "error");
+        } catch (err) {
+            console.error("create conversation failed", err?.status, err?.data ?? err);
+            notify(errorMessage(err, "ساختِ گفتگوی تازه ناموفق بود."), "error");
         }
     };
 
@@ -183,18 +196,18 @@ const Chat = () => {
         setConversations((prev) => prev.map((c) => (c.id === id ? {...c, title} : c)));
         try {
             await chatApi.rename(id, title);
-        } catch {
+        } catch (err) {
             setConversations((prev) => prev.map((c) =>
                 (c.id === id ? {...c, title: previous} : c)));
-            notify("تغییر نام گفتگو ناموفق بود.", "error");
+            notify(errorMessage(err, "تغییر نام گفتگو ناموفق بود."), "error");
         }
     };
 
     const deleteConversation = async (id) => {
         try {
             await chatApi.remove(id);
-        } catch {
-            notify("حذف گفتگو ناموفق بود.", "error");
+        } catch (err) {
+            notify(errorMessage(err, "حذف گفتگو ناموفق بود."), "error");
             return;
         }
         const rest = conversations.filter((c) => c.id !== id);
