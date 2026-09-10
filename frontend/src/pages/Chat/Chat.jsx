@@ -28,6 +28,13 @@ const Chat = () => {
     const [activeId, setActiveId] = useState(null);
     // پیام‌های گفتگوی باز، جدا از فهرست — به همان دلیلِ بالا
     const [messages, setMessages] = useState([]);
+    // شناسهٔ گفتگویی که پیام‌هایش واقعاً از سرور رسیده.
+    //
+    // ⚠️ **«هنوز نرسیده» و «خالی است» دو حالتِ جدا هستند.** با عوض شدنِ گفتگو
+    // پیام‌ها خالی می‌شوند تا جوابِ سرور برسد، و `ChatPane` تا امروز فقط
+    // `messages.length` را می‌دید — پس گفتگوی پُر چند ثانیه صفحهٔ «گفتگوی تازه»
+    // را نشان می‌داد و بعد محتوایش می‌آمد. از پشتِ تونلِ کُند کاملاً به چشم می‌آمد.
+    const [loadedId, setLoadedId] = useState(null);
     const [loading, setLoading] = useState(true);
     // خطای موتور — پاسخ نیامده ولی پیامِ کاربر سرِ جایش است
     const [engineError, setEngineError] = useState(null);
@@ -124,10 +131,15 @@ const Chat = () => {
         let ignore = false;
         chatApi.detail(activeId)
             .then((res) => {
-                if (!ignore) setMessages(res.messages ?? []);
+                if (ignore) return;
+                setMessages(res.messages ?? []);
+                setLoadedId(activeId);
             })
             .catch((err) => {
-                if (!ignore) notify(errorMessage(err, "خواندن این گفتگو ناموفق بود."), "error");
+                if (ignore) return;
+                // در شکست هم علامت می‌خورد، وگرنه اسکلتِ بارگذاری تا ابد می‌ماند
+                setLoadedId(activeId);
+                notify(errorMessage(err, "خواندن این گفتگو ناموفق بود."), "error");
             });
         return () => {
             ignore = true;
@@ -152,6 +164,9 @@ const Chat = () => {
             setConversations((prev) => [fresh, ...prev]);
             setActiveId(fresh.id);
             setMessages([]);
+            // گفتگوی تازه قطعاً خالی است؛ منتظرِ سرور ماندن فقط یک اسکلتِ بی‌دلیل
+            // پیش از صفحهٔ خوش‌آمد نشان می‌داد
+            setLoadedId(fresh.id);
         } catch (err) {
             console.error("create conversation failed", err?.status, err?.data ?? err);
             notify(errorMessage(err, "ساختِ گفتگوی تازه ناموفق بود."), "error");
@@ -300,6 +315,7 @@ const Chat = () => {
                     <Breadcrumb items={[{label: "گفتگو", to: CHAT_PATH, icon: FiMessageSquare}]}/>
                 </div>
                 <ChatPane key={activeId} conversation={active} messages={messages}
+                          historyLoading={activeId !== null && loadedId !== activeId}
                           streamingText={streamingText} runningTool={runningTool}
                           engineError={engineError} onSend={sendMessage}
                           onStop={stopStreaming}

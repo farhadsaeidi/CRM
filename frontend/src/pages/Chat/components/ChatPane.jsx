@@ -81,7 +81,7 @@ const AssistantMessage = ({message, streaming = false}) => (
 const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,
                   engineError = null, onSend, onStop,
                   models = [], model = "", onModelChange,
-                  onRewind, onFork}) => {
+                  onRewind, onFork, historyLoading = false}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
@@ -171,7 +171,9 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
         .map((item) => (typeof item === "string" ? item : item?.label))
         .filter(Boolean);
 
-    const empty = messages.length === 0;
+    // صفحهٔ خوش‌آمد فقط برای گفتگویی که واقعاً خالی است، نه برای گفتگویی که
+    // پیام‌هایش هنوز در راه‌اند — دلیلِ کامل کنارِ `loadedId` در Chat.jsx
+    const empty = !historyLoading && messages.length === 0;
 
     // ریشه `flex-1` است و نه `h-full`: نوارِ مسیر هم بالای همین ستون نشسته، پس
     // ارتفاعِ ثابتِ ۱۰۰٪ به اندازهٔ آن سرریز می‌کرد
@@ -222,6 +224,19 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                 ) : (
                     // ── گفتگو: پیام کاربر حباب‌دار، پاسخ دستیار تمام‌عرض (مثل چت مدل‌های زبانی) ──
                     <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-5">
+                        {/* اسکلتِ بارگذاری در همان چیدمانِ گفتگو: حبابِ کاربر سمتِ چپ
+                            و خطوطِ پاسخ سمتِ راست، تا با رسیدنِ پیام‌ها صفحه نپرد */}
+                        {historyLoading && messages.length === 0 && (
+                            <div aria-label="در حال بارگذاری گفتگو" className="flex flex-col gap-5 animate-pulse">
+                                {[0, 1].map((i) => (
+                                    <div key={i} className="flex flex-col gap-3">
+                                        <div className="self-end h-10 w-2/5 rounded-2xl bg-var-color-01 dark:bg-var-color-40"/>
+                                        <div className="h-3.5 w-11/12 rounded-full bg-var-color-01 dark:bg-var-color-40"/>
+                                        <div className="h-3.5 w-3/4 rounded-full bg-var-color-01 dark:bg-var-color-40"/>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         {messages.map((m) => m.role === "user" ? (
                             // ⚠️ در RTL «انتهای خط» چپ است، پس `items-end` حبابِ
                             // کاربر را سمتِ چپ می‌برد و پاسخِ دستیار سمتِ راست
