@@ -6,7 +6,7 @@
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.conf import settings
-from django.test import override_settings
+from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
@@ -376,3 +376,23 @@ class SmsDeliveryTargetTests(APITestCase):
                                     {"otpPhone": "09129999999"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertFalse(SMSLog.objects.exists())
+
+
+class DevTrustedOriginsTests(SimpleTestCase):
+    """قرارداد: هر جا مبدأهای توسعه ساخته می‌شوند، پورتِ `vite preview` هم در آن‌هاست.
+
+    ⚠️ پراکسیِ رشته‌ایِ Vite `changeOrigin: true` دارد و `Host` را به
+    `localhost:8000` بازنویسی می‌کند، پس جنگو `Origin`ِ مرورگر را فقط از روی
+    `CSRF_TRUSTED_ORIGINS` می‌پذیرد. وقتی برنامه برای اشتراک از بیلدِ preview روی
+    ۴۱۷۳ سرو شد، «گفتگوی جدید» و هر POSTِ دیگری با «Origin checking failed» رد
+    می‌شد چون فهرست فقط پورت‌های `npm run dev` را داشت.
+    """
+
+    def test_preview_ports_are_trusted_wherever_dev_ports_are(self):
+        origins = set(settings.CSRF_TRUSTED_ORIGINS)
+        if "http://localhost:5173" not in origins:
+            # تنظیماتِ production؛ آنجا مبدأها صریح از `.env` می‌آیند
+            self.skipTest("dev origins are not generated in this configuration")
+        for port in (4173, 4183):
+            self.assertIn(f"http://localhost:{port}", origins)
+            self.assertIn(f"http://127.0.0.1:{port}", origins)
