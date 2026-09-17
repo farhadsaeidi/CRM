@@ -943,9 +943,13 @@ html[data-accent="orange"] {
 
     --chart-cursor: rgba(249, 115, 22, 0.07);
 
-    --accent-logo-from: #FFB066;
-    --accent-logo-to: #D66A19;
-    --accent-logo-ink: #D6761F;
+    /* ⚠️ نارنجی در روشناییِ برابر، از آبی و صورتی پریده‌تر دیده می‌شود، پس
+       توقف‌های گرادیان کمی تیره‌تر از مشتقِ مستقیمِ اکسنت‌اند. روشناییِ نسبی‌شان
+       (۰٫۴۲ و ۰٫۲۱ و ۰٫۲۲) بینِ نسخهٔ صورتی و آبی می‌نشیند؛ نسخهٔ اول هر سه
+       را روشن‌تر از هر دو پالتِ دیگر گذاشته بود و لوگو کم‌جان دیده می‌شد. */
+    --accent-logo-from: #FC9538;
+    --accent-logo-to: #C46312;
+    --accent-logo-ink: #C56A1B;
     --accent-logo-coin: #FFF4E8;
     --accent-tile-1a: #FBD0A3;
     --accent-tile-1b: #f97316;
