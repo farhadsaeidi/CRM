@@ -27,9 +27,23 @@ export const MENU_ROW_ACTIVE =
     "bg-var-color-12 text-var-color-19 dark:text-var-color-15 " +
     "border-var-color-13 dark:border-var-color-16";
 
-export const MENU_ROW_HOVER =
-    "hover:bg-var-color-12 hover:text-var-color-19 dark:hover:text-var-color-15 " +
-    "hover:border-var-color-13 dark:hover:border-var-color-16";
+// «سطح» (زمینه و بوردر) از «متن» جدا نگه داشته شده چون کشوی انتخاب رنگ فقط
+// اولی را می‌خواهد
+const ROW_SURFACE_HOVER =
+    "hover:bg-var-color-12 hover:border-var-color-13 dark:hover:border-var-color-16";
+
+const ROW_TEXT_HOVER = "hover:text-var-color-19 dark:hover:text-var-color-15";
+
+export const MENU_ROW_HOVER = `${ROW_SURFACE_HOVER} ${ROW_TEXT_HOVER}`;
+
+/**
+ * همان هاور، ولی بدونِ عوض کردنِ رنگِ متن — مخصوصِ ردیف‌های کشوی انتخاب رنگ.
+ *
+ * ⚠️ آنجا هر ردیف **خودش** یک نمونه‌رنگ نشان می‌دهد و تیک، نشانهٔ رنگِ فعلیِ
+ * برنامه است. اگر متن و تیک هم با هاور اکسنت می‌شدند، ردیفِ زیرِ موس شبیهِ
+ * ردیفِ انتخاب‌شده می‌شد و دو نشانهٔ متفاوت با هم قاطی می‌شدند.
+ */
+export const MENU_ROW_HOVER_QUIET = ROW_SURFACE_HOVER;
 
 /**
  * ردیفِ ویرانگر (حذف) از **رنگِ** این قاعده بیرون است و قرمز می‌ماند — مثل رنگِ

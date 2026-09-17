@@ -1,4 +1,4 @@
-import {MENU_ROW_ACTIVE, MENU_ROW_HOVER} from "../../lib/menuPalette.js";
+import {MENU_ROW_ACTIVE, MENU_ROW_HOVER, MENU_ROW_HOVER_QUIET} from "../../lib/menuPalette.js";
 
 // آیتمِ منو — همان الگوی پروژهٔ CustomerManagement. رنگ‌بندی‌اش دیگر به `toggle`
 // بستگی ندارد و از `lib/menuPalette.js` می‌آید تا همهٔ منوها یک‌شکل باشند؛
@@ -10,10 +10,12 @@ import {MENU_ROW_ACTIVE, MENU_ROW_HOVER} from "../../lib/menuPalette.js";
 // نمی‌شود.
 export default function MenuItem({
     id, icon: Icon, text, active, toggle, onClick, leading, trailing, expanded, selected,
+    quietHover = false,
 }) {
     const palette = active
         ? MENU_ROW_ACTIVE
-        : `text-var-color-08 dark:text-var-color-46 ${MENU_ROW_HOVER}`;
+        : `text-var-color-08 dark:text-var-color-46 ${
+            quietHover ? MENU_ROW_HOVER_QUIET : MENU_ROW_HOVER}`;
 
     // «فعال» معمولاً یعنی کلیکِ بی‌اثر، ولی ردیفی که کشو باز و بسته می‌کند همیشه
     // کلیک‌پذیر است — آنجا فعال یعنی «باز»
