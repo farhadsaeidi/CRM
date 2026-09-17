@@ -7,6 +7,7 @@ import {FiChevronUp, FiFileText, FiHelpCircle, FiLock, FiMessageSquare} from "re
 import {TbFileSpreadsheet} from "react-icons/tb";
 import WindowsIcon from "./WindowsIcon.jsx";
 import MenuItem from "./MenuItem.jsx";
+import AccentPicker from "./AccentPicker.jsx";
 import ChangePasswordModal from "./ChangePasswordModal.jsx";
 import TransactionSearchPanel from "../../pages/Customers/components/TransactionSearchPanel.jsx";
 import personImage from "/images/person2.png";
@@ -421,6 +422,9 @@ const Footer = () => {
                         <MenuItem key={item.id} id={item.id} icon={item.icon} text={item.text}
                                   toggle={item.toggle} onClick={item.onClick}/>
                     ))}
+                    {/* کشوی رنگ زیرِ همین آیتم باز می‌شود و پنل به‌سمتِ بالا رشد
+                        می‌کند، چون به کفِ فوتر لنگر انداخته است */}
+                    <AccentPicker menuOpen={isStartMenuOpen}/>
                 </div>
                 <footer className="w-full flex flex-row justify-between items-center p-2 rounded-b-[10px] bg-var-color-01 dark:bg-var-color-36 border-t border-t-var-color-02 dark:border-t-transparent mt-6 gap-8">
                     <div className="flex flex-row justify-start items-center gap-2 min-w-0">

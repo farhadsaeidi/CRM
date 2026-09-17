@@ -12,6 +12,9 @@
         var dark = localStorage.theme === "dark" ||
           (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
         document.documentElement.classList.toggle("dark", dark);
+        // رنگِ اصلی هم همین‌جا و نه در ری‌اکت: وگرنه صفحه یک لحظه با آبیِ
+        // پیش‌فرض رنگ می‌شود و بعد به رنگِ ذخیره‌شده می‌پرد
+        document.documentElement.dataset.accent = localStorage.accent || "blue";
       })();
     </script>
     <script>

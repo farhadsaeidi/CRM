@@ -28,3 +28,8 @@ export const OPEN_BUSINESS_NAME_EVENT = "crm:open-business-name";
 // مودالِ انتخابِ بدهکاران هم از منوی فوتر باز می‌شود و هم بلافاصله بعد از ذخیرهٔ
 // نامِ کسب‌وکار — کاربری که برای ارسالِ پیامک آمده بود نباید دوباره از منو شروع کند.
 export const OPEN_DEBT_REMINDER_EVENT = "crm:open-debt-reminder";
+
+// رنگِ اصلیِ برنامه از منوی حساب عوض می‌شود. خودِ اعمالِ رنگ با صفتِ `data-accent`
+// روی <html> انجام می‌شود و به رویداد نیازی ندارد؛ این برای همگام ماندنِ هر
+// کامپوننتی است که رنگِ فعلی را **نشان** می‌دهد و ممکن است جای دیگری نشسته باشد.
+export const ACCENT_CHANGED_EVENT = "crm:accent-changed";
