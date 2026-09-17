@@ -13,7 +13,9 @@ import {faNumber, toFaDigits} from "../../../lib/chart.js";
 const SLICES = [
     {key: "debt", label: "بدهکار", color: "var(--color-var-color-55)"},
     {key: "credit", label: "بستانکار", color: "var(--color-var-color-31)"},
-    {key: "settled", label: "تسویه‌شده", color: "var(--color-var-color-15)"},
+    // ⚠️ همان قاعدهٔ کاشی‌های KPI: رنگِ دسته‌ای از اکسنت نمی‌آید. با پالتِ
+    // صورتی این قاچ دقیقاً کنارِ قاچِ «بدهکار» هم‌رنگ می‌شد (۱۹ درجه فاصله).
+    {key: "settled", label: "تسویه‌شده", color: "var(--color-var-color-50)"},
     {key: "untouched", label: "بدون تراکنش", color: "var(--chart-muted)"},
 ];
 

@@ -124,13 +124,21 @@ const Tiles = ({data}) => {
                     که صریح‌تر هم هست — و پسوند رنگش را از خودِ کارت می‌گیرد.
 
                     چهار کاشی روی چرخِ رنگ پخش‌اند تا دوتاشان یک خانواده دیده
-                    نشوند: فیروزه‌ای ۱۹۳° / نارنجی ۲۵° / صورتی ۳۱۳° / سبز ۹۵°. */}
+                    نشوند: نارنجی ۲۵° / فیروزه‌ای ۱۸۷° / صورتی ۳۱۳° / سبز ۹۷°.
+
+                    ⚠️ **هیچ‌کدام از این چهارتا نباید از اکسنت (`var-color-15`) رنگ
+                    بگیرد.** این‌ها رنگِ **دسته‌ای**‌اند نه رنگِ برند: معنایشان «این
+                    کاشی با آن یکی فرق دارد» است، پس باید ثابت بمانند. کارتِ مانده
+                    تا امروز اکسنت می‌گرفت و در پالتِ آبی فیروزه‌ای می‌شد و درست به
+                    نظر می‌رسید — ولی با انتخابِ نارنجی دقیقاً همان `#f97316`ِ کارتِ
+                    بغلی می‌شد و دو کاشیِ کنارِ هم یک رنگ می‌گرفتند. حالا هر دو از
+                    توکنِ ثابت می‌خوانند و هیچ پالتی نمی‌تواند تصادم بسازد. */}
                 <KpiCard
                     title="ماندهٔ کل دفتر" delay={at(1)}
                     value={Math.abs(kpi.balance.value)}
                     suffix={owed ? "تومان طلبکار" : "تومان بدهکار"}
                     suffixAccent
-                    icon={HiOutlineBanknotes} accent="var(--color-var-color-15)"
+                    icon={HiOutlineBanknotes} accent="var(--color-var-color-32)"
                     hint={`${toFaDigits(kpi.balance.transactions)} تراکنش در کلِ دفتر`}
                 />
                 {/* شمارشِ تراکنش‌های دوره — `kpi.count` از قبل در پاسخِ سرور بود
@@ -138,7 +146,7 @@ const Tiles = ({data}) => {
                 <KpiCard
                     title={`تعداد تراکنش های ${data.period_label}`} delay={at(2)}
                     value={kpi.count.value} suffix="تراکنش" icon={HiOutlineArrowsRightLeft}
-                    accent="var(--color-var-color-32)" tone="good"
+                    accent="var(--color-var-color-50)" tone="good"
                     delta={kpi.count.delta} previousLabel={previous}
                 />
                 <KpiCard
