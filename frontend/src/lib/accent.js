@@ -17,6 +17,7 @@ export const ACCENTS = [
     {id: "orange", label: "نارنجی"},
     {id: "green", label: "سبز"},
     {id: "purple", label: "بنفش"},
+    {id: "indigo", label: "نیلی"},
 ];
 
 export const DEFAULT_ACCENT = "blue";
