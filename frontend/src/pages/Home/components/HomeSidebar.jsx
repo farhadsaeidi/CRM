@@ -13,11 +13,19 @@ const ITEMS = [
     {to: "/chat", icon: FiMessageSquare, label: "گفتگو"},
 ];
 
+// ⚠️ **هر دو حالت تهرنگِ آلفادارند، نه رنگِ تو‌پُر.** پیش‌تر فعال `۴۴` بود و هاور
+// `۴۰` — دو رنگِ تو‌پُر که با تیره و خنثی شدنِ کروم، مثلِ وصله روی سایدبار
+// می‌نشستند. تهرنگ با هر زمینه‌ای می‌آمیزد، پس هم ملایم‌تر است هم در تمِ روشن و
+// تیره یک نسخه بیشتر نمی‌خواهد. ۸٪ برای فعال و ۵٪ برای هاور، از یک خانواده، پس
+// هاور نسخهٔ ضعیف‌ترِ همان حالتِ فعال دیده می‌شود.
+//
+// ⚠️ تهرنگِ ۲۰٪ (`۱۳`) امتحان شد و برعکس بود: از رنگِ تو‌پُرِ قبلی **روشن‌تر**
+// درمی‌آمد و بلندتر به نظر می‌رسید، نه ملایم‌تر.
 const itemCls = ({isActive}) =>
     `w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] cursor-pointer text-right no-underline
      transition-colors duration-200 ${isActive
-        ? "bg-var-color-12 dark:bg-var-color-44 text-var-color-19 dark:text-var-color-15 font-IRANSansXFaNumMedium"
-        : "text-var-color-06 dark:text-var-color-01 hover:bg-var-color-01 dark:hover:bg-var-color-40"}`;
+        ? "bg-var-color-17 text-var-color-19 dark:text-var-color-15 font-IRANSansXFaNumMedium"
+        : "text-var-color-06 dark:text-var-color-01 hover:bg-var-color-12"}`;
 
 // کلاس‌های چیدمان روی div داخلی‌اند نه روی ScrollContainer: کتابخانه بین آن و
 // فرزندانش عنصرِ viewport می‌گذارد، پس flex/gap/padding روی میزبان به فرزندان نمی‌رسد.
