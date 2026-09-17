@@ -35,7 +35,11 @@ export const TRANSACTION_SEARCH_EVENT = "crm:transaction-search";
 const SEARCH_BOX_CLASS =
     "relative w-52 xs:w-67 h-8.5 rounded-full transition-all duration-200 ease-in-out " +
     "bg-var-color-00 dark:bg-var-color-37 border border-var-color-48 dark:border-var-color-38 " +
-    "hover:bg-transparent dark:hover:bg-var-color-40 hover:border-var-color-03 dark:hover:border-transparent " +
+    // تمِ تیره در هاور یک سطحِ تهرنگِ اکسنت می‌گیرد (۴۰)؛ تمِ روشن هم همان
+    // زبان را دارد با ۱۲ — همان تهرنگِ ۵٪ی که دکمه‌ها و هاورِ منوها دارند.
+    // پیش‌تر اینجا `bg-transparent` بود و هاور در تمِ روشن فقط بوردر را
+    // پررنگ می‌کرد.
+    "hover:bg-var-color-12 dark:hover:bg-var-color-40 hover:border-var-color-03 dark:hover:border-transparent " +
     "has-[:focus]:bg-var-color-00! dark:has-[:focus]:bg-var-color-37! " +
     "has-[:focus]:border-var-color-48! dark:has-[:focus]:border-var-color-38!";
 
