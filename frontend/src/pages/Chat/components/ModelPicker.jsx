@@ -12,9 +12,11 @@ import {useDismiss} from "../../../lib/useDismiss.js";
  * فکر می‌کرد انتخابش اثر کرده.
  *
  * ⚠️ `<select>` بومی به کار نرفت: در RTL فلشش سمتِ اشتباه می‌افتد، ارتفاعش با
- * دکمه‌های گردِ همین نوار جور نمی‌شود، و برچسبِ «استدلالی» را نمی‌شود داخلش
- * نشاند. این کشو همان الگوی مودال‌های پروژه را دارد — Esc می‌بندد و کلیکِ بیرون
- * هم.
+ * دکمه‌های گردِ همین نوار جور نمی‌شود، و شناسهٔ مدل را نمی‌شود زیرِ نامش نشاند.
+ * این کشو همان الگوی مودال‌های پروژه را دارد — Esc می‌بندد و کلیکِ بیرون هم.
+ *
+ * 📌 برچسب‌های «رایگان» و «استدلالی» عمداً برداشته شده‌اند؛ هر ردیف فقط نام و
+ * شناسهٔ مدل را نشان می‌دهد. `free` و `reasoning` هنوز در پاسخِ سرور هستند.
  */
 const ModelPicker = ({models, value, onChange, disabled = false}) => {
     const [open, setOpen] = useState(false);
@@ -91,23 +93,6 @@ const ModelPicker = ({models, value, onChange, disabled = false}) => {
                                                     {model.id}
                                                 </span>
                                             </span>
-                                            {/* «رایگان» و «استدلالی» هر دو روی تصمیمِ کاربر اثر
-                                                دارند: اولی روی هزینه، دومی روی اینکه صفحه چند
-                                                ثانیه ساکت می‌ماند (پارسر فقط content را می‌خواند). */}
-                                            {model.free && (
-                                                <span className="shrink-0 px-1.5 py-0.5 rounded-md text-[9.5px]
-                                                                 font-IRANSansXFaNumMedium
-                                                                 text-var-color-31 bg-var-color-47">
-                                                    رایگان
-                                                </span>
-                                            )}
-                                            {model.reasoning && (
-                                                <span className="shrink-0 px-1.5 py-0.5 rounded-md text-[9.5px]
-                                                                 font-IRANSansXFaNumMedium
-                                                                 text-var-color-53 bg-var-color-54">
-                                                    استدلالی
-                                                </span>
-                                            )}
                                         </button>
                                     </li>
                                 );

@@ -42,7 +42,9 @@ const SEARCH_BOX_CLASS =
 // ورودیِ داخلِ کادر — هالهٔ آبی روی فوکوس، برای هر دو کادر یکی
 const SEARCH_INPUT_CLASS =
     "w-full h-full text-sm rounded-full bg-transparent text-var-color-06 dark:text-var-color-01 " +
-    "pr-8.25 focus:outline-none focus:ring-0 focus:border-var-color-15 focus:shadow-var-shadow-00 " +
+    // `focus-glow` به‌جای کلاسِ `focus:shadow-var-shadow-00` است تا هاله با
+    // رنگِ اصلیِ برنامه عوض شود؛ توضیحش در `index.css` کنارِ همان کلاس است
+    "pr-8.25 focus:outline-none focus:ring-0 focus:border-var-color-15 focus-glow " +
     "transition-all duration-200 ease-in-out input-placeholder";
 
 const Footer = () => {
@@ -309,10 +311,10 @@ const Footer = () => {
                 <section className="flex justify-start items-center gap-1.75 mr-3">
                     <button
                         type="button"
-                        aria-label="حساب کاربری"
+                        aria-label="تنظیمات کاربری"
                         aria-expanded={isStartMenuOpen}
                         ref={startBtnRef}
-                        data-tooltip={showCustomTooltip ? "حساب کاربری" : undefined}
+                        data-tooltip={showCustomTooltip ? "تنظیمات کاربری" : undefined}
                         onClick={() => {
                             setIsStartMenuOpen((v) => !v);
                             setShowCustomTooltip(false);

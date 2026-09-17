@@ -422,6 +422,14 @@
         box-shadow: var(--shadow-var-shadow-00);
     }
 
+    /* همان هاله، برای ورودی‌هایی که رنگ‌بندیِ کاملِ `input-bluish` را نمی‌خواهند
+       (نوارِ جستجوی فوتر). ⚠️ کلاسِ `focus:shadow-var-shadow-00` اینجا هم جواب
+       نمی‌دهد و دلیلش دقیقاً همان تلهٔ بالاست: رنگِ هاله در زمانِ بیلد ثابت
+       می‌شود و جستجو روی پالتِ صورتی هالهٔ آبی می‌گرفت. */
+    .focus-glow:focus {
+        box-shadow: var(--shadow-var-shadow-00);
+    }
+
     /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
     .input-bluish:-webkit-autofill:focus {
         -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-00) !important;
