@@ -25,7 +25,7 @@ const itemCls = ({isActive}) =>
     `w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] cursor-pointer text-right no-underline
      transition-colors duration-200 ${isActive
         ? "bg-var-color-17 text-var-color-19 dark:text-var-color-15 font-IRANSansXFaNumMedium"
-        : "text-var-color-06 dark:text-var-color-01 hover:bg-var-color-12"}`;
+        : "text-var-color-06 dark:text-var-color-01 hover:bg-var-color-66"}`;
 
 // کلاس‌های چیدمان روی div داخلی‌اند نه روی ScrollContainer: کتابخانه بین آن و
 // فرزندانش عنصرِ viewport می‌گذارد، پس flex/gap/padding روی میزبان به فرزندان نمی‌رسد.
