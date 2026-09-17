@@ -1,9 +1,14 @@
 import {useCallback, useRef} from "react";
 import {useDismiss} from "../../../lib/useDismiss.js";
+import {MENU_ROW_DANGER, MENU_ROW_HOVER} from "../../../lib/menuPalette.js";
 
 // ارتفاعِ تقریبیِ هر ردیف + پدینگِ پنل. فقط برای تصمیمِ «بالا یا پایین باز شود»
 // به کار می‌رود، پس تقریب کافی است — ولی اگر ردیف‌ها بلندتر شدند اینجا هم
 // به‌روز شود، وگرنه منوی نزدیکِ کفِ صفحه بیرون می‌زند.
+// رنگِ عادیِ ردیف مالِ خودِ این منوست (متنش پررنگ‌تر از منوهای فوتر است)؛
+// فقط هاور از پالتِ مشترک می‌آید
+const ROW_IDLE = `text-var-color-06 dark:text-var-color-01 ${MENU_ROW_HOVER}`;
+
 const ROW_HEIGHT = 38;
 const PANEL_PADDING = 10;
 const GAP = 6;
@@ -52,10 +57,8 @@ const ConversationMenu = ({items, rect, onClose}) => {
                         }}
                         className={`w-full px-2.5 py-2 rounded-lg flex items-center gap-2
                                     text-[12.5px] cursor-pointer transition-colors
-                                    hover:bg-var-color-01 dark:hover:bg-var-color-40 ${
-                            danger
-                                ? "text-var-color-28"
-                                : "text-var-color-06 dark:text-var-color-01"}`}>
+                                    bg-transparent border border-transparent ${
+                            danger ? MENU_ROW_DANGER : ROW_IDLE}`}>
                     {/* آیکون **اول** در DOM یعنی راست‌ترین در RTL — همان چیدمانی
                         که منوهای مرجع دارند: اول نشانه، بعد عنوان. */}
                     <Icon className="shrink-0 w-4 h-4"/>

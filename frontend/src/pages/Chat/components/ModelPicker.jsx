@@ -1,6 +1,7 @@
 import {useCallback, useRef, useState} from "react";
 import {FiChevronDown, FiCheck} from "react-icons/fi";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
+import {MENU_ROW_HOVER} from "../../../lib/menuPalette.js";
 import {useDismiss} from "../../../lib/useDismiss.js";
 
 /**
@@ -77,15 +78,18 @@ const ModelPicker = ({models, value, onChange, disabled = false}) => {
                                                     onChange(model.id);
                                                     setOpen(false);
                                                 }}
-                                                className="w-full px-2.5 py-2 rounded-lg flex items-center gap-2
-                                                           text-right cursor-pointer transition-colors
-                                                           hover:bg-var-color-01 dark:hover:bg-var-color-40">
+                                                className={`group w-full px-2.5 py-2 rounded-lg flex items-center
+                                                            gap-2 text-right cursor-pointer transition-colors
+                                                            bg-transparent border border-transparent
+                                                            ${MENU_ROW_HOVER}`}>
                                             <FiCheck className={`shrink-0 w-3.5 h-3.5 text-var-color-15
                                                                  ${active ? "" : "invisible"}`}/>
                                             <span className="min-w-0 flex-1">
                                                 <span className="block truncate text-[12.5px]
-                                                                 font-IRANSansXFaNumMedium
-                                                                 text-var-color-06 dark:text-var-color-01">
+                                                                 font-IRANSansXFaNumMedium transition-colors
+                                                                 text-var-color-06 dark:text-var-color-01
+                                                                 group-hover:text-var-color-19
+                                                                 dark:group-hover:text-var-color-15">
                                                     {model.label}
                                                 </span>
                                                 <span className="block truncate text-[10.5px] mt-0.5

@@ -19,8 +19,11 @@ const DashboardToolbar = ({period, onPeriod, onRefresh, loading, todayLabel}) =>
         </div>
 
         <div className="flex flex-row items-center gap-2">
+            {/* ⚠️ در تمِ تیره زمینه‌ای ندارد: کادرِ سرمه‌ای روی پس‌زمینهٔ تیره یک
+                بلوکِ کدر می‌ساخت و با عوض شدنِ رنگِ برنامه هم‌رنگش نمی‌ماند. شکلِ
+                گروه را همان بوردر نگه می‌دارد. */}
             <div className="flex flex-row items-center gap-0.5 p-1 rounded-full
-                            bg-var-color-01 dark:bg-var-color-40
+                            bg-var-color-01 dark:bg-transparent
                             border border-var-color-02 dark:border-var-color-38">
                 {DASHBOARD_PERIODS.map((item) => (
                     <button

@@ -311,10 +311,10 @@ const Footer = () => {
                 <section className="flex justify-start items-center gap-1.75 mr-3">
                     <button
                         type="button"
-                        aria-label="تنظیمات کاربری"
+                        aria-label="تنظیمات"
                         aria-expanded={isStartMenuOpen}
                         ref={startBtnRef}
-                        data-tooltip={showCustomTooltip ? "تنظیمات کاربری" : undefined}
+                        data-tooltip={showCustomTooltip ? "تنظیمات" : undefined}
                         onClick={() => {
                             setIsStartMenuOpen((v) => !v);
                             setShowCustomTooltip(false);
