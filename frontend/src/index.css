@@ -449,7 +449,15 @@
     }
 
     .input-purplish {
-        @apply hover:border-var-color-23 dark:hover:border-var-color-23 focus:shadow-var-shadow-01 focus:border-var-color-23 dark:focus:border-var-color-23;
+        @apply hover:border-var-color-23 dark:hover:border-var-color-23 focus:border-var-color-23 dark:focus:border-var-color-23;
+    }
+
+    /* هالهٔ فوکوس جدا نوشته می‌شود، دقیقاً به همان دلیلِ `input-bluish`: تیلویند
+       مقدارِ توکنِ سایه را در بیلد درجا می‌نشاند و بازنویسیِ متغیر در زمانِ اجرا
+       بی‌اثر می‌شود. بدونِ این، فرمِ ثبت‌نام در پالتِ بنفش هالهٔ بنفش نگه می‌داشت
+       در حالی که بقیهٔ فرم آبی شده بود. */
+    .input-purplish:focus {
+        box-shadow: var(--shadow-var-shadow-01);
     }
 
     /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
@@ -1044,9 +1052,13 @@ html[data-accent="green"].dark {
 /* بنفش — پایه #c084fc.
 
    📌 **این رنگ از قبل در پروژه بود**، منتها فقط برای صفحهٔ ثبت‌نام
-   (`btn-purplish` و `input-purplish` و توکن‌های ۲۱ تا ۲۵). آن توکن‌ها دستِ اکسنت
-   نیستند و عوض نمی‌شوند، پس با انتخابِ این پالت صفحهٔ ثبت‌نام و بقیهٔ برنامه
-   هم‌رنگ می‌شوند — که اینجا اتفاقِ خوبی است، نه تداخل. */
+   (`btn-purplish` و `input-purplish` و توکن‌های ۲۱ تا ۲۵).
+
+   ⚠️ **و به همین دلیل، در این پالت صفحهٔ ثبت‌نام آبی می‌شود.** قرارِ این دو صفحه
+   این است که از هم تفکیک شوند: ورود رنگِ برنامه را می‌گیرد و ثبت‌نام رنگِ دوم را.
+   با اکسنتِ بنفش هر دو بنفش می‌شدند و آن تفکیک از بین می‌رفت، پس پایین‌تر
+   توکن‌های ۲۱ تا ۲۵ و هالهٔ `shadow-01` به آبیِ پروژه بازنویسی شده‌اند — یعنی
+   جای این دو صفحه با هم عوض می‌شود، نه اینکه یکی‌شان بی‌رنگ بماند. */
 html[data-accent="purple"] {
     --color-var-color-12: rgba(192, 132, 252, 0.05);  /* تهرنگِ خیلی کم — ردیفِ فعال و پرِ دکمه */
     --color-var-color-13: rgba(192, 132, 252, 0.20);  /* تهرنگ — بوردرِ دکمه و هاله */
@@ -1086,6 +1098,14 @@ html[data-accent="purple"] {
     --accent-tile-2b: #a370d6;
     --accent-tile-3a: #C892FC;
     --accent-tile-3b: #7d56a4;
+
+    /* فرمِ ثبت‌نام → آبیِ پروژه. دلیلش بالای همین بلاک نوشته شده. */
+    --color-var-color-21: rgba(0, 188, 255, 0.08);
+    --color-var-color-22: rgba(0, 188, 255, 0.25);
+    --color-var-color-23: rgba(0, 188, 255, 0.40);
+    --color-var-color-24: rgba(0, 188, 255, 0.60);
+    --color-var-color-25: rgba(0, 188, 255, 1);
+    --shadow-var-shadow-01: 0 0 1px #00bcff, 0 0 2px #00bcff, 0 0 5px #00bcff, 0 0 5px #00bcff;
 }
 
 html[data-accent="purple"].dark {
