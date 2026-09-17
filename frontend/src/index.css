@@ -1084,7 +1084,7 @@ html[data-accent="purple"].dark {
 html[data-accent="orange"],
 html[data-accent="pink"] {
     --color-var-color-35: #0a0a0a;   /* مین */
-    --color-var-color-36: #151515;   /* هدر و فوتر و سایدبار — و کارت‌های داشبورد */
+    --color-var-color-36: #121212;   /* هدر و فوتر و سایدبار — و کارت‌های داشبورد */
     --color-var-color-43: #161616;   /* پنلِ منوها */
     --color-var-color-10: #181818;   /* پس‌زمینهٔ ورودی و اتوفیل */
     --color-var-color-37: #1a1a1a;   /* سطحِ کارت‌ها و منوها */
