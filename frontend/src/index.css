@@ -855,6 +855,7 @@
     --accent-preview-pink: #ec4899;
     --accent-preview-orange: #f97316;
     --accent-preview-green: #10b981;
+    --accent-preview-purple: #c084fc;
 
     /* لوگو و آیکونِ دکمهٔ حساب کاربری SVGاند و رنگشان تا امروز داخلِ خودِ فایل
        ثابت بود، پس با عوض شدنِ پالت آبی می‌ماندند. حالا از اینجا می‌آید و مثل
@@ -1011,4 +1012,50 @@ html[data-accent="green"] {
 
 html[data-accent="green"].dark {
     --chart-cursor: rgba(16, 185, 129, 0.10);
+}
+
+/* بنفش — پایه #c084fc.
+
+   📌 **این رنگ از قبل در پروژه بود**، منتها فقط برای صفحهٔ ثبت‌نام
+   (`btn-purplish` و `input-purplish` و توکن‌های ۲۱ تا ۲۵). آن توکن‌ها دستِ اکسنت
+   نیستند و عوض نمی‌شوند، پس با انتخابِ این پالت صفحهٔ ثبت‌نام و بقیهٔ برنامه
+   هم‌رنگ می‌شوند — که اینجا اتفاقِ خوبی است، نه تداخل. */
+html[data-accent="purple"] {
+    --color-var-color-12: rgba(192, 132, 252, 0.05);  /* تهرنگِ خیلی کم — ردیفِ فعال و پرِ دکمه */
+    --color-var-color-13: rgba(192, 132, 252, 0.20);  /* تهرنگ — بوردرِ دکمه و هاله */
+    --color-var-color-14: #e9d4fe;                    /* روشن — بوردرِ ورودی در تم لایت */
+    --color-var-color-15: #c084fc;                    /* خودِ اکسنت */
+    --color-var-color-16: #543a6e;                    /* تیرهٔ مات — بوردرِ ورودی در تم دارک */
+    --color-var-color-17: rgba(192, 132, 252, 0.08);  /* پس‌زمینهٔ آیتمِ منو */
+    --color-var-color-18: rgba(192, 132, 252, 0.60);
+    /* سایهٔ تیره‌ترِ خودِ اکسنت با همان فام و اشباع، تا کنتراستش روی سفید ۴٫۶ شود */
+    --color-var-color-19: rgb(142, 97, 186);          /* تیره‌تر — متن روی تهرنگ در تم لایت */
+    --color-var-color-20: rgb(205, 155, 255);
+    --color-var-color-63: rgba(192, 132, 252, 0.30);  /* پرِ دکمه‌های گرد در هاور */
+    --color-var-color-64: rgba(192, 132, 252, 0.36);  /* بوردرشان و کادرِ چت در فوکوس */
+    --shadow-var-shadow-00: 0 0 1px #c084fc, 0 0 2px #c084fc, 0 0 5px #c084fc, 0 0 5px #c084fc;
+
+    /* سطح‌های تعاملیِ تمِ تیره — هم‌روشناییِ بقیهٔ پالت‌ها، فقط فامشان بنفش */
+    --color-var-color-40: #23182e;
+    --color-var-color-41: #2d1f3b;
+    --color-var-color-42: #6d4b8f;
+    --color-var-color-44: #20162a;
+
+    --chart-cursor: rgba(192, 132, 252, 0.07);
+
+    /* روشناییِ نسبی ۰٫۴۲ و ۰٫۲۱ و ۰٫۲۲ — همان بازهٔ بقیهٔ پالت‌ها */
+    --accent-logo-from: #D693FF;
+    --accent-logo-to: #9868C7;
+    --accent-logo-ink: #9C6CCD;
+    --accent-logo-coin: #F7EDFF;
+    --accent-tile-1a: #DEBAFE;
+    --accent-tile-1b: #c084fc;
+    --accent-tile-2a: #D3A6FD;
+    --accent-tile-2b: #a370d6;
+    --accent-tile-3a: #C892FC;
+    --accent-tile-3b: #7d56a4;
+}
+
+html[data-accent="purple"].dark {
+    --chart-cursor: rgba(192, 132, 252, 0.10);
 }
