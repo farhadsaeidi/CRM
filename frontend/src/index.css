@@ -408,7 +408,18 @@
     }
 
     .input-bluish {
-        @apply hover:border-var-color-14 dark:hover:border-var-color-16 focus:shadow-var-shadow-00 focus:border-var-color-14 dark:focus:border-var-color-16;
+        @apply hover:border-var-color-14 dark:hover:border-var-color-16 focus:border-var-color-14 dark:focus:border-var-color-16;
+    }
+
+    /* ⚠️ **هالهٔ فوکوس عمداً با @apply نوشته نمی‌شود.**
+       تیلویند مقدارِ توکنِ سایه را در زمانِ بیلد **درجا** می‌نشاند:
+           --tw-shadow: 0 0 1px var(--tw-shadow-color, #00bcff), …
+       یعنی رنگ داخلِ خروجی ثابت می‌شود و بازنویسیِ متغیر در زمانِ اجرا هیچ اثری
+       ندارد — حلقهٔ آبی روی فرمِ صورتی باقی می‌ماند. نوشتنِ مستقیمِ box-shadow
+       متغیر را هر بار از نو می‌خواند. این تله مخصوصِ توکن‌های **سایه** است؛
+       برای رنگ‌ها تیلویند خودش var() تولید می‌کند و مشکلی نیست. */
+    .input-bluish:focus {
+        box-shadow: var(--shadow-var-shadow-00);
     }
 
     /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
@@ -834,6 +845,20 @@
        تکرار نشود؛ `AccentPicker` با `var(--accent-preview-<id>)` می‌خواندشان. */
     --accent-preview-blue: #00bcff;
     --accent-preview-pink: #ec4899;
+
+    /* لوگو و آیکونِ دکمهٔ حساب کاربری SVGاند و رنگشان تا امروز داخلِ خودِ فایل
+       ثابت بود، پس با عوض شدنِ پالت آبی می‌ماندند. حالا از اینجا می‌آید و مثل
+       قبل در هر دو تم یکسان است. */
+    --accent-logo-from: #2BC7FF;
+    --accent-logo-to: #0782CE;
+    --accent-logo-ink: #0B90D4;
+    --accent-logo-coin: #EAF7FF;
+    --accent-tile-1a: #95D6F5;
+    --accent-tile-1b: #00bcff;
+    --accent-tile-2a: #5AC5F5;
+    --accent-tile-2b: #0099cc;
+    --accent-tile-3a: #2EA9F5;
+    --accent-tile-3b: #007197;
 }
 
 html[data-accent="pink"] {
@@ -850,4 +875,35 @@ html[data-accent="pink"] {
     --color-var-color-64: rgba(236, 72, 153, 0.36);   /* بوردرشان و کادرِ چت در فوکوس */
     /* هالهٔ فوکوسِ ورودی‌ها (`.input-bluish`) — بدونِ این، حلقهٔ آبی روی فرمِ صورتی می‌ماند */
     --shadow-var-shadow-00: 0 0 1px #ec4899, 0 0 2px #ec4899, 0 0 5px #ec4899, 0 0 5px #ec4899;
+
+    /* ⚠️ **سطح‌های تعاملیِ تمِ تیره هم باید بیایند.** ۴۰ و ۴۱ و ۴۲ و ۴۴ سرمه‌ای‌اند
+       و در تمِ تیره پس‌زمینه و بوردرِ هاورِ آیتم‌های منو، دکمهٔ حساب، نوارِ مسیر و
+       ردیفِ فعال را می‌سازند. بدونِ این چهارتا تمِ روشن صورتی می‌شد و تمِ تیره آبی
+       می‌ماند. هم‌روشناییِ نسخهٔ آبی‌اند و فقط فامشان صورتی است، تا کنتراستِ متن
+       رویشان به‌هم نریزد. */
+    --color-var-color-40: #2e1a28;
+    --color-var-color-41: #3b2035;
+    --color-var-color-42: #8f3768;
+    --color-var-color-44: #2a0c1e;
+
+    /* مکان‌نمای نمودار هم آبیِ ثابت داشت */
+    --chart-cursor: rgba(236, 72, 153, 0.07);
+
+    --accent-logo-from: #FF80C0;
+    --accent-logo-to: #D6197A;
+    --accent-logo-ink: #D62A85;
+    --accent-logo-coin: #FFEDF6;
+    --accent-tile-1a: #F9B6D8;
+    --accent-tile-1b: #ec4899;
+    --accent-tile-2a: #F58AC2;
+    --accent-tile-2b: #d1197a;
+    --accent-tile-3a: #F26AB0;
+    --accent-tile-3b: #a3145f;
+}
+
+/* ⚠️ تمِ تیره برای مکان‌نمای نمودار مقدارِ جدا دارد، پس پالت هم باید نسخهٔ تیره‌اش
+   را جدا بدهد؛ وگرنه در تمِ تیره شفافیتِ نسخهٔ روشن می‌نشست. کلاسِ dark روی خودِ
+   <html> است، پس گزینشگر بدونِ فاصله نوشته می‌شود. */
+html[data-accent="pink"].dark {
+    --chart-cursor: rgba(236, 72, 153, 0.10);
 }
