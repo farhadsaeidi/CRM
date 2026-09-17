@@ -1087,7 +1087,8 @@ html[data-accent="purple"].dark {
    نسبی، پس وزنش روی سرستون عوض نشده. (۶۰ جفتِ لایتش است و دست نخورد.) */
 html[data-accent="orange"],
 html[data-accent="pink"],
-html[data-accent="green"] {
+html[data-accent="green"],
+html[data-accent="purple"] {
     --color-var-color-35: #0a0a0a;   /* مین */
     --color-var-color-36: #121212;   /* هدر و فوتر و سایدبار — و کارت‌های داشبورد */
     --color-var-color-43: #161616;   /* پنلِ منوها */
