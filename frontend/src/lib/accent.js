@@ -14,6 +14,7 @@ import {ACCENT_CHANGED_EVENT} from "./events.js";
 export const ACCENTS = [
     {id: "blue", label: "آبی"},
     {id: "pink", label: "صورتی"},
+    {id: "orange", label: "نارنجی"},
 ];
 
 export const DEFAULT_ACCENT = "blue";

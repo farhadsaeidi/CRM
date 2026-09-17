@@ -853,6 +853,7 @@
        تکرار نشود؛ `AccentPicker` با `var(--accent-preview-<id>)` می‌خواندشان. */
     --accent-preview-blue: #00bcff;
     --accent-preview-pink: #ec4899;
+    --accent-preview-orange: #f97316;
 
     /* لوگو و آیکونِ دکمهٔ حساب کاربری SVGاند و رنگشان تا امروز داخلِ خودِ فایل
        ثابت بود، پس با عوض شدنِ پالت آبی می‌ماندند. حالا از اینجا می‌آید و مثل
@@ -914,4 +915,46 @@ html[data-accent="pink"] {
    <html> است، پس گزینشگر بدونِ فاصله نوشته می‌شود. */
 html[data-accent="pink"].dark {
     --chart-cursor: rgba(236, 72, 153, 0.10);
+}
+
+/* نارنجی — ساختهٔ همان قالبِ بالا. پایه #f97316 است و بقیه از رویش مشتق شده‌اند،
+   پس اگر روزی پایه عوض شد باید همهٔ این‌ها با هم عوض شوند نه یکی‌شان. */
+html[data-accent="orange"] {
+    --color-var-color-12: rgba(249, 115, 22, 0.05);   /* تهرنگِ خیلی کم — ردیفِ فعال و پرِ دکمه */
+    --color-var-color-13: rgba(249, 115, 22, 0.20);   /* تهرنگ — بوردرِ دکمه و هاله */
+    --color-var-color-14: #fdcead;                    /* روشن — بوردرِ ورودی در تم لایت */
+    --color-var-color-15: #f97316;                    /* خودِ اکسنت */
+    --color-var-color-16: #6e4a2b;                    /* تیرهٔ مات — بوردرِ ورودی در تم دارک */
+    --color-var-color-17: rgba(249, 115, 22, 0.08);   /* پس‌زمینهٔ آیتمِ منو */
+    --color-var-color-18: rgba(249, 115, 22, 0.60);
+    /* ⚠️ عمداً از خودِ اکسنت تیره‌تر است: #f97316 روی سفید کنتراستِ ۲٫۸ دارد که
+       برای متن رد می‌شود، ولی این یکی ۴٫۶ است — دقیقاً هم‌ترازِ نسخهٔ صورتی. */
+    --color-var-color-19: rgb(194, 85, 8);            /* تیره‌تر — متن روی تهرنگ در تم لایت */
+    --color-var-color-20: rgb(251, 133, 45);
+    --color-var-color-63: rgba(249, 115, 22, 0.30);   /* پرِ دکمه‌های گرد در هاور */
+    --color-var-color-64: rgba(249, 115, 22, 0.36);   /* بوردرشان و کادرِ چت در فوکوس */
+    --shadow-var-shadow-00: 0 0 1px #f97316, 0 0 2px #f97316, 0 0 5px #f97316, 0 0 5px #f97316;
+
+    /* سطح‌های تعاملیِ تمِ تیره — هم‌روشناییِ نسخهٔ آبی و صورتی، فقط فامشان نارنجی */
+    --color-var-color-40: #2e2216;
+    --color-var-color-41: #3b2a1a;
+    --color-var-color-42: #8f5a37;
+    --color-var-color-44: #2a1a0c;
+
+    --chart-cursor: rgba(249, 115, 22, 0.07);
+
+    --accent-logo-from: #FFB066;
+    --accent-logo-to: #D66A19;
+    --accent-logo-ink: #D6761F;
+    --accent-logo-coin: #FFF4E8;
+    --accent-tile-1a: #FBD0A3;
+    --accent-tile-1b: #f97316;
+    --accent-tile-2a: #F9B570;
+    --accent-tile-2b: #d96b0f;
+    --accent-tile-3a: #F79B45;
+    --accent-tile-3b: #a35010;
+}
+
+html[data-accent="orange"].dark {
+    --chart-cursor: rgba(249, 115, 22, 0.10);
 }

@@ -39,7 +39,7 @@ const SEARCH_BOX_CLASS =
     // زبان را دارد با ۱۲ — همان تهرنگِ ۵٪ی که دکمه‌ها و هاورِ منوها دارند.
     // پیش‌تر اینجا `bg-transparent` بود و هاور در تمِ روشن فقط بوردر را
     // پررنگ می‌کرد.
-    "hover:bg-var-color-12 dark:hover:bg-var-color-40 hover:border-var-color-03 dark:hover:border-transparent " +
+    "hover:bg-var-color-12 dark:hover:bg-var-color-40 hover:border-var-color-14 dark:hover:border-transparent " +
     "has-[:focus]:bg-var-color-00! dark:has-[:focus]:bg-var-color-37! " +
     "has-[:focus]:border-var-color-48! dark:has-[:focus]:border-var-color-38!";
 
