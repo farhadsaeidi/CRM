@@ -1,7 +1,8 @@
 import {NavLink} from "react-router";
-import {FiMessageSquare, FiUsers} from "react-icons/fi";
+import {FiUsers} from "react-icons/fi";
 import {FaHome} from "react-icons/fa";
 import {HiOutlineArrowsRightLeft} from "react-icons/hi2";
+import AgentIcon from "../../../components/common/AgentIcon.jsx";
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 
 // چهار بخشِ اصلیِ برنامه. هر کدام مسیرِ خودش را دارد، پس با NavLink ساخته می‌شوند
@@ -10,7 +11,9 @@ const ITEMS = [
     {to: "/home", icon: FaHome, label: "داشبورد", end: true},
     {to: "/customers", icon: FiUsers, label: "مشتریان"},
     {to: "/all-transactions", icon: HiOutlineArrowsRightLeft, label: "تراکنش ها"},
-    {to: "/chat", icon: FiMessageSquare, label: "گفتگو"},
+    // همان رباتی که خودِ صفحهٔ دستیار نشان می‌دهد، نه آیکونِ عمومیِ گفتگو — نشانِ
+    // دستیار در همهٔ برنامه یکی است
+    {to: "/chat", icon: AgentIcon, label: "دستیار هوش مصنوعی"},
 ];
 
 // ⚠️ **هر دو حالت تهرنگِ آلفادارند، نه رنگِ تو‌پُر.** پیش‌تر فعال `۴۴` بود و هاور
