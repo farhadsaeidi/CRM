@@ -6,6 +6,7 @@ import { OverlayScrollbars } from 'overlayscrollbars'
 import './index.css'
 import App from './App.jsx'
 import { syncScrollHandles } from './lib/scrollSync.js'
+import { initFavicon } from './lib/favicon.js'
 
 // حالا که کتابخانه مقدارِ ScrollTimeline را خوانده، برای بقیهٔ صفحه برمی‌گردانیمش.
 if (window.__ScrollTimeline) {
@@ -23,6 +24,10 @@ OverlayScrollbars(
     // موقعیتِ دسته را خودمان می‌نویسیم — دلیلش در lib/scrollSync.js
     {initialized: syncScrollHandles, scroll: syncScrollHandles, updated: syncScrollHandles},
 )
+
+// آیکونِ تب هم رنگِ پالت را می‌گیرد — دلیلش در lib/favicon.js. همهٔ ایمپورت‌ها
+// (از جمله lib/accent.js و اصلاحِ مقدارِ کهنه‌اش) پیش از این خط اجرا شده‌اند.
+initFavicon()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
