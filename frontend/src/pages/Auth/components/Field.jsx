@@ -1,5 +1,6 @@
-// رنگِ هر فرم — ورود آبی (اکسنتِ قفل‌شده با `accent-base`)، ثبت‌نام صورتی.
-// همان دو تُنِ HMS با رنگ‌های CRM.
+// رنگِ هر فرم — همان دو تُنِ HMS با رنگ‌های CRM. `accent` رنگِ ورود است، یعنی
+// خودِ اکسنتِ پالت؛ `secondary` رنگِ ثبت‌نام (صورتیِ CRM، و در پالتِ صورتی بنفش).
+// نامِ رنگ اینجا نمی‌آید: کدام رنگ پشتِ کدام نقش بنشیند کارِ بلاکِ پالت است.
 const TONES = {
     accent: {icon: "text-var-color-15", input: "auth-input-accent"},
     secondary: {icon: "text-var-color-77", input: "auth-input-secondary"},

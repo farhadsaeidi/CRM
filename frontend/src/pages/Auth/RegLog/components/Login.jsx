@@ -18,7 +18,7 @@ import Field from "../../components/Field.jsx";
 
 const FIELD_INDEX = {username: 0, password: 1};
 
-/** ورود — آبی. ظاهرش عیناً صفحهٔ ورودِ HMS است؛ قرینه‌اش `Register` با صورتی. */
+/** ورود — به رنگِ پالت. ظاهرش عیناً صفحهٔ ورودِ HMS است؛ قرینه‌اش `Register`. */
 const Login = ({active = true}) => {
     // Tab فقط بینِ فیلدها می‌چرخد؛ دکمه‌های ناوبریِ همین فرم از چرخه
     // بیرون‌اند. `active` هم پاس می‌شود تا فرمِ پنهان لیسنر نگذارد.
@@ -164,14 +164,14 @@ const Login = ({active = true}) => {
             <footer className="flex flex-col justify-center items-center gap-1.5 mt-6">
                 <div className="flex items-center">
                     <p className="m-0 text-var-color-71 dark:text-var-color-70 text-base cursor-default">حساب کاربری ندارم.</p>
-                    {/* رنگِ این لینک **صورتی** است — رنگِ فرمی که به آن می‌برد.
-                        همان قراردادِ HMS: لینکِ متقابل رنگِ مقصد را می‌گیرد. */}
+                    {/* رنگِ این لینک رنگِ **ثبت‌نام** است — رنگِ فرمی که به آن
+                        می‌برد. همان قراردادِ HMS: لینکِ متقابل رنگِ مقصد را می‌گیرد. */}
                     <button type="button" onClick={() => navigate("/auth/register")}
                             className="mx-1 text-var-color-77 dark:text-var-color-78 text-base cursor-pointer hover:underline underline-offset-7 bg-transparent border-none p-0">
                         ثبت نام
                     </button>
                 </div>
-                {/* متنِ اکسنت روی کارت: تیره‌ترِ آبی در لایت، روشن‌ترش در دارک */}
+                {/* متنِ اکسنت روی کارت: تیره‌ترِ رنگِ ورود در لایت، روشن‌ترش در دارک */}
                 <button type="button" onClick={() => navigate("/auth/forget-password")}
                         className="text-var-color-19 dark:text-var-color-76 text-[16px] text-center hover:underline underline-offset-7 bg-transparent border-none cursor-pointer p-0">
                     فراموشی رمز عبور

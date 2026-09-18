@@ -17,7 +17,10 @@ import Field from "../../components/Field.jsx";
 
 const FIELD_INDEX = {fullname: 0, phone: 1, password: 2, repeat_password: 3};
 
-/** ثبت‌نام — صورتی، عیناً رنگِ دومِ HMS. قرینه‌اش `Login` است با آبی. */
+/**
+ * ثبت‌نام — رنگِ مکملِ ورود: صورتیِ CRM، و در پالتِ صورتی بنفش (چون آنجا ورود
+ * خودش صورتی است). قرینه‌اش `Login` است.
+ */
 const Register = ({active = false}) => {
     // Tab فقط بینِ فیلدها می‌چرخد؛ دکمه‌های ناوبریِ همین فرم از چرخه
     // بیرون‌اند. `active` هم پاس می‌شود تا فرمِ پنهان لیسنر نگذارد.
@@ -185,7 +188,7 @@ const Register = ({active = false}) => {
                 <p className="m-0 text-var-color-71 dark:text-var-color-70 text-base cursor-default">
                     قبلا ثبت نام <span className="tracking-normal">کرده‌ام</span>.
                 </p>
-                {/* رنگِ این لینک **آبی** است نه صورتی — رنگِ فرمی که به آن می‌برد */}
+                {/* رنگِ این لینک رنگِ **ورود** است — رنگِ فرمی که به آن می‌برد */}
                 <button type="button" onClick={() => navigate("/auth/login")}
                         className="mx-1 text-var-color-19 dark:text-var-color-76 text-base cursor-pointer hover:underline underline-offset-7 bg-transparent border-none p-0">
                     ورود
