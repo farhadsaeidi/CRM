@@ -8,6 +8,7 @@ import {TbFileSpreadsheet} from "react-icons/tb";
 import WindowsIcon from "./WindowsIcon.jsx";
 import MenuItem from "./MenuItem.jsx";
 import AccentPicker from "./AccentPicker.jsx";
+import ThemeMenuItem from "./ThemeMenuItem.jsx";
 import ChangePasswordModal from "./ChangePasswordModal.jsx";
 import TransactionSearchPanel from "../../pages/Customers/components/TransactionSearchPanel.jsx";
 import personImage from "/images/person2.png";
@@ -428,6 +429,7 @@ const Footer = () => {
                         <MenuItem key={item.id} id={item.id} icon={item.icon} text={item.text}
                                   toggle={item.toggle} onClick={item.onClick}/>
                     ))}
+                    <ThemeMenuItem/>
                     {/* کشوی رنگ زیرِ همین آیتم باز می‌شود و پنل به‌سمتِ بالا رشد
                         می‌کند، چون به کفِ فوتر لنگر انداخته است */}
                     <AccentPicker menuOpen={isStartMenuOpen}/>
