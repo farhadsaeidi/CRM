@@ -199,7 +199,7 @@ const TransactionModal = ({mode, customerId, transaction, onClose, onDone}) => {
     return (
         <section
             onClick={requestClose}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm dark:bg-black/40 dark:backdrop-blur-lg"
+            className="accent-base-when-green fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm dark:bg-black/40 dark:backdrop-blur-lg"
         >
             <div
                 tabIndex={-1}

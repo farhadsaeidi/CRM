@@ -60,7 +60,7 @@ const ForgetPassword = () => {
     };
 
     return (
-        <section className="w-full min-h-screen flex flex-col justify-center items-center bg-[radial-gradient(circle_at_50%_0%,#f9fafb_0%,#f3f4f6_60%)] dark:bg-[radial-gradient(circle_at_50%_0%,#171b2b_0%,#0B0E14_60%)]">
+        <section className="accent-base w-full min-h-screen flex flex-col justify-center items-center bg-[radial-gradient(circle_at_50%_0%,#f9fafb_0%,#f3f4f6_60%)] dark:bg-[radial-gradient(circle_at_50%_0%,#171b2b_0%,#0B0E14_60%)]">
             <form ref={formRef} className="w-100 max-w-[calc(100vw-2rem)] rounded-3xl px-6 pt-6 pb-8 form-container"
                   onSubmit={onSubmit} autoComplete="off">
                 <header className="w-full py-3 flex flex-row justify-between items-center">

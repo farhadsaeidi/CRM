@@ -59,7 +59,7 @@ export default function ProgressToast({t, message, type = "info", duration = 300
     }, [t.visible, t.id]);
 
     return (
-        <section className={`w-fit max-w-[calc(100vw-1rem)] px-2.5 py-2 rounded-lg text-sm bg-var-color-00 dark:bg-var-color-09 border border-var-color-02 dark:border-var-color-07 shadow-var-shadow-04 dark:shadow-var-shadow-05 ${t.visible ? "toast-enter" : "toast-leave"}`}>
+        <section className={`accent-base w-fit max-w-[calc(100vw-1rem)] px-2.5 py-2 rounded-lg text-sm bg-var-color-00 dark:bg-var-color-09 border border-var-color-02 dark:border-var-color-07 shadow-var-shadow-04 dark:shadow-var-shadow-05 ${t.visible ? "toast-enter" : "toast-leave"}`}>
             <header className="flex flex-row items-center">
                 {/* آیکون */}
                 <div className={`w-6 h-6 shrink-0 flex items-center justify-center rounded-full ml-2.5
