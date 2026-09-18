@@ -1,16 +1,22 @@
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {FiCheck, FiChevronDown} from "react-icons/fi";
 import {IoIosColorPalette} from "react-icons/io";
 import MenuItem from "./MenuItem.jsx";
 import {ACCENTS, getAccent, setAccent} from "../../lib/accent.js";
 
 /**
- * «انتخاب رنگ» در منوی حساب کاربری: یک ردیف که با کلیک، کشوی رنگ‌ها زیرش باز
- * می‌شود و با انتخابِ هر رنگ، رنگِ اصلیِ کلِ برنامه عوض می‌شود.
+ * «انتخاب رنگ» در منوی تنظیمات: یک ردیف که با کلیک، کشوی رنگ‌ها زیرش باز می‌شود
+ * و با انتخابِ هر رنگ، رنگِ اصلیِ کلِ برنامه عوض می‌شود.
  *
- * ⚠️ **کشو با رندرِ شرطی باز می‌شود، نه با ترنزیشنِ `grid-template-rows: 0fr→1fr`.**
- * آن الگو یک‌بار در همین پروژه (کشوهای جستجوی تاریخ) در فایرفاکس اصلاً باز نشد و
- * کاربر فکر کرد قابلیت خراب است — تله‌ای که در `CLAUDE.md` ثبت شده.
+ * 📌 **باز و بسته شدنش همان سازوکارِ کشوهای جستجوی تاریخ است**
+ * (`DateSearchField.jsx`)، تا در پروژه یک‌جور کشو باشد نه دو جور: بدنه همیشه
+ * رندر می‌شود، ارتفاعِ واقعی‌اش با پیکسل اندازه گرفته می‌شود و `max-height`
+ * ترنزیشن می‌خورد. پیش‌تر اینجا رندرِ شرطی بود — باز شدن انیمیشن داشت ولی بسته
+ * شدن یک‌باره ناپدید می‌شد.
+ *
+ * ⚠️ **عمداً `grid-template-rows: 0fr → 1fr` نیست.** میان‌یابیِ واحدِ `fr` در
+ * فایرفاکسِ قدیمی‌تر کار نمی‌کند و کشوهای جستجوی تاریخ یک‌بار دقیقاً به همین دلیل
+ * اصلاً باز نمی‌شدند — تله‌ای که در `CLAUDE.md` ثبت شده.
  *
  * ⚠️ منو بعد از انتخاب **بسته نمی‌شود**: کاربر رنگ‌ها را با هم مقایسه می‌کند و
  * بستن یعنی برای دیدنِ رنگِ بعدی باید دوباره دو کلیک کند.
@@ -19,9 +25,10 @@ import {ACCENTS, getAccent, setAccent} from "../../lib/accent.js";
  * ساخته می‌شوند تا هاور و بوردرشان دقیقاً همان آیتم‌های دیگرِ منو باشد.
  */
 
-// باز شدنِ کشو و چرخشِ فلش یک حرکت‌اند، پس یک عدد دارند؛ دو مقدارِ جدا یعنی
-// روزی یکی عوض می‌شود و حرکت دوتکه دیده می‌شود
-const OPEN_MS = 200;
+// باز شدنِ کشو و چرخشِ فلش یک حرکت‌اند، پس یک عدد و یک منحنی دارند. ۲۵۰ همان
+// زمانِ بدنهٔ کشوی تاریخ است و `ease-in-out` همان منحنی‌اش. دو مقدارِ جدا یعنی
+// روزی یکی عوض می‌شود و حرکت دوتکه دیده می‌شود.
+const OPEN_MS = 250;
 
 const AccentPicker = ({menuOpen = true}) => {
     const [open, setOpen] = useState(false);
@@ -36,6 +43,22 @@ const AccentPicker = ({menuOpen = true}) => {
         if (!menuOpen && open) setOpen(false);
     }
 
+    // ارتفاعِ محتوا برای ترنزیشن — همان دو لایهٔ کشوی تاریخ. اندازه‌گیریِ اصلی
+    // همان لحظهٔ کلیک است، چون خواندنِ DOM داخلِ هندلرِ رویداد به هیچ زمان‌بندی‌ای
+    // وابسته نیست؛ ResizeObserver فقط تغییرهای بعدی را می‌گیرد (مثلاً بارگذاریِ
+    // دیرترِ فونت)، و اگر معلق هم بماند باز شدنِ کشو همچنان کار می‌کند.
+    const contentRef = useRef(null);
+    const [contentHeight, setContentHeight] = useState(0);
+    const measure = () => setContentHeight(contentRef.current?.scrollHeight ?? 0);
+
+    useEffect(() => {
+        const element = contentRef.current;
+        if (!element) return;
+        const observer = new ResizeObserver(() => setContentHeight(element.scrollHeight));
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, []);
+
     return (
         <div className="w-full">
             <MenuItem
@@ -46,19 +69,29 @@ const AccentPicker = ({menuOpen = true}) => {
                 // می‌دارد تا معلوم بماند این کشو از کجا باز شده
                 active={open}
                 expanded={open}
-                onClick={() => setOpen((value) => !value)}
+                onClick={() => {
+                    measure();
+                    setOpen((value) => !value);
+                }}
                 trailing={
                     <FiChevronDown
-                        className={`w-4 h-4 shrink-0 transition-transform ease-out ${open ? "rotate-180" : ""}`}
+                        className={`w-4 h-4 shrink-0 transition-transform ease-in-out ${open ? "rotate-180" : ""}`}
                         style={{transitionDuration: `${OPEN_MS}ms`}}
                     />
                 }
             />
 
-            {open && (
-                <div role="listbox" aria-label="رنگ اصلی برنامه"
-                     className="mt-1 mb-0.5 pr-3 flex flex-col"
-                     style={{animation: `crm-rise ${OPEN_MS}ms ease-out both`}}>
+            {/* بسته که باشد نه دیده می‌شود نه با Tab در دسترس است */}
+            <div
+                style={{maxHeight: open ? contentHeight : 0, transitionDuration: `${OPEN_MS}ms`}}
+                className="overflow-hidden transition-[max-height] ease-in-out"
+                inert={!open}
+            >
+                {/* فاصله‌ها `padding`اند نه `margin`: `scrollHeight` پدینگِ خودِ
+                    عنصر را می‌شمارد ولی مارجینش را نه، پس با مارجین ارتفاعِ
+                    اندازه‌گرفته کوتاه‌تر از واقعیت درمی‌آمد و لبهٔ پایین بریده می‌شد */}
+                <div ref={contentRef} role="listbox" aria-label="رنگ اصلی برنامه"
+                     className="pt-1 pb-0.5 pr-3 flex flex-col">
                     {ACCENTS.map((item) => {
                         const isCurrent = item.id === accent;
                         return (
@@ -96,7 +129,7 @@ const AccentPicker = ({menuOpen = true}) => {
                         );
                     })}
                 </div>
-            )}
+            </div>
         </div>
     );
 };
