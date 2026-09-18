@@ -54,7 +54,7 @@ const router = createBrowserRouter([
                         handle: {title: "دفتر حساب مشتری"},
                     },
                     {path: "all-transactions", element: <Transactions/>, handle: {title: "تراکنش ها"}},
-                    {path: "chat", element: <Chat/>, handle: {title: "گفتگو"}},
+                    {path: "chat", element: <Chat/>, handle: {title: "دستیار هوش مصنوعی"}},
                     {path: "profile", element: <Profile/>, handle: {title: "پروفایل"}},
                     // صورتحساب یک **سند** است نه صفحهٔ برنامه: هدر و فوترِ اپ
                     // روی کاغذ معنایی ندارند و خودِ سند سربرگِ خودش را دارد
