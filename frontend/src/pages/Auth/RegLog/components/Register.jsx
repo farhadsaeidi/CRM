@@ -1,19 +1,23 @@
-import {useId, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import {useNavigate} from "react-router";
 import toast from "react-hot-toast";
 import {GrPhone} from "react-icons/gr";
-import {FaRegEye, FaRegEyeSlash, FaRegUser} from "react-icons/fa6";
-import {FiLock, FiUserPlus} from "react-icons/fi";
+import {FaUserPlus} from "react-icons/fa6";
+import {FiUserPlus} from "react-icons/fi";
+import {IoMdLock} from "react-icons/io";
 import {useAuth} from "../../../../context/AuthContext.js";
 import {authApi} from "../../../../api/auth.js";
-import ThemeSwitcher from "../../../../components/common/ThemeSwitcher.jsx";
 import {notify, notifyLoading} from "../../../../lib/notify.jsx";
 import {sanitizePhone} from "../../../../lib/utils.js";
 import {registerSchema} from "../../../../validators/auth.js";
 import {useInputTabLoop} from "../../../../lib/useInputTabLoop.js";
+import AuthHeader from "../../components/AuthHeader.jsx";
+import EyeButton from "../../components/EyeButton.jsx";
+import Field from "../../components/Field.jsx";
 
 const FIELD_INDEX = {fullname: 0, phone: 1, password: 2, repeat_password: 3};
 
+/** ثبت‌نام — صورتی، عیناً رنگِ دومِ HMS. قرینه‌اش `Login` است با آبی. */
 const Register = ({active = false}) => {
     // Tab فقط بینِ فیلدها می‌چرخد؛ دکمه‌های ناوبریِ همین فرم از چرخه
     // بیرون‌اند. `active` هم پاس می‌شود تا فرمِ پنهان لیسنر نگذارد.
@@ -22,7 +26,6 @@ const Register = ({active = false}) => {
 
     const {setUser} = useAuth();
     const navigate = useNavigate();
-    const id = useId();
 
     const [fullname, setFullname] = useState("");
     const [phone, setPhone] = useState("");
@@ -83,141 +86,108 @@ const Register = ({active = false}) => {
     };
 
     return (
-        <form ref={formRef} className="w-100 h-150 rounded-3xl px-6 pt-6 pb-8 form-container"
+        <form ref={formRef} className="w-100 h-160 rounded-3xl px-6 pt-6 pb-8 auth-card flex flex-col"
               onSubmit={onSubmit} autoComplete="off" inert={!active}>
-            <header className="w-full py-3 flex flex-row justify-between items-center">
-                <div className="w-8 h-8"/>
-                <h2 className="text-var-color-08 dark:text-var-color-01 text-2xl text-center">ثبت نام</h2>
-                <ThemeSwitcher/>
-            </header>
+            <AuthHeader title="ثبت نام"/>
 
-            <main className="w-full mt-5">
-                {/* نام و نام خانوادگی */}
-                <div className="w-full">
-                    <label htmlFor={id + "fullname"} className="text-var-color-06 dark:text-var-color-03">
-                        نام و نام خانوادگی
-                    </label>
-                    <div className="relative w-full h-10 mt-2">
-                        <FaRegUser className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-var-color-25 pointer-events-none"/>
-                        <input
-                            id={id + "fullname"}
-                            ref={setInputRef(0)}
-                            type="text"
-                            autoComplete="off"
-                            value={fullname}
-                            placeholder="نام و نام خانوادگی خود را وارد کنید..."
-                            onChange={(e) => {
-                                setFullname(e.target.value);
-                                setErrors((prev) => ({...prev, fullname: ""}));
-                            }}
-                            className={`w-full h-full text-[15px] pr-8.5 pl-3 rounded-xl input input-purplish input-placeholder ${errors.fullname ? "input-error" : ""}`}
-                        />
-                    </div>
-                </div>
+            {/* همان دلیلِ `Login` — فضای اضافه بالا و پایینِ گروه پخش می‌شود */}
+            <main className="w-full flex-1 flex flex-col justify-center">
+                {/* ⚠️ فاصله با `space-y` است نه `my-*`ِ هر فیلد: `main` فلکس است و
+                    داخلِ فلکس مارجین‌ها روی هم نمی‌افتند، پس `my-5`ِ پشتِ سرِ هم
+                    فاصلهٔ ۴۰ پیکسلی می‌ساخت. ۲۰ پیکسل همان فاصلهٔ قبلیِ این فرم
+                    است و کارت را هم‌قدِ ورود پر می‌کند. */}
+                <div className="space-y-5">
+                    <Field
+                        tone="secondary"
+                        label="نام و نام خانوادگی"
+                        icon={<FaUserPlus className="w-4 h-4"/>}
+                        inputRef={setInputRef(0)}
+                        value={fullname}
+                        placeholder="نام و نام خانوادگی خود را وارد کنید..."
+                        error={errors.fullname}
+                        onChange={(e) => {
+                            setFullname(e.target.value);
+                            setErrors((prev) => ({...prev, fullname: ""}));
+                        }}
+                    />
 
-                {/* شماره همراه */}
-                <div className="w-full my-5">
-                    <label htmlFor={id + "phone"} className="text-var-color-06 dark:text-var-color-03">شماره همراه</label>
-                    <div className="relative w-full h-10 mt-2">
-                        <GrPhone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-var-color-25 pointer-events-none"/>
-                        <input
-                            id={id + "phone"}
-                            ref={setInputRef(1)}
-                            type="text"
-                            inputMode="numeric"
-                            autoComplete="off"
-                            value={phone}
-                            placeholder="شماره همراه خود را وارد کنید..."
-                            onChange={(e) => {
-                                setPhone(sanitizePhone(e.target.value));
-                                setErrors((prev) => ({...prev, phone: ""}));
-                            }}
-                            className={`w-full h-full text-[15px] pr-8.5 pl-3 rounded-xl input input-purplish input-placeholder ${errors.phone ? "input-error" : ""}`}
-                        />
-                    </div>
-                </div>
+                    <Field
+                        tone="secondary"
+                        label="شماره همراه"
+                        icon={<GrPhone className="w-4 h-4"/>}
+                        inputRef={setInputRef(1)}
+                        value={phone}
+                        inputMode="numeric"
+                        placeholder="شماره همراه خود را وارد کنید..."
+                        error={errors.phone}
+                        onChange={(e) => {
+                            setPhone(sanitizePhone(e.target.value));
+                            setErrors((prev) => ({...prev, phone: ""}));
+                        }}
+                    />
 
-                {/* رمز عبور */}
-                <div className="w-full my-5">
-                    <label htmlFor={id + "password"} className="text-var-color-06 dark:text-var-color-03">رمز عبور</label>
-                    <div className="relative w-full h-10 mt-2">
-                        <FiLock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-var-color-25 pointer-events-none"/>
-                        <input
-                            id={id + "password"}
-                            ref={setInputRef(2)}
-                            type={showPassword ? "text" : "password"}
-                            autoComplete="new-password"
-                            value={password}
-                            placeholder="رمز عبور خود را وارد کنید..."
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setPassword(value);
-                                if (value.length === 0) setShowPassword(false);
-                                setErrors((prev) => ({...prev, password: ""}));
-                            }}
-                            className={`w-full h-full text-[15px] pr-8.5 pl-10 rounded-xl input input-purplish input-placeholder ${errors.password ? "input-error" : ""}`}
-                        />
-                        {/* enabled: لازم است چون هاور روی دکمهٔ disabled هم اعمال می‌شود */}
-                        <button
-                            type="button"
-                            tabIndex={-1}
-                            onClick={() => setShowPassword((s) => !s)}
-                            disabled={password.length === 0}
-                            className="absolute top-1/2 left-3 -translate-y-1/2 disabled:text-var-color-04 dark:disabled:text-var-color-05 enabled:text-var-color-06 dark:enabled:text-var-color-03 enabled:cursor-pointer"
-                        >
-                            {showPassword ? <FaRegEyeSlash/> : <FaRegEye/>}
-                        </button>
-                    </div>
-                </div>
+                    <Field
+                        tone="secondary"
+                        label="رمز عبور"
+                        icon={<IoMdLock className="w-4 h-4"/>}
+                        inputRef={setInputRef(2)}
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        autoComplete="new-password"
+                        placeholder="رمز عبور خود را وارد کنید..."
+                        error={errors.password}
+                        trailing={
+                            <EyeButton shown={showPassword} disabled={password.length === 0}
+                                       onToggle={() => setShowPassword((s) => !s)}/>
+                        }
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setPassword(value);
+                            if (value.length === 0) setShowPassword(false);
+                            setErrors((prev) => ({...prev, password: ""}));
+                        }}
+                    />
 
-                {/* تکرار رمز عبور — قرینهٔ دقیقِ فیلدِ بالا، تا فرم چهار ردیفی و
-                    متقارن بماند. نمایش/پنهانِ هر کدام جداست: کاربر ممکن است فقط
-                    بخواهد ببیند در کدامشان اشتباه تایپ کرده. */}
-                <div className="w-full my-5">
-                    <label htmlFor={id + "repeat_password"} className="text-var-color-06 dark:text-var-color-03">تکرار رمز عبور</label>
-                    <div className="relative w-full h-10 mt-2">
-                        <FiLock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-var-color-25 pointer-events-none"/>
-                        <input
-                            id={id + "repeat_password"}
-                            ref={setInputRef(3)}
-                            type={showRepeat ? "text" : "password"}
-                            autoComplete="new-password"
-                            value={repeatPassword}
-                            placeholder="رمز عبور را دوباره وارد کنید..."
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setRepeatPassword(value);
-                                if (value.length === 0) setShowRepeat(false);
-                                setErrors((prev) => ({...prev, repeat_password: ""}));
-                            }}
-                            className={`w-full h-full text-[15px] pr-8.5 pl-10 rounded-xl input input-purplish input-placeholder ${errors.repeat_password ? "input-error" : ""}`}
-                        />
-                        {/* enabled: لازم است چون هاور روی دکمهٔ disabled هم اعمال می‌شود */}
-                        <button
-                            type="button"
-                            tabIndex={-1}
-                            onClick={() => setShowRepeat((s) => !s)}
-                            disabled={repeatPassword.length === 0}
-                            className="absolute top-1/2 left-3 -translate-y-1/2 disabled:text-var-color-04 dark:disabled:text-var-color-05 enabled:text-var-color-06 dark:enabled:text-var-color-03 enabled:cursor-pointer"
-                        >
-                            {showRepeat ? <FaRegEyeSlash/> : <FaRegEye/>}
-                        </button>
-                    </div>
+                    {/* تکرار رمز عبور — قرینهٔ دقیقِ فیلدِ بالا. نمایش/پنهانِ هر
+                        کدام جداست: کاربر ممکن است فقط بخواهد ببیند در کدامشان
+                        اشتباه تایپ کرده. */}
+                    <Field
+                        tone="secondary"
+                        label="تکرار رمز عبور"
+                        icon={<IoMdLock className="w-4 h-4"/>}
+                        inputRef={setInputRef(3)}
+                        type={showRepeat ? "text" : "password"}
+                        value={repeatPassword}
+                        autoComplete="new-password"
+                        placeholder="رمز عبور را دوباره وارد کنید..."
+                        error={errors.repeat_password}
+                        trailing={
+                            <EyeButton shown={showRepeat} disabled={repeatPassword.length === 0}
+                                       onToggle={() => setShowRepeat((s) => !s)}/>
+                        }
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setRepeatPassword(value);
+                            if (value.length === 0) setShowRepeat(false);
+                            setErrors((prev) => ({...prev, repeat_password: ""}));
+                        }}
+                    />
                 </div>
 
                 <button type="submit" disabled={submitting}
-                        className="w-full py-2.5 rounded-xl btn btn-purplish disabled:opacity-60 disabled:cursor-not-allowed">
+                        className="w-full py-2.5 mt-5 rounded-xl auth-btn auth-btn-secondary disabled:opacity-60 disabled:cursor-not-allowed">
                     <FiUserPlus className="w-5 h-5 ml-2"/>
                     <span className="text-[17px]">{submitting ? "در حال ثبت نام ..." : "ثبت نام"}</span>
                 </button>
             </main>
 
             <footer className="flex justify-center items-center mt-6">
-                <p className="m-0 text-var-color-06 dark:text-var-color-03 text-base cursor-default">
+                <p className="m-0 text-var-color-71 dark:text-var-color-70 text-base cursor-default">
                     قبلا ثبت نام <span className="tracking-normal">کرده‌ام</span>.
                 </p>
+                {/* رنگِ این لینک **آبی** است نه صورتی — رنگِ فرمی که به آن می‌برد */}
                 <button type="button" onClick={() => navigate("/auth/login")}
-                        className="mx-1 text-var-color-15 text-base cursor-pointer hover:underline underline-offset-7 bg-transparent border-none p-0">
+                        className="mx-1 text-var-color-19 dark:text-var-color-76 text-base cursor-pointer hover:underline underline-offset-7 bg-transparent border-none p-0">
                     ورود
                 </button>
             </footer>

@@ -100,10 +100,80 @@
        نیمه‌شفاف است، پس یک توکن برای هر دو تم کافی است. */
     --color-var-color-65: rgba(120, 120, 120, 0.07);
 
+    /* ── صفحه‌های احراز هویت — پالتِ HMS (۶۷ تا ۸۲) ──────────────────────────
+       ورود، ثبت‌نام، ورود با پیامک و فراموشیِ رمز عیناً ظاهرِ صفحهٔ ورودِ پروژهٔ
+       HMS را دارند (خواستهٔ صاحبِ پروژه، ۱۴۰۵/۰۶/۲۸)؛ فقط ورود آبی است نه
+       نارنجی. این‌ها رنگ‌های **خودِ HMS**اند و عمداً جدا از رمپِ CRM ماندند، نه
+       جایگزینش: CRM خاکستریِ سرد دارد و HMS یک رمپِ تقریباً خنثی، و این رمپ
+       فقط باید روی همان چهار صفحه بنشیند — مودال‌های برنامه دست نمی‌خورند.
+       شمارهٔ هم‌تای هر رنگ در HMS جلویش آمده، تا اگر آنجا عوض شد پیدا کردنش
+       آسان باشد. هیچ‌کدام دستِ پالت‌ها نیست. */
+    --color-var-color-67: #F2F2F2;   /* HMS 02 — پرِ ورودی و دکمه در لایت · متنِ اصلی در دارک */
+    --color-var-color-68: #E6E6E6;   /* HMS 03 — بوردرِ لایت */
+    --color-var-color-69: #D1D1D1;   /* HMS 04 — متنِ خاموش در لایت */
+    --color-var-color-70: #9E9E9E;   /* HMS 05 — متنِ کم‌رنگ، خوانا در هر دو تم */
+    --color-var-color-71: #6E6E6E;   /* HMS 06 — متنِ ثانویه در لایت */
+    --color-var-color-72: #2A2A3A;   /* HMS 08 — بوردرِ دارک */
+    --color-var-color-73: #111118;   /* HMS 10 — پرِ ورودی و دکمه در دارک */
+    --color-var-color-74: #1A1A1A;   /* HMS 12 — متنِ اصلی در لایت */
+    --color-var-color-75: #16161F;   /* HMS 50 — کارتِ فرم در دارک */
+    /* آبیِ روشن — نقشی که `17`ِ HMS (#FFAC66) برای نارنجی دارد: لبهٔ دکمهٔ
+       پرشده در هاور و متنِ لینک روی کارتِ تیره. همان فامِ اکسنت با روشناییِ
+       ۷۰٪، یعنی دقیقاً همان فاصله‌ای که ۱۷ از نارنجیِ HMS دارد. */
+    --color-var-color-76: #66D7FF;
+    /* صورتیِ ثبت‌نام — عیناً رنگِ دومِ HMS */
+    --color-var-color-77: #F72E9B;   /* HMS 38 — صورتیِ اصلی */
+    --color-var-color-78: #FF6BBA;   /* HMS 37 — روشن: لبهٔ دکمه در هاور و لینک روی کارتِ تیره */
+    --color-var-color-79: #FFA3D5;   /* HMS 46 — بوردرِ هاور و فوکوسِ ورودی در لایت */
+    --color-var-color-80: #832157;   /* HMS 47 — همان در دارک */
+    /* بوردرِ ورودیِ خطادار — HMS 29 و 30 */
+    --color-var-color-81: #E03A4B;   /* لایت */
+    --color-var-color-82: #FF7085;   /* دارک */
+
     --color-var-gradient-00: linear-gradient(to right, rgba(249, 47, 96, 1), rgba(249, 47, 96, 0.6));
     --color-var-gradient-01: linear-gradient(to right, rgba(249, 115, 22, 1), rgba(249, 115, 22, 0.5));
     --color-var-gradient-02: linear-gradient(to right, rgba(6, 182, 212, 1), rgba(6, 182, 212, 0.5));
     --color-var-gradient-03: linear-gradient(to right, rgba(94, 175, 43, 1), rgba(94, 175, 43, 0.5));
+    /* زمینهٔ صفحه‌های احراز هویت — ساختارِ HMS.
+
+       ⚠️ **یک گرادیانِ مات است، نه پایه به‌علاوهٔ هالهٔ شفاف.** دو افتِ مستقلِ
+       روی هم هیچ‌وقت یکدست درنمی‌آیند؛ اینجا هر ایستگاه رنگِ نهاییِ از پیش
+       حساب‌شده است و نه ترکیبی در کار است نه شفافیتی.
+
+       ایستگاه‌ها: ۲۰ تا، در `i/19`، با رنگِ `پایه + (قله − پایه) × (1 − t)²` که
+       در sRGB گرد می‌شود. منحنی در انتها شیبِ صفر دارد، پس هاله بی‌حلقهٔ
+       پایانی حل می‌شود. همین فرمول چهار گرادیانِ HMS را رقم به رقم بازمی‌سازد.
+
+       - ثبت‌نام (۰۶ و ۰۷) **عیناً** گرادیانِ ثبت‌نامِ HMS است.
+       - ورود (۰۴ و ۰۵) نسخهٔ آبیِ گرادیانِ ورودِ HMS است. پایه‌ها همان‌اند
+         (#FAFAFA و #0A0A0F) و قله با همان روشنایی و کرومای OKLCHِ قلهٔ HMS
+         (#FAEBE1 و #1C0E12) روی فامِ ۲۵۵ نشسته: آبیِ خالص، بینِ اکسنت (۲۳۳)
+         و سورمه‌ایِ کرومِ پروژه (۲۶۸). روی فامِ خودِ اکسنت قلهٔ تیره `#06151C`
+         می‌شد که به فیروزه‌ای می‌زند. */
+    --color-var-gradient-04: /* ورود در لایت */
+        radial-gradient(ellipse 62% 70% at 50% 3%,
+                        #E5EFFD 0%, #E7F0FD 5%, #E9F1FC 11%, #EBF2FC 16%, #EDF3FC 21%,
+                        #EFF4FC 26%, #F0F5FB 32%, #F2F6FB 37%, #F3F6FB 42%, #F4F7FB 47%,
+                        #F5F8FB 53%, #F6F8FB 58%, #F7F9FA 63%, #F8F9FA 68%, #F9F9FA 74%,
+                        #F9FAFA 79%, #F9FAFA 84%, #FAFAFA 89%, #FAFAFA 95%, #FAFAFA 100%);
+    --color-var-gradient-05: /* ورود در دارک */
+        radial-gradient(ellipse 62% 70% at 50% 3%,
+                        #0B131E 0%, #0B121C 5%, #0B111B 11%, #0B101A 16%, #0B1018 21%,
+                        #0B0F17 26%, #0A0E16 32%, #0A0E15 37%, #0A0D14 42%, #0A0C13 47%,
+                        #0A0C12 53%, #0A0C12 58%, #0A0B11 63%, #0A0B10 68%, #0A0B10 74%,
+                        #0A0A10 79%, #0A0A0F 84%, #0A0A0F 89%, #0A0A0F 95%, #0A0A0F 100%);
+    --color-var-gradient-06: /* ثبت‌نام در لایت — HMS 08 */
+        radial-gradient(ellipse 62% 70% at 50% 3%,
+                        #FAEBF3 0%, #FAEDF4 5%, #FAEEF4 11%, #FAEFF5 16%, #FAF1F6 21%,
+                        #FAF2F6 26%, #FAF3F7 32%, #FAF4F7 37%, #FAF5F8 42%, #FAF6F8 47%,
+                        #FAF7F8 53%, #FAF7F9 58%, #FAF8F9 63%, #FAF9F9 68%, #FAF9FA 74%,
+                        #FAF9FA 79%, #FAFAFA 84%, #FAFAFA 89%, #FAFAFA 95%, #FAFAFA 100%);
+    --color-var-gradient-07: /* ثبت‌نام در دارک — HMS 09 */
+        radial-gradient(ellipse 62% 70% at 50% 3%,
+                        #1D0E17 0%, #1B0E16 5%, #190D15 11%, #170D15 16%, #160C14 21%,
+                        #140C13 26%, #130C13 32%, #120C12 37%, #100B12 42%, #0F0B11 47%,
+                        #0E0B11 53%, #0D0B10 58%, #0D0B10 63%, #0C0A10 68%, #0B0A10 74%,
+                        #0B0A0F 79%, #0A0A0F 84%, #0A0A0F 89%, #0A0A0F 95%, #0A0A0F 100%);
 
     /* Custom Measurements */
     --header-height: 76px;
@@ -119,6 +189,26 @@
     --shadow-var-shadow-06: 0 0 1px rgba(249, 47, 96, 1.0), 0 0 2px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0), 0 0 5px rgba(249, 47, 96, 1.0);
     /* هالهٔ کهربایی — فوکوسِ ورودی‌های مودالِ ویرایش */
     --shadow-var-shadow-07: 0 0 1px rgba(251, 191, 36, 1), 0 0 2px rgba(251, 191, 36, 1), 0 0 5px rgba(251, 191, 36, 1), 0 0 5px rgba(251, 191, 36, 1);
+
+    /* ── صفحه‌های احراز هویت (HMS) — ۰۸ تا ۱۲ عمداً هم‌شمارهٔ خودِ HMS‌اند ── */
+    /* کارتِ فرم در دارک — هالهٔ درونیِ چهارطرفه، HMS 08. نسخهٔ لایتش همان ۰۲ است. */
+    --shadow-var-shadow-08: inset 0 4px 12px rgba(64, 64, 64, 0.38), inset 0 -4px 12px rgba(64, 64, 64, 0.38), inset 4px 0 12px rgba(64, 64, 64, 0.38), inset -4px 0 12px rgba(64, 64, 64, 0.38);
+    /* همان هاله در مقیاسِ دکمه — HMS 09 (لایت) و 10 (دارک). ⚠️ ۰۲/۰۸ را روی دکمه
+       نگذارید: بلورِ ۱۲ پیکسلی از چهار طرف، دکمهٔ ۴۶ پیکسلی را پر می‌کند و به‌جای
+       لبهٔ برجسته یک لکهٔ روشن می‌سازد. */
+    --shadow-var-shadow-09: inset 0 2px 6px rgba(120, 120, 120, 0.03), inset 0 -2px 6px rgba(120, 120, 120, 0.03), inset 2px 0 6px rgba(120, 120, 120, 0.03), inset -2px 0 6px rgba(120, 120, 120, 0.03);
+    --shadow-var-shadow-10: inset 0 2px 6px rgba(90, 90, 90, 0.06), inset 0 -2px 6px rgba(90, 90, 90, 0.06), inset 2px 0 6px rgba(90, 90, 90, 0.06), inset -2px 0 6px rgba(90, 90, 90, 0.06);
+    /* هالهٔ نورانیِ دکمه در هاور — HMS 11 (آنجا نارنجی) با آبیِ پروژه، و HMS 12
+       صورتی. دو لایه‌اند نه یکی: ۱۰ پیکسلی داغیِ رنگ را دورِ لبه می‌سازد و ۲۸
+       پیکسلی نور را روی زمینه پخش می‌کند. */
+    --shadow-var-shadow-11: 0 0 10px rgba(0, 188, 255, 0.55), 0 0 28px rgba(0, 188, 255, 0.32);
+    --shadow-var-shadow-12: 0 0 10px rgba(247, 46, 155, 0.55), 0 0 28px rgba(247, 46, 155, 0.32);
+    /* هالهٔ فوکوسِ صورتی — HMS 06. هالهٔ آبی همان ۰۰ است. */
+    --shadow-var-shadow-13: 0 0 1px #F72E9B, 0 0 2px #F72E9B, 0 0 5px #F72E9B, 0 0 5px #F72E9B;
+    /* رینگِ خطا — HMS 01. ⚠️ عمداً تخت و کم‌رنگ است نه نئونی: کلاسِ خطا آن را
+       **همیشه** می‌گذارد نه فقط روی فوکوس، و در HMS خواسته شد فقط بوردرِ کادرِ
+       خطادار قرمز شود. */
+    --shadow-var-shadow-14: 0 0 0 3px rgba(224, 58, 75, 0.22);
 
     /* Custom Border Radius */
     --radius-4xl: 2rem;
@@ -448,20 +538,6 @@
         -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-00) !important;
     }
 
-    .input-purplish {
-        @apply hover:border-var-color-23 dark:hover:border-var-color-23 focus:shadow-var-shadow-01 focus:border-var-color-23 dark:focus:border-var-color-23;
-    }
-
-    /* جلوگیری از استایل دیفالت مرورگر در حالت اتوفیلد */
-    .input-purplish:-webkit-autofill:focus {
-        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-01) !important;
-        box-shadow: 0 0 0 1000px var(--color-var-color-00) inset, var(--shadow-var-shadow-01) !important;
-    }
-
-    .dark .input-purplish:-webkit-autofill:focus {
-        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-10) inset, var(--shadow-var-shadow-01) !important;
-    }
-
     /* ورودی‌های مودالِ ویرایش — کهربایی، تا با نوارِ بالای کارت و دکمه‌اش ست باشد */
     .input-yellowish {
         @apply hover:border-var-color-61 dark:hover:border-var-color-62 focus:shadow-var-shadow-07 focus:border-var-color-61 dark:focus:border-var-color-62;
@@ -513,9 +589,8 @@
        باشند — همان توپُری که دکمهٔ «ثبت مشتری جدید» در هدر دارد. دو رفتارِ
        متفاوت برای یک رنگ، ناهماهنگ دیده می‌شد. */
 
-    .btn-purplish {
-        @apply border border-var-color-22 dark:border-var-color-24 hover:border-transparent bg-var-color-21 dark:bg-var-color-21 hover:bg-var-color-25 dark:text-var-color-25;
-    }
+    /* 📌 `btn-purplish` و `input-purplish` (فرمِ ثبت‌نامِ بنفش) از ۱۴۰۵/۰۶/۲۸
+       نیستند: ثبت‌نام صورتی شد و کلاس‌های `auth-*`ِ پایین‌تر را دارد. */
 
     /* دکمه‌های حذف و ویرایش در مودال‌ها — همان رنگ‌بندی پروژهٔ CustomerManagement */
     .btn-redish {
@@ -566,6 +641,255 @@
        مشتری‌های مختلف می‌آیند */
     .grid-all-transactions {
         @apply grid-cols-[2rem_minmax(10rem,1fr)_minmax(7rem,0.6fr)_minmax(7rem,0.6fr)_minmax(7rem,0.6fr)_minmax(4rem,0.15fr)];
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   صفحه‌های احراز هویت — ظاهرِ صفحهٔ ورودِ HMS
+
+   ورود، ثبت‌نام، ورود با پیامک و فراموشیِ رمز ساختار و استایلِ HMS را دارند؛
+   فقط رنگ‌ها مالِ CRM‌اند: **ورود آبی** و **ثبت‌نام صورتی**.
+
+   ⚠️ **کلاس‌های جدا، نه بازنویسیِ `.input` و `.btn` و `.form-container`.** آن
+   سه در مودال‌های برنامه هم هستند (مشتری، تراکنش، تغییرِ رمز) و باید ظاهرِ
+   CRM را نگه دارند. `.btn` حتی هاورِ رنگِ متن دارد که با هاورِ این دکمه‌ها
+   می‌جنگید.
+
+   ⚠️ **آبیِ ورود از خودِ اکسنت می‌آید** (۱۴ و ۱۵ و ۱۶ و ۱۹ و هالهٔ ۰۰)، و
+   `.accent-base` روی ریشهٔ این صفحه‌ها (`AuthBackdrop`) آن را در هر پالتی آبی
+   نگه می‌دارد. صورتی و خنثی‌ها توکن‌های خودشان را دارند (۶۷ تا ۸۲) که دستِ
+   هیچ پالتی نیستند — پس این چهار صفحه در هر پالت و کرومی یک‌جورند.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+    /* زمینه. ⚠️ کلاس است نه یوتیلیتیِ `bg-*`: گرادیان `background-image` است و
+       `bg-var-gradient-04` یک `background-color`ِ نامعتبر می‌ساخت. رنگِ ثبت‌نام
+       هم کلاس است نه متغیرِ درون‌خطی، چون بینِ ایستگاه‌های از پیش حساب‌شده
+       نمی‌شود با `var()` میان‌یابی کرد. */
+    .auth-backdrop {
+        background-image: var(--color-var-gradient-04);
+    }
+
+    .dark .auth-backdrop {
+        background-image: var(--color-var-gradient-05);
+    }
+
+    .auth-backdrop.is-register {
+        background-image: var(--color-var-gradient-06);
+    }
+
+    .dark .auth-backdrop.is-register {
+        background-image: var(--color-var-gradient-07);
+    }
+
+    /* دیترِ زمینه — درمانِ نوارهای هاله.
+
+       کلِ دامنهٔ رنگیِ هاله حدودِ ده پله از ۲۵۶ است که روی ~۷۰۰ پیکسل پخش
+       می‌شود، پس هر نوارِ هم‌رنگ ~۷۰ پیکسل پهنا دارد و دیده می‌شود. این
+       کوانتیزاسیونِ ۸ بیتی است نه ایرادِ منحنی، و با هیچ تعداد ایستگاهی حل
+       نمی‌شود؛ نویزِ ضعیف مرزِ نوارها را تصادفی می‌کند و چشم پیوستگی می‌بیند.
+
+       ⚠️ **آلفا عمداً ۱٫۲٪ است** — نوسانش هم‌اندازهٔ یک پلهٔ کوانتیزاسیون. بیشتر
+       از این دانه‌ها دیده می‌شوند و دیتر به بافتِ نویز تبدیل می‌شود. ترکیبِ
+       عادی است نه `overlay`: روی زمینهٔ نزدیک‌به‌سیاه `overlay` عملاً بی‌اثر است.
+
+       ⚠️ `#` در `url(#n)` باید `%23` بماند، وگرنه مرورگر آن را شروعِ fragment
+       می‌خواند و فیلتر اصلاً اعمال نمی‌شود. */
+    .auth-noise {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.012;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-size: 140px 140px;
+    }
+
+    /* کارتِ فرم — هالهٔ درونیِ چهارطرفه که لبه را «برجسته» نشان می‌دهد */
+    .auth-card {
+        @apply bg-var-color-00 dark:bg-var-color-75 border border-var-color-68 dark:border-var-color-72
+               shadow-var-shadow-02 dark:shadow-var-shadow-08;
+    }
+
+    /* ورودی. در لایت با هاور و فوکوس سفید می‌شود و با کارت یکی؛ در دارک همان
+       پر می‌ماند.
+       ⚠️ بوردرِ هاور و فوکوس اینجا نیست، در تُن‌هاست (`-accent` و
+       `-secondary`) — رنگِ کرسر هم به همین دلیل: هر فرم کرسرِ رنگِ خودش را
+       دارد. قاعدهٔ خنثی اینجا با بوردرِ رنگیِ تُن‌ها هم‌ویژگی می‌شد و فقط به
+       لطفِ ترتیبِ سطر می‌باخت. */
+    .auth-input {
+        @apply bg-var-color-67 dark:bg-var-color-73 border border-var-color-68 dark:border-var-color-72
+               text-var-color-74 dark:text-var-color-67
+               hover:bg-transparent dark:hover:bg-var-color-73
+               focus:bg-transparent dark:focus:bg-var-color-73
+               focus:outline-none focus:ring-0 transition-all duration-200 ease-in-out;
+    }
+
+    /* جلوگیری از استایلِ پیش‌فرضِ مرورگر در حالتِ اتوفیل */
+    .auth-input:-webkit-autofill,
+    .auth-input:-webkit-autofill:hover,
+    .auth-input:-webkit-autofill:focus {
+        -webkit-transition: box-shadow 200ms ease-in-out, border-color 200ms ease-in-out !important;
+        transition: box-shadow 200ms ease-in-out, border-color 200ms ease-in-out !important;
+        -webkit-text-fill-color: var(--color-var-color-74) !important;
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-67) inset !important;
+        background-clip: padding-box !important;
+    }
+
+    .dark .auth-input:-webkit-autofill,
+    .dark .auth-input:-webkit-autofill:hover,
+    .dark .auth-input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--color-var-color-67) !important;
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-73) inset !important;
+        background-clip: padding-box !important;
+    }
+
+    /* تُنِ ورود — آبی. هالهٔ فوکوس با `box-shadow`ِ مستقیم نوشته شده نه با
+       `@apply`، همان قاعدهٔ `.input-bluish`: تیلویند توکنِ سایه را در بیلد درجا
+       می‌نشاند. اینجا قفلِ `.accent-base` هم هست، ولی قاعده یک‌جور بماند. */
+    .auth-input-accent {
+        @apply caret-var-color-15
+               hover:border-var-color-14 dark:hover:border-var-color-16
+               focus:border-var-color-14 dark:focus:border-var-color-16;
+    }
+
+    .auth-input-accent:focus {
+        box-shadow: var(--shadow-var-shadow-00);
+    }
+
+    .auth-input-accent:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-67) inset, var(--shadow-var-shadow-00) !important;
+        box-shadow: 0 0 0 1000px var(--color-var-color-67) inset, var(--shadow-var-shadow-00) !important;
+    }
+
+    .dark .auth-input-accent:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-73) inset, var(--shadow-var-shadow-00) !important;
+    }
+
+    /* تُنِ ثبت‌نام — صورتی، قرینهٔ `auth-input-accent` */
+    .auth-input-secondary {
+        @apply caret-var-color-77
+               hover:border-var-color-79 dark:hover:border-var-color-80
+               focus:border-var-color-79 dark:focus:border-var-color-80;
+    }
+
+    .auth-input-secondary:focus {
+        box-shadow: var(--shadow-var-shadow-13);
+    }
+
+    .auth-input-secondary:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-67) inset, var(--shadow-var-shadow-13) !important;
+        box-shadow: 0 0 0 1000px var(--color-var-color-67) inset, var(--shadow-var-shadow-13) !important;
+    }
+
+    .dark .auth-input-secondary:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-73) inset, var(--shadow-var-shadow-13) !important;
+    }
+
+    /* خطا — بوردرِ قرمز و رینگِ تختِ کم‌رنگ، حتی روی فوکوس */
+    .auth-input-error {
+        @apply border-var-color-81! hover:border-var-color-81! dark:border-var-color-82!
+               dark:hover:border-var-color-82! focus:border-var-color-81!;
+        box-shadow: var(--shadow-var-shadow-14) !important;
+    }
+
+    .auth-input-error:-webkit-autofill,
+    .auth-input-error:-webkit-autofill:hover,
+    .auth-input-error:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-67) inset, var(--shadow-var-shadow-14) !important;
+        box-shadow: 0 0 0 1000px var(--color-var-color-67) inset, var(--shadow-var-shadow-14) !important;
+    }
+
+    .dark .auth-input-error:-webkit-autofill,
+    .dark .auth-input-error:-webkit-autofill:hover,
+    .dark .auth-input-error:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px var(--color-var-color-73) inset, var(--shadow-var-shadow-14) !important;
+    }
+
+    .auth-btn {
+        @apply flex justify-center items-center cursor-pointer transition-all duration-200 ease-in-out;
+    }
+
+    .auth-btn:disabled {
+        @apply cursor-not-allowed opacity-50;
+    }
+
+    /* دکمه. ⚠️ **در حالتِ عادی هیچ رنگی ندارد**: پر و بوردر و متنش همان فیلدِ
+       فرم است، به‌علاوهٔ هالهٔ درونیِ ۰۹/۱۰ که آن را کمی برجسته نشان می‌دهد.
+       رنگ فقط با هاور می‌آید: پرِ رنگی، لبه‌ای **روشن‌تر** از همان رنگ (همان
+       یک پیکسل دکمه را نورانی نشان می‌دهد نه فقط رنگی) و هالهٔ ۱۱/۱۲.
+       آیکون‌ها قاعدهٔ جدا ندارند؛ react-icons با `currentColor` دنبالِ متن
+       می‌آیند. هاورها با `:not(:disabled)` نوشته شده‌اند نه واریانتِ `enabled:`.
+
+       ⚠️ **متنِ روی پرِ آبی در تمِ تیره مشکی است، نه سفیدِ HMS.** سفید روی
+       #00bcff کنتراستِ ۲٫۲ دارد، و این همان قاعده‌ای است که `.btn` برای همهٔ
+       دکمه‌های آبیِ برنامه دارد (روشن سفید، تیره مشکی) — پس «ورود» و «ثبت مشتری
+       جدید» یک‌جور هاور می‌شوند. صورتی در هر دو تم سفید است (۳٫۶)، عیناً HMS. */
+    .auth-btn-accent,
+    .auth-btn-secondary {
+        @apply border border-var-color-68 dark:border-var-color-72
+               bg-var-color-67 dark:bg-var-color-73
+               text-var-color-71 dark:text-var-color-70
+               shadow-var-shadow-09 dark:shadow-var-shadow-10;
+    }
+
+    .auth-btn-accent:not(:disabled):hover {
+        background-color: var(--color-var-color-15);
+        border-color: var(--color-var-color-76);
+        color: var(--color-var-color-00);
+        box-shadow: var(--shadow-var-shadow-11);
+    }
+
+    .dark .auth-btn-accent:not(:disabled):hover {
+        color: var(--color-var-color-11);
+    }
+
+    .auth-btn-secondary:not(:disabled):hover {
+        background-color: var(--color-var-color-77);
+        border-color: var(--color-var-color-78);
+        color: var(--color-var-color-00);
+        box-shadow: var(--shadow-var-shadow-12);
+    }
+
+    /* بوردرِ رنگیِ دکمهٔ گوگل — فقط تمِ تیره، عیناً HMS؛ در لایت همان بوردرِ
+       معمولیِ دکمه می‌ماند.
+       ⚠️ با `background-clip` ساخته می‌شود نه `border-color`: `border-color`
+       گرادیان نمی‌پذیرد و `border-image` با `border-radius` نمی‌سازد. بوردر شفاف
+       می‌شود و دو لایهٔ پس‌زمینه (یکی تا `padding-box`، یکی تا `border-box`) آن
+       یک پیکسل را می‌سازند.
+       ⚠️ گرادیان `conic` است نه `linear`: رنگ باید دورِ **محیط** بچرخد؛ با
+       خطی دو گوشهٔ مقابل همیشه هم‌رنگ درمی‌آیند. رنگ‌ها هگزهای برندِ گوگل‌اند
+       و ایستگاه‌ها را صاحبِ پروژه در HMS تنظیم کرده — بی‌دلیل جابه‌جا نشوند.
+       ⚠️ لایهٔ اول پرِ `auth-btn-accent` (۷۳) را فرض می‌کند، و کلِ افکت داخلِ
+       `@supports` است: مرورگری که `conic-gradient` نشناسد کلِ پس‌زمینه را دور
+       می‌اندازد و چون بوردر شفاف شده، دکمه بی‌بوردر می‌ماند. روی هاور
+       `background-image: none` لازم است وگرنه این لایه پرِ رنگیِ هاور را
+       می‌پوشاند. */
+    @supports (background: conic-gradient(red, blue)) {
+        .dark .auth-edge-gradient {
+            border: 1px solid transparent;
+            background-image:
+                linear-gradient(var(--color-var-color-73), var(--color-var-color-73)),
+                conic-gradient(from 0deg at 50% 50%,
+                               rgba(234, 67, 53, 0.55) 0deg,
+                               rgba(255, 255, 255, 0.06) 90deg,
+                               rgba(66, 133, 244, 0.55) 110deg,
+                               rgba(66, 133, 244, 0.75) 130deg,
+                               rgba(52, 168, 83, 0.70) 150deg,
+                               rgba(52, 168, 83, 0.65) 160deg,
+                               rgba(52, 168, 83, 0.30) 240deg,
+                               rgba(255, 255, 255, 0.06) 260deg,
+                               rgba(250, 188, 5, 0.07) 270deg,
+                               rgba(250, 188, 5, 0.50) 300deg,
+                               rgba(234, 67, 53, 0.65) 330deg,
+                               rgba(234, 67, 53, 0.60) 340deg,
+                               rgba(234, 67, 53, 0.55) 360deg);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        .dark .auth-edge-gradient:not(:disabled):hover {
+            background-image: none;
+            border-color: var(--color-var-color-76);
+        }
     }
 }
 
@@ -1043,10 +1367,9 @@ html[data-accent="green"].dark {
 
 /* بنفش — پایه #c084fc.
 
-   📌 **این رنگ از قبل در پروژه بود**، منتها فقط برای صفحهٔ ثبت‌نام
-   (`btn-purplish` و `input-purplish` و توکن‌های ۲۱ تا ۲۵). آن توکن‌ها دستِ اکسنت
-   نیستند و عوض نمی‌شوند، پس با انتخابِ این پالت صفحهٔ ثبت‌نام و بقیهٔ برنامه
-   هم‌رنگ می‌شوند — که اینجا اتفاقِ خوبی است، نه تداخل. */
+   📌 **این رنگ از قبل در پروژه بود** — توکن‌های ۲۱ تا ۲۵، که صفحهٔ پروفایل و
+   گفتگو هم دارند. آن توکن‌ها دستِ اکسنت نیستند و عوض نمی‌شوند. (تا ۱۴۰۵/۰۶/۲۸
+   رنگِ صفحهٔ ثبت‌نام هم بود؛ از آن روز ثبت‌نام صورتیِ HMS است.) */
 html[data-accent="purple"] {
     --color-var-color-12: rgba(192, 132, 252, 0.05);  /* تهرنگِ خیلی کم — ردیفِ فعال و پرِ دکمه */
     --color-var-color-13: rgba(192, 132, 252, 0.20);  /* تهرنگ — بوردرِ دکمه و هاله */
@@ -1134,9 +1457,10 @@ html[data-accent="purple"] {
    متغیرها را روی ریشه‌اش دوباره تعریف کنیم — تعریفِ نزدیک‌تر بر ارثی می‌چربد.
 
    جاهایی که می‌گیرندش:
-   - صفحه‌های پیش از ورود (ورود، ثبت‌نام، ورود با پیامک، فراموشیِ رمز): ورود
-     همیشه آبی و ثبت‌نام همیشه بنفش. کاربر هنوز وارد نشده و این تجربهٔ برند است،
-     نه ترجیحِ شخصی.
+   - صفحه‌های پیش از ورود (ورود، ثبت‌نام، ورود با پیامک، فراموشیِ رمز) — کلاس
+     روی `AuthBackdrop` است: ورود همیشه آبی. کاربر هنوز وارد نشده و این تجربهٔ
+     برند است، نه ترجیحِ شخصی. (صورتیِ ثبت‌نام توکن‌های خودش را دارد و اصلاً
+     دستِ پالت‌ها نیست.)
    - نوارِ پیغام: موفقیت سبز، خطا قرمز، اطلاع آبی — در هر پالتی. رنگِ پیغام
      **معنا** دارد. پیش‌تر «اطلاع» از خودِ اکسنت رنگ می‌گرفت و «موفقیت» از
      خانوادهٔ بستانکار که پالتِ سبز آبی‌اش می‌کند، پس در پالتِ سبز پیغامِ موفقیت

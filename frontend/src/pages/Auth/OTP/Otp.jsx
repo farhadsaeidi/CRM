@@ -1,20 +1,34 @@
 import {useLocation} from "react-router";
+import AuthBackdrop from "../components/AuthBackdrop.jsx";
 import OtpPhone from "./components/OtpPhone.jsx";
 import OtpConfirm from "./components/OtpConfirm.jsx";
 
+/**
+ * ورود با پیامک — دو گام که مثلِ ورود و ثبت‌نام بینِ هم اسلاید می‌کنند.
+ *
+ * ⚠️ **ارتفاع ثابت نیست**، برخلافِ `RegLog` — همان ساختارِ `Otp`ِ HMS. کارت‌ها
+ * در جریانِ عادی کنارِ هم می‌نشینند و با `margin` جابه‌جا می‌شوند، پس ارتفاعِ
+ * ظرف از خودِ محتوا می‌آید. پیش‌تر هر دو کارت `h-84` بودند و با `absolute`
+ * اسلاید می‌کردند: محتوای بلندتر از ۳۳۶ پیکسل (مثلاً متنی که دوخطی شود) زیرِ
+ * `overflow-hidden`ِ ظرف بریده می‌شد، و سرِ تازهٔ کارت‌ها از قبلی بلندتر است.
+ */
 const Otp = () => {
     const {pathname} = useLocation();
     const step = pathname.includes("otp/phone") ? "phone" : "confirm";
 
     return (
-        <section className="accent-base w-full min-h-screen flex flex-col justify-center items-center bg-[radial-gradient(circle_at_50%_0%,#f9fafb_0%,#f3f4f6_60%)] dark:bg-[radial-gradient(circle_at_50%_0%,#171b2b_0%,#0B0E14_60%)]">
-            <div className="relative w-100 max-w-[calc(100vw-2rem)] h-84 overflow-hidden">
-                <div className={`absolute ${step === "phone" ? "right-0" : "-right-100"} top-0 bottom-0 flex flex-row justify-start items-center transition-all duration-200 ease-in-out`}>
-                    <OtpPhone key={`otp-phone-${step}`} active={step === "phone"}/>
-                    <OtpConfirm key={`otp-confirm-${step}`} active={step === "confirm"}/>
+        <AuthBackdrop>
+            <div className="relative w-100 max-w-[calc(100vw-2rem)] overflow-hidden">
+                <div className={`flex flex-row justify-start items-start transition-all duration-200 ease-in-out ${step === "phone" ? "mr-0" : "-mr-100"}`}>
+                    <div className="w-100 shrink-0">
+                        <OtpPhone key={`otp-phone-${step}`} active={step === "phone"}/>
+                    </div>
+                    <div className="w-100 shrink-0">
+                        <OtpConfirm key={`otp-confirm-${step}`} active={step === "confirm"}/>
+                    </div>
                 </div>
             </div>
-        </section>
+        </AuthBackdrop>
     );
 };
 

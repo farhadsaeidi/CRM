@@ -1,15 +1,14 @@
 import {useEffect, useRef, useState} from "react";
 import {useLocation, useNavigate} from "react-router";
 import toast from "react-hot-toast";
-import {HiOutlineArrowRight} from "react-icons/hi";
 import {FiCheck, FiClock, FiRefreshCw} from "react-icons/fi";
 import {useAuth} from "../../../../context/AuthContext.js";
 import {authApi} from "../../../../api/auth.js";
-import ThemeSwitcher from "../../../../components/common/ThemeSwitcher.jsx";
 import {notify, notifyLoading} from "../../../../lib/notify.jsx";
 import {toEnglishDigits} from "../../../../lib/utils.js";
 import {otpConfirmSchema} from "../../../../validators/auth.js";
 import {useInputTabLoop} from "../../../../lib/useInputTabLoop.js";
+import AuthHeader from "../../components/AuthHeader.jsx";
 
 const OTP_LENGTH = 5;
 const OTP_EXPIRES_SECONDS = 120;
@@ -169,26 +168,19 @@ const OtpConfirm = ({active = false}) => {
     };
 
     return (
-        <form ref={formRef} className="w-100 h-84 rounded-3xl px-6 pt-6 pb-8 form-container"
+        <form ref={formRef} className="w-100 max-w-[calc(100vw-2rem)] rounded-3xl px-6 pt-6 pb-8 auth-card"
               onSubmit={onSubmit} autoComplete="off" inert={!active}>
-            <header className="w-full mb-5 flex flex-row justify-between items-center">
-                <button type="button" tabIndex={-1} aria-label="بازگشت" onClick={() => navigate("/auth/otp/phone", {replace: true})}
-                        className="grid h-8 w-8 place-items-center rounded-full cursor-pointer bg-transparent transition-all duration-200 ease-in-out text-var-color-06 hover:text-var-color-08 dark:text-var-color-03 dark:hover:text-var-color-03 hover:bg-var-color-01 dark:hover:bg-var-color-65">
-                    <HiOutlineArrowRight className="h-6 w-6"/>
-                </button>
-                <h2 className="text-var-color-08 dark:text-var-color-01 text-2xl text-center">کد تایید</h2>
-                <ThemeSwitcher/>
-            </header>
+            <AuthHeader title="کد تایید" onBack={() => navigate("/auth/otp/phone", {replace: true})}/>
 
-            <main className="w-full">
-                {/* وسط‌چین و هم‌رنگِ SAM. شماره در `dir=ltr` می‌نشیند وگرنه در
-                    جملهٔ فارسی وارونه خوانده می‌شود. */}
-                <p className="w-full m-0 text-center text-var-color-06 dark:text-var-color-03">
+            <main className="w-full mt-4">
+                {/* وسط‌چین، مثل SAM. شماره در `dir=ltr` می‌نشیند وگرنه در جملهٔ
+                    فارسی وارونه خوانده می‌شود. */}
+                <p className="w-full m-0 text-center text-[14px] text-var-color-71 dark:text-var-color-70">
                     کد تایید به شماره <span dir="ltr">{otpPhone}</span> ارسال شد.
                 </p>
 
                 {/* خانه‌ها با dir=ltr چیده می‌شوند تا اولین رقم سمت چپ بنشیند، مثل خودِ عدد */}
-                <div className="flex flex-row justify-center items-center gap-2 mt-2" dir="ltr">
+                <div className="flex flex-row justify-center items-center gap-2 mt-3" dir="ltr">
                     {digits.map((digit, index) => (
                         <input
                             key={index}
@@ -198,10 +190,11 @@ const OtpConfirm = ({active = false}) => {
                             maxLength={1}
                             autoComplete="off"
                             value={digit}
+                            aria-label={`رقم ${index + 1} از ${OTP_LENGTH}`}
                             onChange={(e) => writeDigit(index, e.target.value)}
                             onPaste={(e) => onPaste(index, e)}
                             onKeyDown={(e) => onKeyDown(index, e)}
-                            className={`w-10 h-10 text-center text-base rounded-xl input input-bluish ${error ? "input-error" : ""}`}
+                            className={`w-11 h-11 text-center text-[17px] rounded-xl auth-input auth-input-accent ${error ? "auth-input-error" : ""}`}
                         />
                     ))}
                 </div>
@@ -209,26 +202,26 @@ const OtpConfirm = ({active = false}) => {
                 {/* «زمان باقیمانده:» برچسب دارد، مثل SAM — عددِ تنها نمی‌گوید
                     چه چیزی دارد می‌شمارد. حالتِ پایانِ اعتبار مالِ CRM است و
                     می‌ماند: بدونش کاربر نمی‌فهمد چرا دکمهٔ تایید خاموش شد. */}
-                <div className="w-full flex flex-row justify-center items-center mt-5">
-                    <FiClock className={`w-5 h-5 ml-1 ${expired ? "text-var-color-28" : "text-var-color-15"}`}/>
+                <div className="w-full flex flex-row justify-center items-center gap-1.5 mt-5">
+                    <FiClock className={`w-4 h-4 ${expired ? "text-var-color-81 dark:text-var-color-82" : "text-var-color-15"}`}/>
                     {expired ? (
-                        <p className="m-0 ml-2 text-var-color-28 text-[14px]">اعتبار کد به پایان رسید</p>
+                        <p className="m-0 text-[13px] text-var-color-81 dark:text-var-color-82">اعتبار کد به پایان رسید</p>
                     ) : (
                         <>
-                            <p className="m-0 ml-2 text-var-color-06 dark:text-var-color-03 text-[14px]">زمان باقیمانده:</p>
-                            <p className="m-0 text-var-color-15 text-[15px]" dir="ltr">{formatTimer(remainingSeconds)}</p>
+                            <p className="m-0 text-[13px] text-var-color-71 dark:text-var-color-70">زمان باقیمانده:</p>
+                            <p className="m-0 text-[14px] text-var-color-19 dark:text-var-color-76" dir="ltr">{formatTimer(remainingSeconds)}</p>
                         </>
                     )}
                 </div>
 
                 {/* آیکون بیرونِ دکمه است، مثل SAM: خودِ آیکون کلیک‌پذیر نیست و
                     وقتی ارسالِ دوباره خاموش است هم رنگش عوض نمی‌شود. */}
-                <div className="w-full flex flex-row justify-center items-center mt-3">
-                    <FiRefreshCw className="w-4.5 h-4.5 ml-1.25 text-var-color-15"/>
+                <div className="w-full flex flex-row justify-center items-center gap-1.5 mt-2.5">
+                    <FiRefreshCw className="w-4 h-4 text-var-color-15"/>
                     <button type="button" tabIndex={-1} onClick={resend} disabled={!expired}
-                            className={`m-0 ml-2 text-[14px] bg-transparent border-none p-0 transition-all duration-200 ease-in-out ${expired
-                                ? "text-var-color-06 hover:text-var-color-11 dark:text-var-color-03 dark:hover:text-var-color-00 cursor-pointer"
-                                : "text-var-color-04 dark:text-var-color-05 cursor-not-allowed"}`}>
+                            className={`m-0 text-[13px] bg-transparent border-none p-0 transition-all duration-200 ease-in-out ${expired
+                                ? "text-var-color-71 dark:text-var-color-70 hover:text-var-color-19 dark:hover:text-var-color-76 cursor-pointer"
+                                : "text-var-color-69 dark:text-var-color-71 cursor-not-allowed"}`}>
                         ارسال دوبارهٔ کد
                     </button>
                 </div>
@@ -236,11 +229,11 @@ const OtpConfirm = ({active = false}) => {
 
             {/* دکمهٔ اصلی در فوترِ خودش، مثل SAM — از بدنه جدا می‌شود و فاصلهٔ
                 بیشتری می‌گیرد. */}
-            <footer className="w-full mt-5 mb-1">
+            <footer className="w-full mt-5">
                 <button type="submit" tabIndex={-1} disabled={submitting || expired}
-                        className="w-full flex items-center justify-center py-2.5 rounded-xl btn btn-bluish disabled:opacity-60 disabled:cursor-not-allowed">
+                        className="w-full py-2.5 rounded-xl auth-btn auth-btn-accent disabled:opacity-60 disabled:cursor-not-allowed">
                     <FiCheck className="w-5 h-5 ml-2"/>
-                    <h2 className="m-0 text-[17px]">{submitting ? "در حال بررسی ..." : "تایید و ورود"}</h2>
+                    <span className="text-[17px]">{submitting ? "در حال بررسی ..." : "تایید و ورود"}</span>
                 </button>
             </footer>
         </form>

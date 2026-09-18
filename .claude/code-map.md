@@ -4,38 +4,47 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-08-26 05:47 · کامیت `827b9c8`
+آخرین تولید: 2026-09-19 01:55 · کامیت `67f181a`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 42 | 4157 |
-| فرانت‌اند | 87 | 8732 |
+| بک‌اند | 57 | 7434 |
+| فرانت‌اند | 110 | 11138 |
 
-اپ‌های جنگو: account api home
+اپ‌های جنگو: account api chat home
 
 ## endpointها
 
 | مسیر | ویو | فایل:خط | مجوز |
 |---|---|---|---|
-| `/api/auth/csrf/` | CSRFView | account/views.py:80 | [AllowAny] |
-| `/api/auth/me/` | MeView | account/views.py:88 | [AllowAny] |
-| `/api/auth/register/` | RegisterView | account/views.py:100 | [AllowAny] |
-| `/api/auth/login/` | LoginView | account/views.py:143 | [AllowAny] |
+| `/api/auth/csrf/` | CSRFView | account/views.py:81 | [AllowAny] |
+| `/api/auth/me/` | MeView | account/views.py:89 | [AllowAny] |
+| `/api/auth/register/` | RegisterView | account/views.py:101 | [AllowAny] |
+| `/api/auth/login/` | LoginView | account/views.py:141 | [AllowAny] |
 | `/api/auth/logout/` | LogoutView | account/views.py:363 | [AllowAny] |
-| `/api/auth/otp/phone/` | OtpPhoneView | account/views.py:181 | [AllowAny] |
-| `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:228 | [AllowAny] |
-| `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:289 | [AllowAny] |
+| `/api/auth/otp/phone/` | OtpPhoneView | account/views.py:179 | [AllowAny] |
+| `/api/auth/otp/confirm/` | OtpConfirmView | account/views.py:227 | [AllowAny] |
+| `/api/auth/forget-password/` | ForgetPasswordView | account/views.py:288 | [AllowAny] |
 | `/api/auth/profile/` | ProfileView | account/views.py:325 | _(پیش‌فرض DRF)_ |
 | `/api/auth/change-password/` | ChangePasswordView | account/views.py:343 | _(پیش‌فرض DRF)_ |
-| `/api/dashboard/` | DashboardView | home/views.py:154 | _(پیش‌فرض DRF)_ |
-| `/api/statement/` | StatementView | home/views.py:125 | _(پیش‌فرض DRF)_ |
-| `/api/export/xlsx/` | ExcelExportView | home/views.py:136 | _(پیش‌فرض DRF)_ |
-| `/api/customers/` | CustomerListCreateView | home/views.py:58 | _(پیش‌فرض DRF)_ |
-| `/api/customers/stats/` | CustomerStatsView | home/views.py:95 | _(پیش‌فرض DRF)_ |
-| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:106 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/` | AllTransactionsView | home/views.py:179 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:215 | _(پیش‌فرض DRF)_ |
-| `/api/transactions/stats/` | AllTransactionsStatsView | home/views.py:208 | _(پیش‌فرض DRF)_ |
+| `/api/dashboard/` | DashboardView | home/views.py:195 | _(پیش‌فرض DRF)_ |
+| `/api/statement/` | StatementView | home/views.py:126 | _(پیش‌فرض DRF)_ |
+| `/api/reminders/debtors/` | DebtorReminderListView | home/views.py:155 | _(پیش‌فرض DRF)_ |
+| `/api/reminders/send/` | DebtorReminderSendView | home/views.py:163 | _(پیش‌فرض DRF)_ |
+| `/api/export/xlsx/` | ExcelExportView | home/views.py:137 | _(پیش‌فرض DRF)_ |
+| `/api/customers/` | CustomerListCreateView | home/views.py:59 | _(پیش‌فرض DRF)_ |
+| `/api/customers/stats/` | CustomerStatsView | home/views.py:96 | _(پیش‌فرض DRF)_ |
+| `/api/customers/<int:pk>/` | CustomerDetailView | home/views.py:107 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/` | AllTransactionsView | home/views.py:220 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:256 | _(پیش‌فرض DRF)_ |
+| `/api/transactions/stats/` | AllTransactionsStatsView | home/views.py:249 | _(پیش‌فرض DRF)_ |
+| `/api/chat/models/` | ModelListView | chat/views.py:63 | [IsOwner] |
+| `/api/chat/conversations/` | ConversationListCreateView | chat/views.py:39 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/` | ConversationDetailView | chat/views.py:51 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/messages/` | MessageCreateView | chat/views.py:90 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/stream/` | MessageStreamView | chat/views.py:241 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/rewind/` | MessageRewindView | chat/views.py:163 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/fork/` | MessageForkView | chat/views.py:188 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -44,6 +53,8 @@
 - `account.Roles` — 0 فیلد — ./account/models.py:40
 - `account.MyUser` — 11 فیلد — ./account/models.py:45
 - `account.SMSLog` — 6 فیلد — ./account/models.py:103
+- `chat.Conversation` — 5 فیلد — ./chat/models.py:6
+- `chat.Message` — 6 فیلد — ./chat/models.py:46
 - `home.AccountCode` — 0 فیلد — ./home/models.py:7
 - `home.Customer` — 5 فیلد — ./home/models.py:17
 - `home.CustomerOwner` — 3 فیلد — ./home/models.py:55
@@ -62,7 +73,7 @@
     - `Roles` :40
     - `MyUser` :45
     - `SMSLog` :103
-- **./account/serializers.py** (35 خط، 4 نماد)
+- **./account/serializers.py** (39 خط، 4 نماد)
     - `UserSerializer` :8
     - `ProfileUpdateSerializer` :18
 - **./account/services.py** (128 خط، 9 نماد)
@@ -73,34 +84,120 @@
     - `_delivery_target` :45
     - `send_sms` :56
     - `send_token_sms` :76
-- **./account/tests.py** (366 خط، 50 نماد)
-    - `RegisterLoginTests` :22
-    - `OtpTests` :94
-    - `PasswordTests` :170
-    - `ProfileTests` :228
-    - `BusinessNameTests` :285
-    - `SmsDeliveryTargetTests` :324
+- **./account/tests.py** (398 خط، 52 نماد)
+    - `RegisterLoginTests` :23
+    - `OtpTests` :95
+    - `PasswordTests` :171
+    - `ProfileTests` :231
+    - `BusinessNameTests` :297
+    - `SmsDeliveryTargetTests` :336
+    - `DevTrustedOriginsTests` :381
 - **./account/views.py** (371 خط، 26 نماد)
-    - `normalize_digits` :36
-    - `to_persian_digits` :43
-    - `generate_otp_code` :48
-    - `get_otp_remaining_seconds` :54
-    - `normalize_phone_number` :62
-    - `is_valid_iranian_mobile` :70
-    - `CSRFView` :80
-    - `MeView` :88
-    - `RegisterView` :100
-    - `LoginView` :143
-    - `OtpPhoneView` :181
-    - `OtpConfirmView` :228
-    - `ForgetPasswordView` :289
+    - `normalize_digits` :37
+    - `to_persian_digits` :44
+    - `generate_otp_code` :49
+    - `get_otp_remaining_seconds` :55
+    - `normalize_phone_number` :63
+    - `is_valid_iranian_mobile` :71
+    - `CSRFView` :81
+    - `MeView` :89
+    - `RegisterView` :101
+    - `LoginView` :141
+    - `OtpPhoneView` :179
+    - `OtpConfirmView` :227
+    - `ForgetPasswordView` :288
     - `ProfileView` :325
 - **./api/apps.py** (5 خط، 1 نماد)
     - `ApiConfig` :4
 - **./api/views.py** (15 خط، 2 نماد)
     - `HealthView` :7
+- **./chat/admin.py** (26 خط، 3 نماد)
+    - `MessageInline` :6
+    - `ConversationAdmin` :14
+    - `MessageAdmin` :22
+- **./chat/apps.py** (5 خط، 1 نماد)
+    - `ChatConfig` :4
+- **./chat/catalog.py** (72 خط، 3 نماد)
+    - `default_model` :39
+    - `resolve` :48
+    - `choices` :61
+- **./chat/engine.py** (686 خط، 16 نماد)
+    - `is_fallback` :89
+    - `_has_numbers` :102
+    - `EngineNotConfigured` :141
+    - `EngineError` :145
+    - `is_configured` :149
+    - `_proxies` :157
+    - `_call_model` :180
+    - `_merge_tool_deltas` :212
+    - `_stream_model` :237
+    - `_rescue_tool_calls` :317
+    - `_looks_machine` :373
+    - `_rescue_bare_call` :391
+    - `_rescued` :421
+    - `_history` :437
+- **./chat/models.py** (80 خط، 8 نماد)
+    - `Conversation` :6
+    - `Message` :46
+- **./chat/serializers.py** (42 خط، 7 نماد)
+    - `MessageSerializer` :7
+    - `ConversationSerializer` :14
+    - `ConversationDetailSerializer` :38
+- **./chat/suggestions.py** (129 خط، 2 نماد)
+    - `build_suggestions` :86
+- **./chat/test_engine.py** (426 خط، 51 نماد)
+    - `say` :26
+    - `call` :31
+    - `ToolScopingTests` :38
+    - `EngineLoopTests` :132
+    - `RescueTests` :283
+    - `MachineOutputTests` :345
+    - `ProxyTests` :386
+    - `NotConfiguredTests` :420
+- **./chat/test_stream.py** (243 خط، 27 نماد)
+    - `stream_of` :31
+    - `tool_call` :43
+    - `StreamLoopTests` :49
+    - `StreamEncodingTests` :117
+    - `ToolDeltaMergeTests` :150
+    - `SuggestionTests` :182
+- **./chat/tests.py** (368 خط، 49 نماد)
+    - `ConversationCrudTests` :19
+    - `MessageTests` :89
+    - `ScopingTests` :179
+    - `ModelPickerTests` :215
+    - `RewindAndForkTests` :287
+- **./chat/tools.py** (397 خط، 17 نماد)
+    - `_customers_of` :35
+    - `_clamp` :39
+    - `_jalali` :43
+    - `_transaction_row` :62
+    - `has_data` :80
+    - `tool_overview` :95
+    - `tool_customer_summary` :115
+    - `tool_transaction_summary` :120
+    - `tool_debtors` :125
+    - `tool_find_customer` :140
+    - `tool_customer_ledger` :161
+    - `tool_recent_transactions` :177
+    - `tool_customer_transactions` :190
+    - `tool_best_payers` :209
+- **./chat/views.py** (340 خط، 24 نماد)
+    - `OwnerScopedMixin` :26
+    - `ConversationListCreateView` :39
+    - `ConversationDetailView` :51
+    - `ModelListView` :63
+    - `_apply_model` :76
+    - `MessageCreateView` :90
+    - `MessageActionMixin` :145
+    - `MessageRewindView` :163
+    - `MessageForkView` :188
+    - `_sse` :231
+    - `MessageStreamView` :241
 - **./core/permissions.py** (22 خط، 3 نماد)
     - `role_permission` :5
+- **./core/settings.py** (322 خط، 1 نماد)
+    - `_local_ipv` :195
 - **./home/admin.py** (26 خط، 3 نماد)
     - `CustomerAdmin` :6
     - `CustomerOwnerAdmin` :14
@@ -129,6 +226,10 @@
     - `Customer` :17
     - `CustomerOwner` :55
     - `Transaction` :71
+- **./home/reminders.py** (125 خط، 3 نماد)
+    - `format_amount` :25
+    - `build_debtor_list` :34
+    - `send_reminders` :87
 - **./home/reports.py** (188 خط، 4 نماد)
     - `_today` :30
     - `build_statement` :36
@@ -158,6 +259,10 @@
 - **./home/tests/test_customers_api.py** (125 خط، 16 نماد)
     - `CustomerListTests` :11
     - `CustomerWriteTests` :62
+- **./home/tests/test_reminders.py** (164 خط، 23 نماد)
+    - `DebtorListTests` :20
+    - `ReminderSendTests` :82
+    - `AmountFormatTests` :160
 - **./home/tests/test_reports.py** (146 خط، 23 نماد)
     - `StatementTests` :12
     - `ExcelExportTests` :87
@@ -178,33 +283,35 @@
     - `LedgerTests` :11
     - `DateSearchTests` :82
     - `AllTransactionsTests` :132
-- **./home/views.py** (365 خط، 39 نماد)
-    - `CustomerPagination` :32
-    - `OwnerScopedMixin` :41
-    - `CustomerListCreateView` :58
-    - `CustomerStatsView` :95
-    - `CustomerDetailView` :106
-    - `StatementView` :125
-    - `ExcelExportView` :136
-    - `DashboardView` :154
-    - `AllTransactionsPagination` :168
-    - `AllTransactionsView` :179
-    - `AllTransactionsStatsView` :208
-    - `AllTransactionsSearchView` :215
-    - `TransactionListCreateView` :243
-    - `TransactionDetailView` :297
+- **./home/views.py** (406 خط، 43 نماد)
+    - `CustomerPagination` :33
+    - `OwnerScopedMixin` :42
+    - `CustomerListCreateView` :59
+    - `CustomerStatsView` :96
+    - `CustomerDetailView` :107
+    - `StatementView` :126
+    - `ExcelExportView` :137
+    - `DebtorReminderListView` :155
+    - `DebtorReminderSendView` :163
+    - `DashboardView` :195
+    - `AllTransactionsPagination` :209
+    - `AllTransactionsView` :220
+    - `AllTransactionsStatsView` :249
+    - `AllTransactionsSearchView` :256
 - **./manage.py** (22 خط، 1 نماد)
     - `main` :7
 
 ## فرانت‌اند
 
 ### صفحه‌ها
-- **frontend/src/pages/Chat/Chat.jsx** (83 خط)
+- **frontend/src/pages/Chat/Chat.jsx** (329 خط)
+    - AgentIcon
     - Breadcrumb
     - ChatPane
     - ChatSidebar
     - Sidebar
-- **frontend/src/pages/Customers/CustomerLedger.jsx** (41 خط)
+    - notify
+- **frontend/src/pages/Customers/CustomerLedger.jsx** (54 خط)
     - Breadcrumb
     - LedgerKpis
     - TransactionsTable
@@ -216,7 +323,7 @@
     - HomeSidebar
     - Sidebar
 - **frontend/src/pages/NotFound/NotFound.jsx** (27 خط)
-- **frontend/src/pages/Profile/Profile.jsx** (384 خط)
+- **frontend/src/pages/Profile/Profile.jsx** (358 خط)
     - Breadcrumb
     - ChangePasswordModal
     - ScrollContainer
@@ -224,9 +331,10 @@
 - **frontend/src/pages/Statement/Statement.jsx** (208 خط)
     - LogoIcon
     - notify
-- **frontend/src/pages/Transactions/Transactions.jsx** (460 خط)
+- **frontend/src/pages/Transactions/Transactions.jsx** (491 خط)
     - Breadcrumb
     - CustomTooltip
+    - CustomerPickerModal
     - Footer
     - MenuItem
     - RowSelectMark
@@ -235,16 +343,20 @@
     - notify
 
 ### کامپوننت‌های مشترک
+- `AccentPicker` — 137 خط
+- `AgentIcon` — 32 خط
 - `Breadcrumb` — 72 خط
 - `BusinessNameModal` — 166 خط
-- `ChangePasswordModal` — 180 خط
+- `ChangePasswordModal` — 178 خط
 - `CustomTooltip` — 54 خط
-- `Footer` — 455 خط
+- `CustomerPickerModal` — 258 خط
+- `DebtReminderModal` — 262 خط
+- `Footer` — 476 خط
 - `GuideModal` — 238 خط
 - `Header` — 42 خط
-- `KpiCard` — 116 خط
-- `LogoIcon` — 28 خط
-- `MenuItem` — 34 خط
+- `KpiCard` — 134 خط
+- `LogoIcon` — 36 خط
+- `MenuItem` — 44 خط
 - `ModalActions` — 53 خط
 - `ModalCloseButton` — 30 خط
 - `Pagination` — 77 خط
@@ -252,17 +364,24 @@
 - `RowSelectMark` — 33 خط
 - `ScrollContainer` — 115 خط
 - `Sidebar` — 76 خط
-- `ThemeSwitcher` — 87 خط
-- `WindowsIcon` — 37 خط
+- `ThemeMenuItem` — 33 خط
+- `ThemeSwitcher` — 33 خط
+- `WindowsIcon` — 40 خط
 
 ### لایهٔ API
 - **auth.js**: me login register otpPhone otpConfirm forgetPassword updateProfile changePassword logout
+
+- **chat.js**: list create detail remove rename rewind fork send models
+
+- **chatStream.js**: 
 
 - **client.js**: get post put patch delete
 
 - **customers.js**: list stats create update remove
 
 - **dashboard.js**: get
+
+- **reminders.js**: debtors send
 
 - **reports.js**: statement
 
