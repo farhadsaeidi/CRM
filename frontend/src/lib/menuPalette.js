@@ -8,8 +8,15 @@
  * دارند و هر منو فقط وصلشان می‌کند.
  *
  * 📌 **مرجعش دکمهٔ «ثبت مشتری جدید» در حالتِ عادی است** (`.btn-bluish`): همان
- * زمینهٔ تهرنگِ ۱۲ و همان بوردرِ ۱۳/۱۶. یعنی هاورِ منو و حالتِ آرامِ دکمه‌های
- * برنامه یک زبان دارند و کاربر دو لهجهٔ متفاوت از یک رنگ نمی‌بیند.
+ * زمینهٔ تهرنگِ ۱۲ و در تمِ روشن همان بوردرِ ۱۳. یعنی هاورِ منو و حالتِ آرامِ
+ * دکمه‌های برنامه یک زبان دارند و کاربر دو لهجهٔ متفاوت از یک رنگ نمی‌بیند.
+ *
+ * ⚠️ **در تمِ تیره بوردر هم‌رنگِ زمینه است، یعنی `transparent` — نه توکنِ ۱۲.**
+ * زمینه به‌طورِ پیش‌فرض زیرِ بوردر هم کشیده می‌شود (`background-clip: border-box`)
+ * و بوردرِ نیمه‌شفاف **رویش** می‌نشیند؛ پس بوردرِ ۱۲ روی زمینهٔ ۱۲ لبه را دو لایه
+ * تهرنگ می‌کرد (حدودِ ۹٫۷۵٪ در برابر ۵٪ِ داخل) و خطِ کم‌رنگی می‌ماند. بوردرِ
+ * شفاف از همان زمینهٔ زیرش پر می‌شود، پس ردیف یکدست دیده می‌شود. پیش‌تر اینجا ۱۶
+ * بود و روی کرومِ خاکستری مثلِ قاب دورِ ردیف می‌نشست.
  *
  * ⚠️ تنها تفاوت با آن دکمه، **رنگِ متن در تمِ روشن** است: دکمه `var-color-06`
  * (خاکستریِ تیره) دارد ولی ردیفِ منو ۱۹ می‌گیرد — همان توکنی که در `index.css`
@@ -25,12 +32,12 @@
  */
 export const MENU_ROW_ACTIVE =
     "bg-var-color-12 text-var-color-19 dark:text-var-color-15 " +
-    "border-var-color-13 dark:border-var-color-16";
+    "border-var-color-13 dark:border-transparent";
 
 // «سطح» (زمینه و بوردر) از «متن» جدا نگه داشته شده چون کشوی انتخاب رنگ فقط
 // اولی را می‌خواهد
 const ROW_SURFACE_HOVER =
-    "hover:bg-var-color-12 hover:border-var-color-13 dark:hover:border-var-color-16";
+    "hover:bg-var-color-12 hover:border-var-color-13 dark:hover:border-transparent";
 
 const ROW_TEXT_HOVER = "hover:text-var-color-19 dark:hover:text-var-color-15";
 
@@ -51,4 +58,4 @@ export const MENU_ROW_HOVER_QUIET = ROW_SURFACE_HOVER;
  * است: تهرنگِ کم‌رنگ + بوردر، همان جفتی که دکمهٔ خروج در فوتر دارد.
  */
 export const MENU_ROW_DANGER =
-    "text-var-color-28 hover:bg-var-color-26 hover:border-var-color-45";
+    "text-var-color-28 hover:bg-var-color-26 hover:border-var-color-45 dark:hover:border-transparent";
