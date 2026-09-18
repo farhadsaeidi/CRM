@@ -82,7 +82,7 @@ const MessageActions = ({created, body, onCopy, onRewind, onFork}) => {
                         className="w-6.5 h-6.5 rounded-full flex items-center justify-center
                                    cursor-default transition-all duration-200 active:scale-90
                                    text-var-color-05 dark:text-var-color-04
-                                   hover:bg-var-color-01 dark:hover:bg-var-color-40
+                                   hover:bg-var-color-01 dark:hover:bg-var-color-65
                                    hover:text-var-color-06 dark:hover:text-var-color-01">
                     <Icon className={`w-3.5 h-3.5 ${spin ? "rotate-90" : ""}`}/>
                 </button>

@@ -17,7 +17,7 @@ const CURRENT_CHIP = "bg-var-color-12 dark:bg-var-color-44 text-var-color-19 dar
     "font-IRANSansXFaNumMedium cursor-default";
 
 const LINK_CHIP = "no-underline text-var-color-05 dark:text-var-color-39 " +
-    "hover:bg-var-color-01 dark:hover:bg-var-color-40 hover:text-var-color-19 dark:hover:text-var-color-15";
+    "hover:bg-var-color-01 dark:hover:bg-var-color-65 hover:text-var-color-19 dark:hover:text-var-color-15";
 
 /**
  * نوارِ مسیر — می‌گوید کاربر از کجا به اینجا رسیده و هر پله‌اش قابلِ کلیک است.

@@ -20,7 +20,7 @@ const TopDebtors = ({rows}) => {
                         onClick={() => navigate(customerLedgerPath(customer.id))}
                         className="w-full text-right cursor-pointer rounded-xl px-2.5 py-2 min-w-0
                                    transition-colors duration-200
-                                   hover:bg-var-color-01 dark:hover:bg-var-color-40"
+                                   hover:bg-var-color-01 dark:hover:bg-var-color-65"
                     >
                         <span className="flex flex-row items-center gap-2 min-w-0">
                             <span className="w-5 h-5 shrink-0 rounded-md flex items-center justify-center text-[10.5px]

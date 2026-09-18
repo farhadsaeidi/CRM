@@ -49,7 +49,7 @@ export const RecentTransactions = ({rows}) => {
                                 onClick={() => navigate(customerLedgerPath(row.customer_id))}
                                 className={`${ROW_GRID} w-full text-right cursor-pointer rounded-xl px-2.5 py-2
                                             min-w-0 transition-colors duration-200
-                                            hover:bg-var-color-01 dark:hover:bg-var-color-40`}
+                                            hover:bg-var-color-01 dark:hover:bg-var-color-65`}
                             >
                                 <span className={`w-6 h-6 rounded-lg flex items-center justify-center ${kind.chip}`}>
                                     <kind.icon className="w-3 h-3"/>
@@ -91,7 +91,7 @@ export const RecentCustomers = ({rows}) => {
                         onClick={() => navigate(customerLedgerPath(customer.id))}
                         className="w-full text-right cursor-pointer rounded-xl px-2.5 py-2 min-w-0
                                    flex flex-row items-center gap-2.5 transition-colors duration-200
-                                   hover:bg-var-color-01 dark:hover:bg-var-color-40"
+                                   hover:bg-var-color-01 dark:hover:bg-var-color-65"
                     >
                         <span className="w-7 h-7 shrink-0 rounded-lg flex items-center justify-center
                                          bg-var-color-12 dark:bg-var-color-44 text-var-color-15">

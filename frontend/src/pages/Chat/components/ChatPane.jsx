@@ -339,7 +339,7 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                         <button type="button" aria-label="افزودن"
                                 className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer
                                            text-var-color-05 dark:text-var-color-39
-                                           hover:bg-var-color-01 dark:hover:bg-var-color-40 transition-colors">
+                                           hover:bg-var-color-01 dark:hover:bg-var-color-65 transition-colors">
                             <FiPlus className="w-4.5 h-4.5"/>
                         </button>
                         {/* mr-auto فضای خالی را سمت راست جمع می‌کند و این گروه را به لبهٔ چپ می‌برد
@@ -354,7 +354,7 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                             <button type="button" aria-label="گفتار"
                                     className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer
                                                text-var-color-05 dark:text-var-color-39
-                                               hover:bg-var-color-01 dark:hover:bg-var-color-40 transition-colors">
+                                               hover:bg-var-color-01 dark:hover:bg-var-color-65 transition-colors">
                                 <FiMic className="w-4 h-4"/>
                             </button>
                             {/* ⚠️ حینِ پاسخ، همین دکمه «توقف» می‌شود.
@@ -405,9 +405,9 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                     className="inline-flex flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full
                                                cursor-pointer text-[12px] transition-colors duration-200
                                                text-var-color-06 dark:text-var-color-39
-                                               bg-var-color-01 dark:bg-var-color-40
+                                               bg-var-color-01 dark:bg-var-color-37
                                                border border-var-color-02 dark:border-var-color-38
-                                               hover:bg-var-color-02 dark:hover:bg-var-color-44">
+                                               hover:bg-var-color-02 dark:hover:bg-var-color-52">
                                 {question}
                             </button>
                         ))}

@@ -36,7 +36,7 @@ const BestPayers = ({rows}) => {
                             style={medal ? {background: medal.glow} : undefined}
                             className={`w-full text-right cursor-pointer rounded-xl px-2.5 py-2 min-w-0
                                         flex flex-row items-center gap-2.5 transition-colors duration-200
-                                        ${medal ? "" : "hover:bg-var-color-01 dark:hover:bg-var-color-40"}`}
+                                        ${medal ? "" : "hover:bg-var-color-01 dark:hover:bg-var-color-65"}`}
                         >
                             {medal ? (
                                 <span className="w-6 h-6 shrink-0 flex items-center justify-center"
