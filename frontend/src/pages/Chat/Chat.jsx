@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {FiMessageSquare} from "react-icons/fi";
+import AgentIcon from "../../components/common/AgentIcon.jsx";
 import Breadcrumb from "../../components/common/Breadcrumb.jsx";
 import Sidebar from "../../components/common/Sidebar.jsx";
 import ChatSidebar from "./components/ChatSidebar.jsx";
@@ -312,7 +312,7 @@ const Chat = () => {
                     ChatPane، چون آن با هر تعویضِ گفتگو `key` عوض می‌کند و
                     remount می‌شود — نوار هم هر بار دوباره انیمیشنِ ورود می‌گرفت. */}
                 <div className="shrink-0 px-3 pt-3">
-                    <Breadcrumb items={[{label: "گفتگو", to: CHAT_PATH, icon: FiMessageSquare}]}/>
+                    <Breadcrumb items={[{label: "دستیار هوش مصنوعی", to: CHAT_PATH, icon: AgentIcon}]}/>
                 </div>
                 <ChatPane key={activeId} conversation={active} messages={messages}
                           historyLoading={activeId !== null && loadedId !== activeId}
