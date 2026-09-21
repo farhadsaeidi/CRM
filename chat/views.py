@@ -93,6 +93,9 @@ class MessageCreateView(OwnerScopedMixin, generics.GenericAPIView):
     ⚠️ پاسخ **همزمان** ساخته می‌شود، نه در صف. مدلِ محلی روی CPU چند ده ثانیه
     طول می‌کشد و کلاینت منتظر می‌ماند؛ برای یک کاربرِ تنها قابلِ قبول است و
     استریم کردنش کارِ فاز بعد است. با چند کاربرِ همزمان باید به صف برود.
+
+    📌 این مسیر **ویجت نمی‌سازد** (`widgets` خالی می‌ماند) — ویجت‌ها مالِ مسیرِ
+    استریم‌اند (`chat/widgets.py`). اینجا پشتیبانِ بی‌رابط است و متن کافی است.
     """
     serializer_class = ConversationDetailSerializer
 
@@ -203,10 +206,12 @@ class MessageForkView(MessageActionMixin, generics.GenericAPIView):
             # دیگر، و با مدلِ دیگر دیگر مقایسه‌پذیر نیست.
             model=conversation.model,
         )
+        # ویجت‌ها هم می‌آیند: شاخهٔ تازه باید همان چیزی را نشان دهد که کاربر در
+        # گفتگوی اصلی تا این نقطه دید، نه فقط متنِ آن.
         Message.objects.bulk_create([
             Message(conversation=fork, role=row.role, body=row.body,
                     tools_used=row.tools_used, suggestion=row.suggestion,
-                    created=row.created)
+                    widgets=row.widgets, created=row.created)
             for row in rows
         ])
         return Response(self.get_serializer(fork).data, status=status.HTTP_201_CREATED)
@@ -308,6 +313,11 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
 
         threading.Thread(target=produce, daemon=True).start()
 
+        # ویجت‌ها همان لحظه به فرانت می‌روند و اینجا جمع می‌شوند تا با خودِ پاسخ
+        # ذخیره شوند. اگر جوابی ساخته نشود (خطای موتور یا توقفِ کاربر)، پیامی
+        # هم ذخیره نمی‌شود — ویجت‌ها هم با آن می‌روند.
+        widgets = []
+
         while True:
             try:
                 kind, payload = events.get(timeout=HEARTBEAT_SECONDS)
@@ -326,6 +336,9 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
                 yield _sse("delta", {"text": data})
             elif name == "tool":
                 yield _sse("tool", {"name": data})
+            elif name == "widget":
+                widgets.append(data)
+                yield _sse("widget", {"widget": data})
             elif name == "reset":
                 # متنِ خامِ یک فراخوانیِ ابزار روی صفحه رفته بود؛ فرانت
                 # باید آنچه تا حالا نوشته را دور بریزد
@@ -336,5 +349,6 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
                     role="assistant", body=text, tools_used=used,
                     suggestion=build_suggestions(used, context,
                                                  answered=not is_fallback(text)),
+                    widgets=widgets,
                 )
                 yield _sse("done", {"assistantMessage": MessageSerializer(assistant).data})

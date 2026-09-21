@@ -25,6 +25,7 @@ from urllib.parse import urlparse
 
 from .catalog import resolve as resolve_model
 from .tools import TOOLS, has_data, run_tool, tool_schemas
+from .widgets import build_widget
 
 logger = logging.getLogger(__name__)
 
@@ -557,13 +558,18 @@ def answer_stream(user, conversation):
     """همان حلقهٔ `answer` ولی تکه‌تکه.
 
     رویدادهایی که بیرون می‌دهد:
-        ("tool",  نامِ ابزار)   — پیش از اجرای هر ابزار
-        ("delta", تکهٔ متن)      — حینِ نوشتنِ جواب
-        ("done",  (متن, ابزارها, زمینه))
+        ("tool",   نامِ ابزار)   — پیش از اجرای هر ابزار
+        ("widget", ویجت)         — بلافاصله بعد از ابزاری که داده برگرداند
+        ("delta",  تکهٔ متن)      — حینِ نوشتنِ جواب
+        ("done",   (متن, ابزارها, زمینه))
 
     ⚠️ چرا رویدادِ `tool` هم بیرون می‌رود؟ چون بینِ سوال و اولین حرفِ جواب،
     ابزار اجرا می‌شود و روی CPU همین چند دقیقه طول می‌کشد. بدونِ این رویداد
     کاربر فقط سکوت می‌بیند و فکر می‌کند چیزی کار نمی‌کند.
+
+    ⚠️ ویجت **همان لحظه** می‌رود نه در `done`: جدولِ بدهکاران چند ثانیه بعد از
+    سوال آماده است و متنِ جواب روی CPU چند دقیقه بعد. کاربر داده را زودتر از
+    جمله‌ای که درباره‌اش ساخته می‌شود می‌بیند. (چرایی خودِ ویجت: `widgets.py`.)
     """
     if not is_configured():
         raise EngineNotConfigured(
@@ -581,6 +587,9 @@ def answer_stream(user, conversation):
     used = []
     # شناسه‌هایی که دکمهٔ پیشنهاد به آن‌ها نیاز دارد (مثلاً کدام مشتری)
     context = {}
+    # ابزار+آرگومان‌هایی که ویجتشان رفته. مدلِ کوچک گاهی همان ابزار را با همان
+    # آرگومان دوباره صدا می‌زند؛ دو جدولِ یکسانِ پشتِ سرِ هم فقط شلوغی است.
+    shown_widgets = set()
     text_parts = []
     nudges_left = GROUNDING_RETRIES
     retries_left = FORMAT_RETRIES
@@ -672,6 +681,13 @@ def answer_stream(user, conversation):
             if isinstance(arguments, dict) and arguments.get("customer_id"):
                 context["customer_id"] = arguments["customer_id"]
             logger.info("chat tool %s(%s) -> %s", name, arguments, str(result)[:200])
+
+            widget = build_widget(name, arguments, result)
+            if widget is not None:
+                key = (name, json.dumps(arguments, sort_keys=True, ensure_ascii=False, default=str))
+                if key not in shown_widgets:
+                    shown_widgets.add(key)
+                    yield ("widget", widget)
 
             messages.append({
                 "role": "tool",

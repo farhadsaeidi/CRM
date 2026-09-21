@@ -5,6 +5,7 @@ import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentRepo
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import ModelPicker from "./ModelPicker.jsx";
 import MessageActions from "./MessageActions.jsx";
+import ChatWidgets from "./widgets/ChatWidgets.jsx";
 
 // پیشنهادهای شروع — متناسب با دامنهٔ همین سامانه (دفترِ حساب مشتریان)
 const SUGGESTIONS = [
@@ -18,8 +19,9 @@ const SUGGESTIONS = [
      title: "گزارش دوره‌ای", body: "گزارش هفتگی یا ماهانه"},
 ];
 
-// نامِ ابزارها به فارسی، برای خطِ «این عدد از کجا آمد» زیرِ پاسخ.
-// بدونِ آن کاربر نمی‌داند جواب از دفترِ خودش آمده یا مدل جمله ساخته.
+// نامِ ابزارها به فارسی، برای خطِ «در حال خواندنِ …» پیش از جواب.
+// ⚠️ هر ابزارِ `chat/tools.py` باید اینجا باشد؛ تا امروز چهارتا جا مانده بود و
+// کاربر نامِ انگلیسیِ داخلیِ ابزار را می‌دید.
 const TOOL_LABELS = {
     overview: "نمای کلی دفتر",
     customer_summary: "خلاصهٔ مشتریان",
@@ -27,7 +29,29 @@ const TOOL_LABELS = {
     debtors: "فهرست بدهکاران",
     find_customer: "جستجوی مشتری",
     customer_ledger: "حساب مشتری",
+    recent_transactions: "آخرین تراکنش‌ها",
+    customer_transactions: "تراکنش‌های مشتری",
+    best_payers: "خوش‌حساب‌ترین مشتریان",
+    dormant_customers: "مشتریانِ نیازمندِ پیگیری",
 };
+
+// ⚠️ فقط سه نقطه کافی نیست: مدلِ محلی روی CPU چند دقیقه طول می‌کشد و کاربر
+// بی‌متن فکر می‌کند برنامه هنگ کرده.
+const PendingStatus = ({runningTool}) => (
+    <span className="flex flex-row items-center gap-2" aria-label="در حال آماده‌سازی پاسخ">
+        <span className="flex gap-1">
+            {[0, 1, 2].map((d) => (
+                <span key={d} className="w-1.5 h-1.5 rounded-full bg-var-color-04 dark:bg-var-color-39"
+                      style={{animation: `crm-blink 1s ease-in-out ${d * 0.15}s infinite`}}/>
+            ))}
+        </span>
+        <span className="text-[11.5px] text-var-color-04 dark:text-var-color-39">
+            {runningTool
+                ? `در حال خواندنِ ${TOOL_LABELS[runningTool] ?? runningTool} …`
+                : "در حال آماده‌سازی پاسخ …"}
+        </span>
+    </span>
+);
 
 /**
  * پاسخِ دستیار — چه ذخیره‌شده، چه در حالِ نوشته شدن.
@@ -49,23 +73,31 @@ const isUngrounded = (message) =>
     (message.tools_used?.length ?? 0) === 0 && DIGITS.test(message.body || "");
 
 
-const AssistantMessage = ({message, streaming = false}) => (
+// `waiting`: ویجت‌ها رسیده‌اند ولی متنِ جواب هنوز نه — به‌جای پاراگرافِ خالی، همان
+// خطِ «در حال …» داخلِ همین حباب می‌نشیند، نه در حبابِ دوم با آیکونِ دوم.
+const AssistantMessage = ({message, streaming = false, waiting = false, runningTool = null}) => (
     <div className="flex gap-2.5">
         {/* بدونِ قاب: خودِ شکلِ پیکسلی به‌اندازهٔ کافی مشخص است و کادرِ دورش
             فقط یک مربعِ اضافه کنارِ متن می‌شد */}
         <span className="shrink-0 w-7 h-7 flex items-center justify-center">
             <AgentIcon className="w-5 h-5 text-var-color-15"/>
         </span>
-        <div className="min-w-0">
-            <p className="m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
-                          whitespace-pre-wrap wrap-break-word">
-                {message.body}
-                {/* نشانگرِ «هنوز در حال نوشتن» — همان مکث‌نمای چت‌های زبانی */}
-                {streaming && (
-                    <span className="inline-block w-1.5 h-4 mr-0.5 align-text-bottom bg-var-color-15"
-                          style={{animation: "crm-blink 1s ease-in-out infinite"}}/>
-                )}
-            </p>
+        {/* `flex-1`: ویجت‌ها تمام‌عرضِ ستون‌اند، نه به اندازهٔ متنِ کنارشان */}
+        <div className="min-w-0 flex-1">
+            <ChatWidgets widgets={message.widgets}/>
+            {waiting ? (
+                <div className="pt-1"><PendingStatus runningTool={runningTool}/></div>
+            ) : (
+                <p className="m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
+                              whitespace-pre-wrap wrap-break-word">
+                    {message.body}
+                    {/* نشانگرِ «هنوز در حال نوشتن» — همان مکث‌نمای چت‌های زبانی */}
+                    {streaming && (
+                        <span className="inline-block w-1.5 h-4 mr-0.5 align-text-bottom bg-var-color-15"
+                              style={{animation: "crm-blink 1s ease-in-out infinite"}}/>
+                    )}
+                </p>
+            )}
 
             {!streaming && isUngrounded(message) && (
                 <p className="m-0 mt-1.5 flex flex-row items-start gap-1.5 text-[11px] text-var-color-53">
@@ -79,7 +111,7 @@ const AssistantMessage = ({message, streaming = false}) => (
 
 
 const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,
-                  engineError = null, onSend, onStop,
+                  streamingWidgets = [], engineError = null, onSend, onStop,
                   models = [], model = "", onModelChange,
                   onRewind, onFork, historyLoading = false}) => {
     const [draft, setDraft] = useState("");
@@ -107,7 +139,8 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
         if (el) el.scrollTop = el.scrollHeight;
     }, [messages.length]);
 
-    useEffect(stick, [streamingText, runningTool, pending]);
+    // ویجتِ تازه هم ارتفاع را بالا می‌برد، پس همان قاعدهٔ «فقط اگر کاربر ته است»
+    useEffect(stick, [streamingText, runningTool, pending, streamingWidgets.length]);
 
     // ارتفاعِ خودکارِ کادر نوشتن، با سقف
     const autoGrow = (el) => {
@@ -273,9 +306,12 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                         ))}
 
                         {/* پاسخی که همین حالا نوشته می‌شود. همان قالبِ بالا را
-                            دارد تا موقعِ تمام شدن، متن جابه‌جا نپرد. */}
-                        {streamingText !== null && (
-                            <AssistantMessage message={{body: streamingText}} streaming/>
+                            دارد تا موقعِ تمام شدن، متن جابه‌جا نپرد. ویجت‌ها پیش از
+                            متن می‌رسند، پس حباب با اولین ویجت هم باز می‌شود. */}
+                        {(streamingText !== null || streamingWidgets.length > 0) && (
+                            <AssistantMessage message={{body: streamingText ?? "", widgets: streamingWidgets}}
+                                              streaming waiting={streamingText === null}
+                                              runningTool={runningTool}/>
                         )}
                         {/* پاسخی نیامده و دلیلش را سرور گفته. ظاهرش عمداً با
                             حبابِ دستیار فرق دارد تا با یک جوابِ واقعی اشتباه نشود. */}
@@ -286,28 +322,12 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                 <p className="m-0 text-[12.5px] leading-7 text-var-color-53">{engineError}</p>
                             </div>
                         )}
-                        {pending && streamingText === null && (
+                        {pending && streamingText === null && streamingWidgets.length === 0 && (
                             <div className="flex gap-2.5 items-center">
                                 <span className="shrink-0 w-7 h-7 flex items-center justify-center">
                                     <AgentIcon className="w-5 h-5 text-var-color-15"/>
                                 </span>
-                                {/* ⚠️ فقط سه نقطه کافی نیست: مدلِ محلی روی CPU
-                                    چند دقیقه طول می‌کشد و کاربر بی‌متن فکر می‌کند
-                                    برنامه هنگ کرده. */}
-                                <span className="flex flex-row items-center gap-2"
-                                      aria-label="در حال آماده‌سازی پاسخ">
-                                    <span className="flex gap-1">
-                                        {[0, 1, 2].map((d) => (
-                                            <span key={d} className="w-1.5 h-1.5 rounded-full bg-var-color-04 dark:bg-var-color-39"
-                                                  style={{animation: `crm-blink 1s ease-in-out ${d * 0.15}s infinite`}}/>
-                                        ))}
-                                    </span>
-                                    <span className="text-[11.5px] text-var-color-04 dark:text-var-color-39">
-                                        {runningTool
-                                            ? `در حال خواندنِ ${TOOL_LABELS[runningTool] ?? runningTool} …`
-                                            : "در حال آماده‌سازی پاسخ …"}
-                                    </span>
-                                </span>
+                                <PendingStatus runningTool={runningTool}/>
                             </div>
                         )}
                     </div>

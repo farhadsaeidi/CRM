@@ -68,6 +68,14 @@ class Message(models.Model):
     # دستیار هیچ‌وقت اجرا نمی‌کند؛ فرانت این را به دکمه تبدیل می‌کند و کاربر
     # تصمیم می‌گیرد. `null` یعنی پیشنهادی نبوده.
     suggestion = models.JSONField(null=True, blank=True, verbose_name="پیشنهاد عمل")
+    # کارت‌ها و جدول‌هایی که کنارِ همین پاسخ نشان داده شدند (`chat/widgets.py`).
+    #
+    # ⚠️ **این با قاعدهٔ بالا — «نتیجهٔ ابزار ذخیره نمی‌شود» — تناقض ندارد.** آن
+    # قاعده برای **مدل** است: خروجیِ خامِ ابزار دوباره به تاریخچهٔ مدل نمی‌رود تا
+    # جوابِ کهنه تحویل ندهد. این ستون برای **کاربر** است: عکسِ همان چیزی که آن
+    # لحظه دید، کنارِ متنی که همان لحظه نوشته شد. `_history` در `engine.py` فقط
+    # `body` را برمی‌دارد، پس هیچ ویجتی به مدل برنمی‌گردد.
+    widgets = models.JSONField(default=list, blank=True, verbose_name="ویجت‌ها")
     created = models.DateTimeField(default=timezone.now, verbose_name="زمان")
 
     class Meta:

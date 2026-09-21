@@ -20,7 +20,7 @@ const getCookie = (name) => {
  * @param id شناسهٔ گفتگو
  * @param body متنِ پیام
  * @param model شناسهٔ مدلِ انتخاب‌شده (اختیاری)
- * @param handlers `{onStart, onDelta, onTool, onReset, onDone, onError}`
+ * @param handlers `{onStart, onDelta, onTool, onWidget, onReset, onDone, onError}`
  * @param signal برای لغو از بیرون
  */
 export async function streamMessage(id, body, handlers = {}, signal, model) {
@@ -82,6 +82,10 @@ export async function streamMessage(id, body, handlers = {}, signal, model) {
             if (event === "start") handlers.onStart?.(payload);
             else if (event === "delta") handlers.onDelta?.(payload?.text ?? "");
             else if (event === "tool") handlers.onTool?.(payload?.name ?? "");
+            // کارت یا جدولِ نتیجهٔ یک ابزار — پیش از متنِ جواب می‌رسد
+            else if (event === "widget") {
+                if (payload?.widget) handlers.onWidget?.(payload.widget);
+            }
             else if (event === "reset") handlers.onReset?.();
             else if (event === "done") handlers.onDone?.(payload?.assistantMessage ?? null);
             else if (event === "error") handlers.onError?.(payload?.error ?? "خطای نامعلوم");

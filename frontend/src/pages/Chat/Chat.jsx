@@ -46,6 +46,9 @@ const Chat = () => {
     // ابزاری که همین حالا اجرا می‌شود — بینِ سوال و اولین حرفِ جواب، روی CPU
     // چند دقیقه سکوت است و کاربر باید بداند چه خبر است
     const [runningTool, setRunningTool] = useState(null);
+    // کارت‌ها و جدول‌های پاسخِ در حالِ نوشتن. پیش از متن می‌رسند و با `done`
+    // جایشان را نسخهٔ ذخیره‌شده در خودِ پیام می‌گیرد.
+    const [streamingWidgets, setStreamingWidgets] = useState([]);
 
     const active = conversations.find((c) => c.id === activeId) ?? null;
 
@@ -120,6 +123,7 @@ const Chat = () => {
         setEngineError(null);
         setStreamingText(null);
         setRunningTool(null);
+        setStreamingWidgets([]);
         // ⚠️ لازم است، وگرنه مدلی که برای گفتگوی قبلی انتخاب شده بود روی
         // گفتگوی تازه می‌نشیند و کاربر فکر می‌کند این گفتگو هم همان را دارد.
         setPendingModel(null);
@@ -240,6 +244,7 @@ const Chat = () => {
         setEngineError(null);
         setStreamingText(null);
         setRunningTool(null);
+        setStreamingWidgets([]);
 
         const controller = new AbortController();
         abortRef.current = controller;
@@ -253,26 +258,35 @@ const Chat = () => {
                         (c.id === activeId ? {...c, title: payload.title} : c)));
                 },
                 onTool: (name) => setRunningTool(name),
+                // ⚠️ `runningTool` اینجا پاک نمی‌شود: ویجت یعنی همان ابزار تمام شد، ولی
+                // شاید ابزارِ بعدی در راه باشد؛ پاک کردنش را `onDelta` یا ابزارِ
+                // بعدی انجام می‌دهد
+                onWidget: (widget) => setStreamingWidgets((prev) => [...prev, widget]),
                 onDelta: (text) => {
                     setRunningTool(null);
                     setStreamingText((prev) => (prev ?? "") + text);
                 },
-                // متنِ خامِ یک فراخوانیِ ابزار روی صفحه رفته بود — دور ریخته شود
+                // متنِ خامِ یک فراخوانیِ ابزار روی صفحه رفته بود — دور ریخته شود.
+                // ویجت‌ها می‌مانند: دادهٔ واقعیِ ابزارند نه متنِ مدل.
                 onReset: () => setStreamingText(null),
                 onDone: (message) => {
                     setStreamingText(null);
                     setRunningTool(null);
+                    setStreamingWidgets([]);
                     if (message) setMessages((prev) => [...prev, message]);
                 },
+                // خطای موتور یعنی پیامی ذخیره نشد؛ ویجت‌ها هم با همان پاسخ می‌روند
                 onError: (text) => {
                     setStreamingText(null);
                     setRunningTool(null);
+                    setStreamingWidgets([]);
                     setEngineError(text);
                 },
             }, controller.signal, model);
         } catch (err) {
             setStreamingText(null);
             setRunningTool(null);
+            setStreamingWidgets([]);
 
             // ⚠️ توقف خطا نیست. کاربر خودش گفته بس است، پس نه پیغامِ قرمزی
             // لازم است نه پاک کردنِ پیامش — سوالش پرسیده شده و سرِ جایش می‌ماند.
@@ -317,6 +331,7 @@ const Chat = () => {
                 <ChatPane key={activeId} conversation={active} messages={messages}
                           historyLoading={activeId !== null && loadedId !== activeId}
                           streamingText={streamingText} runningTool={runningTool}
+                          streamingWidgets={streamingWidgets}
                           engineError={engineError} onSend={sendMessage}
                           onStop={stopStreaming}
                           models={models} model={model} onModelChange={changeModel}
