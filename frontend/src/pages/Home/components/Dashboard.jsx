@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {FiClock, FiMoon, FiPieChart, FiTrendingUp, FiUserPlus, FiUsers} from "react-icons/fi";
 import {HiOutlineArrowsRightLeft, HiOutlineBanknotes} from "react-icons/hi2";
 import {FaMedal} from "react-icons/fa6";
@@ -24,6 +24,9 @@ import DebtorsCta from "./DebtorsCta.jsx";
 // گامِ تاخیرِ ورودِ کاشی‌ها. کوچک نگه داشته شده: با دوازده کاشی، گامِ بزرگ یعنی
 // آخرین کاشی یک ثانیه بعد از اولی ظاهر شود که دیگر «انیمیشن» نیست، «کندی» است.
 const STEP = 45;
+
+// بیشترین فاصله‌ای که با کش آمدنِ کاشی‌ها پر می‌شود — توضیح کنارِ افکتِ هم‌ترازی
+const FILL_LIMIT = 160;
 
 const SKELETONS = [
     "h-28 xl:col-span-1", "h-28 xl:col-span-1", "h-28 xl:col-span-1", "h-28 xl:col-span-1",
@@ -59,6 +62,34 @@ const Dashboard = () => {
         };
     }, [period, refreshKey]);
 
+    // ⚠️ لبهٔ پایینِ آخرین کاشی باید روی لبهٔ پایینِ سایدبار بنشیند؛ هر دو ستون تا
+    // تهِ صفحه کشیده می‌شوند. وقتی کاشی‌ها از کادر بلندترند، تهِ اسکرول خودش همین
+    // را می‌دهد — به شرطی که پایینِ محتوا پدینگ نداشته باشد (پیش‌تر `pb-2` داشت و
+    // آخرین کاشی ۸ پیکسل بالاتر می‌ایستاد). وقتی کوتاه‌ترند و فاصله کم است، عنصرِ
+    // `data-fill` آن‌قدر کش می‌آید که لبه‌ها یکی شوند. فاصلهٔ بیش از FILL_LIMIT
+    // رها می‌شود: کاشی‌ای که صدها پیکسل کش آمده بدتر از دو لبهٔ ناهم‌تراز است.
+    const viewportRef = useRef(null);
+    const contentRef = useRef(null);
+    useEffect(() => {
+        const viewport = viewportRef.current;
+        const content = contentRef.current;
+        if (!viewport || !content) return undefined;
+        const fit = () => {
+            const target = content.querySelector("[data-fill]");
+            if (!target) return;
+            // اول اندازهٔ طبیعی، بعد تصمیم؛ وگرنه کشِ دفعهٔ قبل هم اندازه گرفته می‌شد
+            target.style.minHeight = "";
+            const gap = viewport.clientHeight - content.offsetHeight;
+            if (gap > 0 && gap <= FILL_LIMIT) target.style.minHeight = `${target.offsetHeight + gap}px`;
+        };
+        // کادر با پنجره و با کشیدنِ لبهٔ سایدبار عوض می‌شود، محتوا با هر بارگذاری
+        // (وابستگیِ همین افکت). ناظر فقط روی کادر است نه محتوا: `fit` خودش اندازهٔ
+        // محتوا را عوض می‌کند و ناظرِ روی آن، هشدارِ حلقهٔ ResizeObserver می‌داد.
+        const observer = new ResizeObserver(fit);
+        observer.observe(viewport);
+        return () => observer.disconnect();
+    }, [state.data]);
+
     const startLoading = () => setState((prev) => ({...prev, loading: true}));
     const changePeriod = (next) => {
         if (next === period) return;
@@ -83,8 +114,9 @@ const Dashboard = () => {
 
             {/* trackPadding برابرِ شعاعِ گوشهٔ کاشی‌هاست (rounded-[18px])، وگرنه
                 ریلِ اسکرول تا کنارِ انحنای گوشه بالا می‌رود و رویش می‌افتد */}
-            <ScrollContainer className="flex-1 min-h-0" overflowX="hidden" position="right" trackPadding={18}>
-                <div className="pl-2 pb-2">
+            <ScrollContainer viewportRef={viewportRef} className="flex-1 min-h-0" overflowX="hidden"
+                             position="right" trackPadding={18}>
+                <div ref={contentRef} className="pl-2">
                     {!data ? (
                         <SkeletonGrid failed={failed && !loading}/>
                     ) : data.customers_total === 0 ? (
@@ -163,7 +195,9 @@ const Tiles = ({data}) => {
                 />
             </div>
 
-            <div className="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3">
+            {/* data-fill: اگر لازم شود این گرید کش می‌آید و ردیف‌هایش فاصله را بینِ
+                خودشان تقسیم می‌کنند؛ ردیفِ شاخص‌های بالا دست نمی‌خورد */}
+            <div data-fill className="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3">
                 <DashboardTile
                     title="روند نسیه و وصولی" subtitle="دوازده ماهِ گذشته"
                     icon={FiTrendingUp} delay={at(5)} className="xl:col-span-2"
@@ -274,7 +308,7 @@ const SkeletonGrid = ({failed}) => (
 
 // مالکِ تازه‌وارد به‌جای دوازده کارتِ خالی، یک دعوتِ روشن می‌بیند
 const FirstRun = ({onAdd}) => (
-    <section className="animate-fade-up flex flex-col items-center justify-center gap-4 py-16 px-6 text-center
+    <section data-fill className="animate-fade-up flex flex-col items-center justify-center gap-4 py-16 px-6 text-center
                         rounded-[18px] bg-var-color-00 dark:bg-var-color-36
                         border border-var-color-02 dark:border-var-color-38">
         <span className="w-14 h-14 rounded-2xl flex items-center justify-center
