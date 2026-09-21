@@ -23,8 +23,9 @@ import requests
 from django.conf import settings
 from urllib.parse import urlparse
 
-from .catalog import resolve as resolve_model
+from .catalog import resolve as resolve_model, supports_ui
 from .tools import TOOLS, has_data, run_tool, tool_schemas
+from .ui_tools import FUNCTION_TOOLS, run_ui_tool, ui_has_data, ui_prompt, ui_tool_schemas
 from .widgets import build_widget
 
 logger = logging.getLogger(__name__)
@@ -103,6 +104,39 @@ _DIGITS = re.compile(r"[0-9۰-۹٠-٩]")
 def _has_numbers(text):
     return bool(_DIGITS.search(text or ""))
 
+
+# کدِ رابط داخلِ حصارِ ``` است. اگر مدل حصار را جا بیندازد، از خطِ `root =` به
+# بعد کد است — همان قاعده‌ای که فرانت هم برای جدا کردنِ متن و رابط دارد.
+_FENCE = re.compile(r"```[^\n]*\n?(.*?)(?:```|\Z)", re.S)
+_ROOT_LINE = re.compile(r"^root\s*=", re.M)
+
+
+def split_ui(text):
+    """(متنِ جواب, کدِ رابط یا None).
+
+    ⚠️ گاردِ «عددِ بی‌پشتوانه» فقط روی **متن** اجرا می‌شود. کدِ رابط پر از رقم است
+    (`limit: 10`، `@Round(x, 1)`) ولی هیچ‌کدام ادعا نیستند؛ عددهایی که کاربر
+    می‌بیند را مرورگر هنگامِ رندر از `Query` می‌گیرد، نه از دستِ مدل.
+    """
+    text = text or ""
+    fence = _FENCE.search(text)
+    if fence:
+        return f"{text[:fence.start()]}{text[fence.end():]}".strip(), fence.group(1).strip()
+    root = _ROOT_LINE.search(text)
+    if root:
+        return text[:root.start()].strip(), text[root.start():].strip()
+    return text.strip(), None
+
+
+# جوابِ رابط‌دارِ بی‌متن، برای تاریخچهٔ مدلی که رابط نمی‌فهمد
+UI_PLACEHOLDER = "[یک کارت یا جدول از دفتر نمایش داده شد]"
+
+UI_GROUNDING_NUDGE = (
+    "In your text you wrote numbers you did not read from a tool. Never put numbers in the "
+    "text: the UI shows them live through Query(). Answer again with the same UI and a short "
+    "Persian introduction that contains no digits."
+)
+
 SYSTEM_PROMPT = """تو دستیارِ سامانهٔ «مدیریت مشتریان» هستی؛ یک دفترِ حسابِ نسیه و پرداختی.
 
 کاربرِ تو صاحبِ کسب‌وکار است و دربارهٔ مشتریان و حساب‌هایش می‌پرسد.
@@ -137,6 +171,50 @@ SYSTEM_PROMPT = """تو دستیارِ سامانهٔ «مدیریت مشتری�
 
 تو فقط می‌خوانی و توضیح می‌دهی. هیچ‌وقت چیزی ثبت، ویرایش یا حذف نمی‌کنی و پیامکی
 نمی‌فرستی — اگر کاربر چنین چیزی خواست، بگو باید خودش از دکمهٔ مربوطه اقدام کند."""
+
+
+# ⚠️ **حالتِ رابط پرامپتِ فارسیِ خودش را دارد، نه همان بالایی را.**
+#
+# پرامپتِ بالا برای جوابِ متنی نوشته شده: «ابزار را صدا بزن و عدد را با
+# جداکننده بنویس». در آزمایشِ ۲۰۲۶-۰۹-۲۲ همان باعث شد مدل برای «وضعِ کلیِ دفترم؟»
+# ابزار را صدا بزند و هفت عدد را در متن ردیف کند، به‌جای ساختنِ رابط — و برای
+# «حسابِ رضا» مانده را زیرِ رابط **با حروف** تکرار کند («چهار میلیون و دویست
+# هزار»)، که گاردِ رقم هم نمی‌دیدش.
+UI_SYSTEM_PROMPT = """تو دستیارِ سامانهٔ «مدیریت مشتریان» هستی؛ یک دفترِ حسابِ نسیه و پرداختی.
+
+کاربرِ تو صاحبِ کسب‌وکار است و دربارهٔ مشتریان و حساب‌هایش می‌پرسد.
+
+قواعدِ کارت:
+- همیشه فارسی و کوتاه جواب بده.
+- **هر سوال دربارهٔ دادهٔ دفتر را با رابط جواب بده** (بدهی، مشتری، تراکنش، روند، وضعیتِ کلی).
+  عددها را خودِ رابط هنگامِ نمایش از دفتر می‌خواند؛ متنِ تو فقط یک یا دو جملهٔ کوتاه برای معرفیِ آن است.
+- در متن **هیچ عدد، مبلغ یا تاریخی** ننویس — نه با رقم، نه با حروف. تو داده را نمی‌بینی و هر عددی
+  که بنویسی ساختگی است. نامِ مشتری را فقط وقتی بنویس که کاربر خودش گفته یا find_customer برگردانده.
+- find_customer را **فقط وقتی** صدا بزن که کاربر نامِ یک مشتریِ مشخص را گفته، تا customer_id او را
+  بگیری. اگر چند نفر پیدا شدند، بپرس منظورِ کاربر کدام است. برای هر سوالی دربارهٔ کلِ دفتر هیچ
+  ابزاری صدا نزن؛ رابط داده را خودش می‌گیرد.
+- کدام ابزار برای کدام سوال:
+  • «بدهکاران»، «چه کسانی بدهکارند» → debtors
+  • «وضعیت کلی»، «این ماه چطور بود» → overview، با فیلترِ دوره
+  • «روند»، «ماه‌به‌ماه» → monthly_trend
+  • «ترکیب مشتریان» → customer_mix
+  • «سررسید»، «بدهی‌های کهنه» → debt_aging
+  • «آخرین تراکنش‌ها» → recent_transactions
+  • «حسابِ فلانی»، «تراکنش‌های فلانی» → find_customer، بعد customer_ledger و customer_transactions
+  • «خوش‌حساب‌ترین» → best_payers
+  • «چه کسی را پیگیری کنم» → dormant_customers
+- سوالی که به دادهٔ دفتر ربطی ندارد (مثلاً طرزِ کار با برنامه) را فقط با متن جواب بده، بدونِ کد.
+
+تو فقط می‌خوانی و نشان می‌دهی. هیچ‌وقت چیزی ثبت، ویرایش یا حذف نمی‌کنی و پیامکی نمی‌فرستی —
+اگر کاربر چنین چیزی خواست، بگو باید خودش از دکمهٔ مربوطه اقدام کند."""
+
+# عددِ حروفی هم عدد است. فهرست عمداً فقط واحدهای بزرگ است: «یک» و «دو» در هر
+# جملهٔ عادی هستند، ولی «میلیون» در جملهٔ معرفیِ یک جدول جایی ندارد.
+_NUMBER_WORDS = re.compile(r"هزار|میلیون|میلیارد")
+
+
+def _ui_prose_has_numbers(prose):
+    return _has_numbers(prose) or bool(_NUMBER_WORDS.search(prose or ""))
 
 
 class EngineNotConfigured(Exception):
@@ -178,7 +256,7 @@ def _proxies():
     return None
 
 
-def _call_model(messages, model=None):
+def _call_model(messages, model=None, tools=None):
     """یک رفت‌وبرگشت با مدل، روی قراردادِ سازگار با OpenAI."""
     url = f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions"
     try:
@@ -191,7 +269,7 @@ def _call_model(messages, model=None):
             json={
                 "model": model or settings.LLM_MODEL,
                 "messages": messages,
-                "tools": tool_schemas(),
+                "tools": tools or tool_schemas(),
                 # دمای پایین: اینجا جای خلاقیت نیست، جای گزارشِ درست است
                 "temperature": 0.2,
             },
@@ -235,7 +313,7 @@ def _merge_tool_deltas(buffer, deltas):
             slot["function"]["arguments"] += function["arguments"]
 
 
-def _stream_model(messages, model=None):
+def _stream_model(messages, model=None, tools=None):
     """یک رفت‌وبرگشت با مدل، به‌صورت استریم.
 
     ژنراتوری که تکه‌های متن را حین رسیدن بیرون می‌دهد و در پایان پیامِ کاملِ
@@ -257,7 +335,7 @@ def _stream_model(messages, model=None):
             json={
                 "model": model or settings.LLM_MODEL,
                 "messages": messages,
-                "tools": tool_schemas(),
+                "tools": tools or tool_schemas(),
                 "temperature": 0.2,
                 "stream": True,
             },
@@ -435,13 +513,26 @@ def _rescued(name, arguments):
     }
 
 
-def _history(conversation, limit=10):
+def _history(conversation, limit=10, keep_ui=False):
     """پیام‌های قبلیِ همین گفتگو، برای اینکه دستیار رشتهٔ حرف را گم نکند.
 
     فقط آخرین چندتا: تاریخچهٔ بلند هم کندتر است هم مدل را از سوالِ فعلی پرت می‌کند.
+
+    ⚠️ مدلی که رابط نمی‌سازد، کدِ رابطِ جواب‌های قبلی را هم نمی‌بیند — گفتگو ممکن
+    است با یک مدلِ ابری شروع شده و حالا مدلِ محلی جواب بدهد، و ۷B از روی آن کد
+    فقط یاد می‌گیرد که کد بنویسد. مدلِ رابط‌ساز اما کدِ قبلی را لازم دارد تا
+    «یک نمودار هم اضافه کن» را روی همان رابط بسازد.
     """
     rows = conversation.messages.order_by("-created", "-id")[:limit]
-    return [{"role": row.role, "content": row.body} for row in reversed(rows)]
+    history = []
+    for row in reversed(rows):
+        body = row.body
+        if not keep_ui and row.role == "assistant":
+            prose, code = split_ui(body)
+            if code is not None:
+                body = prose or UI_PLACEHOLDER
+        history.append({"role": row.role, "content": body})
+    return history
 
 
 def answer(user, conversation):
@@ -580,9 +671,17 @@ def answer_stream(user, conversation):
     # شناسه‌های فهرستِ سفید را می‌پذیرد، پس کلاینت نمی‌تواند مدلِ دلخواه
     # (و گران) را به ارائه‌دهنده تحمیل کند.
     model = resolve_model(conversation.model)
+    # ⚠️ **حالتِ رابط:** مدلِ ابری جوابش را با رابط (کارت، جدول، نمودار) می‌سازد و
+    # عددها را مرورگر هنگامِ رندر از همان ابزارها می‌خواند، نه از متنِ مدل. پس
+    # ابزارها هم ابزارهای رابط‌اند (`ui_tools.py`) تا شکلی که مدل می‌بیند همانی
+    # باشد که صفحه می‌گیرد. مدلِ محلی همان مسیرِ قبلی را می‌رود.
+    ui = supports_ui(model)
+    tools = ui_tool_schemas() if ui else tool_schemas()
+    system = f"{UI_SYSTEM_PROMPT}\n\n{ui_prompt()}" if ui else SYSTEM_PROMPT
+    numeric = _ui_prose_has_numbers if ui else _has_numbers
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        *_history(conversation),
+        {"role": "system", "content": system},
+        *_history(conversation, keep_ui=ui),
     ]
     used = []
     # شناسه‌هایی که دکمهٔ پیشنهاد به آن‌ها نیاز دارد (مثلاً کدام مشتری)
@@ -596,7 +695,7 @@ def answer_stream(user, conversation):
 
     for _step in range(MAX_STEPS):
         text_parts = []
-        stream = _stream_model(messages, model)
+        stream = _stream_model(messages, model, tools)
         while True:
             try:
                 piece = next(stream)
@@ -636,24 +735,30 @@ def answer_stream(user, conversation):
                     continue
                 text = ""
 
+            # در حالتِ رابط فقط متنِ بیرونِ کد سنجیده می‌شود — چرایی‌اش کنارِ `split_ui`
+            prose, code = split_ui(text) if ui else (text, None)
+
             # عددِ بی‌پشتوانه: یک بار تذکر می‌دهیم و دوباره می‌پرسیم
-            if not used and nudges_left > 0 and _has_numbers(text):
+            if not used and nudges_left > 0 and numeric(prose):
                 nudges_left -= 1
                 logger.warning("chat answered with numbers and no tool; nudging")
                 if text:
                     # آنچه نوشته شده ساختگی است و نباید روی صفحه بماند
                     yield ("reset", None)
                 messages.append({"role": "assistant", "content": text})
-                messages.append({"role": "user", "content": GROUNDING_NUDGE})
+                messages.append({"role": "user", "content": UI_GROUNDING_NUDGE if ui else GROUNDING_NUDGE})
                 continue
 
             # همان امتناعِ `answer` — و متنِ نوشته‌شده از صفحه پاک می‌شود
-            if not used and _has_numbers(text):
+            if not used and numeric(prose):
                 logger.warning("chat refused an ungrounded numeric answer")
                 if text:
                     yield ("reset", None)
-                yield ("delta", GROUNDING_REFUSAL)
-                yield ("done", (GROUNDING_REFUSAL, used, context))
+                # ⚠️ رابط می‌ماند و فقط متن کنار می‌رود: عددهای رابط را مرورگر از
+                # Query می‌خواند، پس ایرادِ متن به آن سرایت نمی‌کند
+                final = f"```openui-lang\n{code}\n```" if code else GROUNDING_REFUSAL
+                yield ("delta", final)
+                yield ("done", (final, used, context))
                 return
 
             if not text:
@@ -673,16 +778,23 @@ def answer_stream(user, conversation):
                 arguments = {}
 
             yield ("tool", name)
-            result = run_tool(user, name, arguments)
+            if ui and name not in FUNCTION_TOOLS:
+                # نجات‌دهنده‌ها نامِ هر ابزاری را از متن بیرون می‌کشند؛ اینجا همان مرزِ
+                # `FUNCTION_TOOLS` دوباره اجرا می‌شود تا عددی به دستِ مدل نرسد
+                result = {"error": f"{name} is only available through Query() in the UI."}
+            else:
+                result = run_ui_tool(user, name, arguments) if ui else run_tool(user, name, arguments)
             # همان قاعدهٔ `answer`: پشتوانه یعنی دادهٔ برگشته، نه اجرای ابزار
-            if name and name not in used and has_data(result):
+            if name and name not in used and (ui_has_data(result) if ui else has_data(result)):
                 used.append(name)
             # شناسهٔ مشتری برای مقصدِ دکمهٔ پیشنهاد
             if isinstance(arguments, dict) and arguments.get("customer_id"):
                 context["customer_id"] = arguments["customer_id"]
             logger.info("chat tool %s(%s) -> %s", name, arguments, str(result)[:200])
 
-            widget = build_widget(name, arguments, result)
+            # در حالتِ رابط خودِ مدل رابط می‌سازد و ویجتِ ثابت کنارش تکرارِ همان
+            # داده بود — تازه شکلِ خروجیِ ابزارهای رابط را هم نمی‌شناسد
+            widget = None if ui else build_widget(name, arguments, result)
             if widget is not None:
                 key = (name, json.dumps(arguments, sort_keys=True, ensure_ascii=False, default=str))
                 if key not in shown_widgets:

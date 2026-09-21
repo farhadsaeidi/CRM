@@ -125,7 +125,7 @@ class WidgetStreamTests(APITestCase):
     def collect(self, *streams):
         calls = iter(streams)
         with patch("chat.engine._stream_model",
-                   side_effect=lambda messages, model=None: next(calls)(messages)):
+                   side_effect=lambda messages, model=None, tools=None: next(calls)(messages)):
             return list(answer_stream(self.owner, self.conversation))
 
     def test_widget_arrives_before_the_answer_text(self):

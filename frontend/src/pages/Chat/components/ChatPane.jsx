@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {Suspense, lazy, useEffect, useRef, useState} from "react";
 import {FiAlertTriangle, FiArrowUp, FiMic, FiPlus, FiSquare} from "react-icons/fi";
 import AgentIcon from "../../../components/common/AgentIcon.jsx";
 import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentReport} from "react-icons/hi";
@@ -6,6 +6,11 @@ import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import ModelPicker from "./ModelPicker.jsx";
 import MessageActions from "./MessageActions.jsx";
 import ChatWidgets from "./widgets/ChatWidgets.jsx";
+import {splitAnswer} from "../openui/splitAnswer.js";
+
+// ⚠️ تنبل، مثلِ داشبورد: موتورِ OpenUI حدودِ ۳۳ کیلوبایتِ فشرده است و بدونِ این
+// روی صفحهٔ ورود هم بار می‌شد. فقط با اولین جوابی می‌آید که واقعاً رابط دارد.
+const GeneratedUi = lazy(() => import("../openui/GeneratedUi.jsx"));
 
 // پیشنهادهای شروع — متناسب با دامنهٔ همین سامانه (دفترِ حساب مشتریان)
 const SUGGESTIONS = [
@@ -33,6 +38,10 @@ const TOOL_LABELS = {
     customer_transactions: "تراکنش‌های مشتری",
     best_payers: "خوش‌حساب‌ترین مشتریان",
     dormant_customers: "مشتریانِ نیازمندِ پیگیری",
+    // ابزارهایی که فقط رابطِ مدل دارد (`chat/ui_tools.py`)
+    monthly_trend: "روند ماهانه",
+    customer_mix: "ترکیب مشتریان",
+    debt_aging: "سررسید بدهی",
 };
 
 // ⚠️ فقط سه نقطه کافی نیست: مدلِ محلی روی CPU چند دقیقه طول می‌کشد و کاربر
@@ -67,47 +76,70 @@ const PendingStatus = ({runningTool}) => (
 //
 // شرط عمداً «عدد دارد» است نه «ابزار ندارد»: «سلام، چطور کمکتان کنم؟» هم ابزاری
 // ندارد ولی خطری هم ندارد، و هشدار روی آن فقط نویز است.
+//
+// ⚠️ کدِ رابط شمرده نمی‌شود، فقط متن: کد پر از رقم است (`limit: 10`) ولی عددهایی
+// که کاربر در رابط می‌بیند را Query هنگامِ نمایش از دفتر می‌آورد. بدونِ این، زیرِ
+// هر جوابِ رابط‌دار همین هشدار می‌نشست.
 const DIGITS = /[0-9۰-۹٠-٩]/;
 
-const isUngrounded = (message) =>
-    (message.tools_used?.length ?? 0) === 0 && DIGITS.test(message.body || "");
+const isUngrounded = (message) => {
+    if ((message.tools_used?.length ?? 0) > 0) return false;
+    const {before, after} = splitAnswer(message.body || "");
+    return DIGITS.test(`${before} ${after}`);
+};
+
+const PROSE = `m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
+               whitespace-pre-wrap wrap-break-word`;
 
 
 // `waiting`: ویجت‌ها رسیده‌اند ولی متنِ جواب هنوز نه — به‌جای پاراگرافِ خالی، همان
 // خطِ «در حال …» داخلِ همین حباب می‌نشیند، نه در حبابِ دوم با آیکونِ دوم.
-const AssistantMessage = ({message, streaming = false, waiting = false, runningTool = null}) => (
-    <div className="flex gap-2.5">
-        {/* بدونِ قاب: خودِ شکلِ پیکسلی به‌اندازهٔ کافی مشخص است و کادرِ دورش
-            فقط یک مربعِ اضافه کنارِ متن می‌شد */}
-        <span className="shrink-0 w-7 h-7 flex items-center justify-center">
-            <AgentIcon className="w-5 h-5 text-var-color-15"/>
-        </span>
-        {/* `flex-1`: ویجت‌ها تمام‌عرضِ ستون‌اند، نه به اندازهٔ متنِ کنارشان */}
-        <div className="min-w-0 flex-1">
-            <ChatWidgets widgets={message.widgets}/>
-            {waiting ? (
-                <div className="pt-1"><PendingStatus runningTool={runningTool}/></div>
-            ) : (
-                <p className="m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-var-color-01
-                              whitespace-pre-wrap wrap-break-word">
-                    {message.body}
-                    {/* نشانگرِ «هنوز در حال نوشتن» — همان مکث‌نمای چت‌های زبانی */}
-                    {streaming && (
-                        <span className="inline-block w-1.5 h-4 mr-0.5 align-text-bottom bg-var-color-15"
-                              style={{animation: "crm-blink 1s ease-in-out infinite"}}/>
-                    )}
-                </p>
-            )}
+const AssistantMessage = ({message, streaming = false, waiting = false, runningTool = null}) => {
+    // جوابِ مدلِ ابری ممکن است یک بلوکِ رابط داشته باشد؛ متنِ قبل و بعدش سرِ جایشان
+    // می‌مانند و خودِ بلوک به کارت و جدول تبدیل می‌شود
+    const {before, code, after} = splitAnswer(message.body);
+    return (
+        <div className="flex gap-2.5">
+            {/* بدونِ قاب: خودِ شکلِ پیکسلی به‌اندازهٔ کافی مشخص است و کادرِ دورش
+                فقط یک مربعِ اضافه کنارِ متن می‌شد */}
+            <span className="shrink-0 w-7 h-7 flex items-center justify-center">
+                <AgentIcon className="w-5 h-5 text-var-color-15"/>
+            </span>
+            {/* `flex-1`: ویجت‌ها تمام‌عرضِ ستون‌اند، نه به اندازهٔ متنِ کنارشان */}
+            <div className="min-w-0 flex-1">
+                <ChatWidgets widgets={message.widgets}/>
+                {waiting ? (
+                    <div className="pt-1"><PendingStatus runningTool={runningTool}/></div>
+                ) : code === null ? (
+                    <p className={PROSE}>
+                        {before}
+                        {/* نشانگرِ «هنوز در حال نوشتن» — همان مکث‌نمای چت‌های زبانی */}
+                        {streaming && (
+                            <span className="inline-block w-1.5 h-4 mr-0.5 align-text-bottom bg-var-color-15"
+                                  style={{animation: "crm-blink 1s ease-in-out infinite"}}/>
+                        )}
+                    </p>
+                ) : (
+                    <>
+                        {before && <p className={PROSE}>{before}</p>}
+                        <Suspense fallback={<div className="mt-2 h-24 rounded-2xl animate-pulse
+                                                            bg-var-color-01 dark:bg-var-color-36"/>}>
+                            <GeneratedUi code={code} streaming={streaming}/>
+                        </Suspense>
+                        {after && <p className={`${PROSE} mt-2`}>{after}</p>}
+                    </>
+                )}
 
-            {!streaming && isUngrounded(message) && (
-                <p className="m-0 mt-1.5 flex flex-row items-start gap-1.5 text-[11px] text-var-color-53">
-                    <FiAlertTriangle className="shrink-0 w-3.5 h-3.5 mt-0.5"/>
-                    این پاسخ از دفترِ شما خوانده نشده؛ عددهایش قابلِ اتکا نیست.
-                </p>
-            )}
+                {!streaming && isUngrounded(message) && (
+                    <p className="m-0 mt-1.5 flex flex-row items-start gap-1.5 text-[11px] text-var-color-53">
+                        <FiAlertTriangle className="shrink-0 w-3.5 h-3.5 mt-0.5"/>
+                        این پاسخ از دفترِ شما خوانده نشده؛ عددهایش قابلِ اتکا نیست.
+                    </p>
+                )}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 
 const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,

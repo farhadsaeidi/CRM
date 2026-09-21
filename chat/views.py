@@ -19,6 +19,7 @@ from .engine import (EngineError, EngineNotConfigured, answer, answer_stream,
 from .models import Conversation, Message
 from .suggestions import build_suggestions
 from .serializers import ConversationDetailSerializer, ConversationSerializer, MessageSerializer
+from .ui_tools import is_ui_tool, run_ui_tool
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,30 @@ class ModelListView(APIView):
 
     def get(self, request):
         return Response({"models": model_choices(), "default": default_model()})
+
+
+# noinspection PyMethodMayBeStatic
+class UiQueryView(APIView):
+    """دادهٔ یک `Query` در رابطی که دستیار ساخته.
+
+    ⚠️ **مرورگر صدایش می‌زند ولی نامِ ابزار و آرگومان‌ها را مدل نوشته.** پس مرزِ
+    امنیت همین‌جاست، نه در فرانت: فهرستِ سفیدِ ابزارها، فقط پارامترهای شناخته‌شده
+    (هر دو در `run_ui_tool`)، و کاربر از سشن نه از بدنه. هیچ ابزاری چیزی نمی‌نویسد.
+
+    خطای ابزار ۴۰۰ می‌گیرد تا `Query` در مرورگر شکست بخورد و خانه‌ها خالی بمانند —
+    نه اینکه با ۲۰۰ یک شیءِ خطا به‌جای داده بنشیند.
+    """
+    permission_classes = [IsOwner]
+
+    def post(self, request):
+        tool = request.data.get("tool")
+        if not isinstance(tool, str) or not is_ui_tool(tool):
+            return Response({"detail": "ابزارِ ناشناخته."}, status=status.HTTP_400_BAD_REQUEST)
+        args = request.data.get("args")
+        result = run_ui_tool(request.user, tool, args if isinstance(args, dict) else {})
+        if "error" in result:
+            return Response({"detail": result["error"]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result)
 
 
 def _apply_model(conversation, requested, fields):

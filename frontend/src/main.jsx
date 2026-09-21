@@ -1,5 +1,7 @@
 // باید اولین ایمپورت بماند — دلیلش داخلِ خودِ فایل
 import './lib/scrollTimelineGuard.js'
+// پیش از هر ایمپورتی که به OpenUI برسد — دلیلش داخلِ خودِ فایل
+import './lib/openuiDevtoolsOff.js'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { OverlayScrollbars } from 'overlayscrollbars'

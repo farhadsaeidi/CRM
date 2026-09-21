@@ -23,6 +23,9 @@ export const formatValue = (value, format) => {
 // واحدِ پیش‌فرضِ هر قالب. مبلغ همیشه تومان است، پس سرور لازم نیست هر بار بگوید.
 export const unitOf = (format, unit) => unit ?? (format === "money" ? "تومان" : "");
 
+// گریدِ کاشی‌های عدد — مشترکِ ویجتِ ثابت و `KpiGrid`ِ رابطی که مدل می‌سازد
+export const TILE_GRID = "grid grid-cols-2 sm:grid-cols-3 gap-2 px-2.5 pb-2.5";
+
 // ⚠️ رنگِ وضعیت‌ها **معنا** دارد و از پالت پیروی نمی‌کند — همان جفت‌رنگ‌های
 // جدولِ مشتریان: بدهکار صورتی، بستانکار سبز، بی‌حساب کهربایی.
 export const TONE_TEXT = {
