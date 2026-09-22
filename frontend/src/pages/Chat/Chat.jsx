@@ -6,6 +6,7 @@ import ChatSidebar from "./components/ChatSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
 import {chatApi} from "../../api/chat.js";
 import {streamMessage} from "../../api/chatStream.js";
+import {useAuth} from "../../context/AuthContext.js";
 import {errorMessage} from "../../lib/apiError.js";
 import {notify} from "../../lib/notify.jsx";
 import {CHAT_PATH} from "../../lib/paths.js";
@@ -13,6 +14,25 @@ import {useGoBack} from "../../lib/useGoBack.js";
 
 // کلیدِ یادآوریِ «نمایش هوشمند» روی همین دستگاه
 const VISUAL_KEY = "crm:chat-visual";
+
+// گفتگوی بازِ هر کاربر در همین زبانهٔ مرورگر، تا رفرش هم به همان‌جا برگردد.
+// sessionStorage و نه localStorage: زبانهٔ تازه یعنی نشستِ تازه، و با «گفتگوی جدید»
+// شروع می‌شود — نه با گفتگویی که دیروز باز مانده بود.
+const openKey = (userId) => `crm:chat-open:${userId}`;
+
+const readOpen = (key) => {
+    try {
+        const id = Number(sessionStorage.getItem(key));
+        return Number.isInteger(id) && id > 0 ? id : null;
+    } catch {
+        return null;
+    }
+};
+
+// آخرین وضعِ همین صفحه در این نشستِ برنامه. برگشت از صفحه‌ای دیگر، فهرست و پیام‌ها را
+// بی‌درنگ از اینجا نشان می‌دهد و پشتِ صحنه از سرور تازه می‌کند — وگرنه هر برگشت یک
+// اسکلتِ بارگذاری جلوی گفتگویی می‌گذاشت که همین چند لحظه پیش باز بود.
+let lastView = null;
 
 /**
  * صفحهٔ گفتگو. سایدبارش فهرستِ گفتگوهاست، نه ناوبریِ برنامه — ناوبری فقط در
@@ -27,10 +47,20 @@ const VISUAL_KEY = "crm:chat-visual";
  */
 const Chat = () => {
     const goBack = useGoBack();
-    const [conversations, setConversations] = useState([]);
-    const [activeId, setActiveId] = useState(null);
+    const {user} = useAuth();
+    const storageKey = openKey(user?.id);
+    // ⚠️ فقط وضعِ همین کاربر: روی مرورگرِ مشترک، کاربرِ بعدی نباید حتی یک لحظه
+    // گفتگوهای قبلی را ببیند
+    const cached = lastView?.userId === user?.id ? lastView : null;
+    const [conversations, setConversations] = useState(cached?.conversations ?? []);
+    // گفتگوی باز. `null` یعنی «گفتگوی جدید»ی که هنوز پیامی ندارد و روی سرور هم ساخته نشده.
+    //
+    // ⚠️ از همان رندرِ اول معلوم است، نه بعد از رسیدنِ فهرست. پیش‌تر صفحه با `null` باز
+    // می‌شد: تا فهرست برسد صفحهٔ خوش‌آمدِ «گفتگوی جدید» روی صفحه بود و بعد گفتگوی
+    // قبلی جایش را می‌گرفت.
+    const [activeId, setActiveId] = useState(() => (cached ? cached.activeId : readOpen(storageKey)));
     // پیام‌های گفتگوی باز، جدا از فهرست — به همان دلیلِ بالا
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState(cached?.messages ?? []);
     // شناسهٔ گفتگویی که پیام‌هایش واقعاً از سرور رسیده.
     //
     // ⚠️ **«هنوز نرسیده» و «خالی است» دو حالتِ جدا هستند.** با عوض شدنِ گفتگو
@@ -38,11 +68,18 @@ const Chat = () => {
     // `messages.length` را می‌دید — پس گفتگوی پُر چند ثانیه صفحهٔ «گفتگوی تازه»
     // را نشان می‌داد و بعد محتوایش می‌آمد. از پشتِ تونلِ کُند کاملاً به چشم می‌آمد.
     const [loadedId, setLoadedId] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!cached);
     // خطای موتور — پاسخ نیامده ولی پیامِ کاربر سرِ جایش است
     const [engineError, setEngineError] = useState(null);
     // کنترلرِ درخواستِ در جریان — برای دکمهٔ توقف
     const abortRef = useRef(null);
+    // شمارهٔ «باز کردن». با هر تعویضِ گفتگو یکی جلو می‌رود تا رویدادهای استریمِ
+    // گفتگوی قبلی روی صفحهٔ گفتگوی تازه ننشینند.
+    const viewRef = useRef(0);
+    // کلیدِ ChatPane. با تعویضِ گفتگو عوض می‌شود، ولی نه وقتی «گفتگوی جدید» با اولین
+    // پیام روی سرور ساخته می‌شود: همان گفتگوست، و remount وسطِ پاسخ دکمهٔ توقف و
+    // نشانگرِ «در حال آماده‌سازی» را از صفحه برمی‌داشت.
+    const [paneKey, setPaneKey] = useState(0);
     // پاسخی که همین حالا در حالِ نوشته شدن است. جدا از `messages` نگه داشته
     // می‌شود تا با هر حرفِ تازه کلِ فهرست دوباره رندر نشود.
     const [streamingText, setStreamingText] = useState(null);
@@ -143,23 +180,23 @@ const Chat = () => {
             (c.id === activeId ? {...c, model: next} : c)));
     }, [activeId]);
 
-    // فهرستِ اولیه. اگر مالک هیچ گفتگویی ندارد یکی ساخته می‌شود تا صفحه با
-    // حالتِ خالیِ بی‌مقصد باز نشود.
+    // فهرستِ کناری. نه گفتگویی انتخاب می‌کند نه چیزی می‌سازد: گفتگوی باز از همان
+    // رندرِ اول معلوم است، و گفتگوی تازه با اولین پیام ساخته می‌شود.
     useEffect(() => {
         let ignore = false;
         chatApi.list()
-            .then(async (res) => {
-                const rows = res?.results ?? res ?? [];
+            .then((res) => {
                 if (ignore) return;
-                if (rows.length === 0) {
-                    const fresh = await chatApi.create();
-                    if (ignore) return;
-                    setConversations([fresh]);
-                    setActiveId(fresh.id);
-                } else {
-                    setConversations(rows);
-                    setActiveId(rows[0].id);
-                }
+                // ⚠️ گفتگوی بی‌پیام در فهرست نمی‌آید. «گفتگوی جدید» تا اولین پیام فقط
+                // روی صفحه است، و گفتگوهای خالیِ مانده از نسخهٔ قبلی — که با هر کلیک
+                // روی «گفتگوی جدید» روی سرور ساخته می‌شدند — هم ردیفِ بی‌محتوا نمی‌سازند.
+                const rows = (res?.results ?? res ?? []).filter((c) => c.message_count > 0);
+                // تنها ردیفِ بی‌پیامِ حافظه، گفتگویی است که همین حالا با اولین پیام ساخته
+                // شد و شاید هنوز در این پاسخ نباشد؛ بقیه عیناً از سرور جایگزین می‌شوند.
+                setConversations((prev) => [
+                    ...prev.filter((c) => c.message_count === 0 && !rows.some((r) => r.id === c.id)),
+                    ...rows,
+                ]);
             })
             .catch((err) => {
                 if (!ignore) notify(errorMessage(err, "دریافت گفتگوها ناموفق بود."), "error");
@@ -172,13 +209,19 @@ const Chat = () => {
         };
     }, []);
 
-    // پاک‌سازیِ پیام‌ها هنگامِ تعویضِ گفتگو با مقایسه در حین رندر انجام می‌شود،
-    // نه با افکت: قاعدهٔ `react-hooks/set-state-in-effect` هر setStateِ همگام در
-    // بدنهٔ افکت را رد می‌کند. ضمناً این‌طور پیام‌های گفتگوی قبلی یک لحظه هم
-    // زیرِ عنوانِ گفتگوی تازه دیده نمی‌شوند.
-    const [lastActiveId, setLastActiveId] = useState(activeId);
-    if (lastActiveId !== activeId) {
-        setLastActiveId(activeId);
+    // باز کردنِ یک گفتگو — یا با `null`، «گفتگوی جدید». هرچه مالِ گفتگوی قبلی بود پاک می‌شود.
+    //
+    // ⚠️ اینجا و نه با مقایسه در حینِ رندر: وقتی «گفتگوی جدید» با اولین پیام روی سرور
+    // ساخته می‌شود شناسه عوض می‌شود ولی گفتگو همان است، و پاک کردنِ پیام‌ها در آن لحظه
+    // سوالِ خودِ کاربر را از صفحه برمی‌داشت.
+    const openConversation = useCallback((id) => {
+        if (id === activeId) return;
+        viewRef.current += 1;
+        // پاسخِ گفتگوی قبلی قطع نمی‌شود — پشتِ صحنه کامل و ذخیره می‌شود — ولی دکمهٔ
+        // توقفِ گفتگوی تازه نباید آن را متوقف کند
+        abortRef.current = null;
+        setActiveId(id);
+        setLoadedId(null);
         setMessages([]);
         setEngineError(null);
         setStreamingText(null);
@@ -187,11 +230,13 @@ const Chat = () => {
         // ⚠️ لازم است، وگرنه مدلی که برای گفتگوی قبلی انتخاب شده بود روی
         // گفتگوی تازه می‌نشیند و کاربر فکر می‌کند این گفتگو هم همان را دارد.
         setPendingModel(null);
-    }
+        setPaneKey((key) => key + 1);
+    }, [activeId]);
 
-    // پیام‌های گفتگوی باز
+    // پیام‌های گفتگوی باز. گفتگویی که پیام‌هایش همین‌جاست (`loadedId`) دوباره خوانده
+    // نمی‌شود — مثلِ «گفتگوی جدید»ی که همین حالا با اولین پیام ساخته شد.
     useEffect(() => {
-        if (activeId === null) return undefined;
+        if (activeId === null || loadedId === activeId) return undefined;
         let ignore = false;
         chatApi.detail(activeId)
             .then((res) => {
@@ -201,6 +246,13 @@ const Chat = () => {
             })
             .catch((err) => {
                 if (ignore) return;
+                // گفتگوی به‌یادمانده دیگر نیست (مثلاً از دستگاهِ دیگر حذف شده): بی‌پیغام
+                // به «گفتگوی جدید» برمی‌گردد — کاربر کاری نکرده که خطایش را ببیند
+                if (err?.status === 404) {
+                    setConversations((prev) => prev.filter((c) => c.id !== activeId));
+                    openConversation(null);
+                    return;
+                }
                 // در شکست هم علامت می‌خورد، وگرنه اسکلتِ بارگذاری تا ابد می‌ماند
                 setLoadedId(activeId);
                 notify(errorMessage(err, "خواندن این گفتگو ناموفق بود."), "error");
@@ -208,34 +260,19 @@ const Chat = () => {
         return () => {
             ignore = true;
         };
-    }, [activeId]);
+    }, [activeId, loadedId, openConversation]);
 
-    // ⚠️ **خطاها دیگر با یک متنِ ثابت پوشانده نمی‌شوند.** نسخهٔ قبلیِ این
-    // هندلرها `catch {}` بی‌پارامتر داشت، پس ۵۰۳ِ رلهٔ تونل، ۴۰۳ِ CSRF و ۵۰۰ِ
-    // سرور هر سه همان «ناموفق بود» را نشان می‌دادند و علت نه برای کاربر
-    // پیدا بود نه برای عیب‌یابی. `errorMessage` پیامِ خودِ سرور یا وضعیتِ HTTP
-    // را برمی‌گرداند و متنِ قبلی فقط وقتی می‌آید که هیچ‌کدام نباشد.
-    const createConversation = async () => {
+    // جای کاربر: شناسه در sessionStorage (برای رفرش) و خودِ داده در حافظهٔ برنامه
+    // (برای برگشت از صفحه‌ای دیگر، بی‌درنگ).
+    useEffect(() => {
+        lastView = {userId: user?.id, activeId, messages, conversations};
         try {
-            const fresh = await chatApi.create();
-            // وضعیتِ موفق با بدنهٔ خالی/ناقص هم ممکن است (پاسخِ نیمه‌کاره از
-            // پشتِ رله). بدونِ این بررسی `fresh.id` یک TypeError می‌داد که از
-            // خطای سرور قابلِ تشخیص نبود.
-            if (!fresh?.id) {
-                throw Object.assign(new Error("empty response"),
-                    {data: {message: "پاسخِ سرور ناقص رسید؛ دوباره تلاش کنید."}});
-            }
-            setConversations((prev) => [fresh, ...prev]);
-            setActiveId(fresh.id);
-            setMessages([]);
-            // گفتگوی تازه قطعاً خالی است؛ منتظرِ سرور ماندن فقط یک اسکلتِ بی‌دلیل
-            // پیش از صفحهٔ خوش‌آمد نشان می‌داد
-            setLoadedId(fresh.id);
-        } catch (err) {
-            console.error("create conversation failed", err?.status, err?.data ?? err);
-            notify(errorMessage(err, "ساختِ گفتگوی تازه ناموفق بود."), "error");
+            if (activeId === null) sessionStorage.removeItem(storageKey);
+            else sessionStorage.setItem(storageKey, String(activeId));
+        } catch {
+            // فقط یادآوری از دست می‌رود؛ خودِ گفتگو سرِ جایش است
         }
-    };
+    }, [user?.id, storageKey, activeId, messages, conversations]);
 
     // «بازگشت به اینجا» — این پیام و بعدی‌ها حذف می‌شوند و متنش برمی‌گردد تا
     // کاربر همان سوال را ویرایش کند. متن برگردانده می‌شود نه ست؛ کادرِ نوشتن
@@ -260,12 +297,12 @@ const Chat = () => {
         try {
             const fresh = await chatApi.fork(activeId, messageId);
             setConversations((prev) => [fresh, ...prev]);
-            setActiveId(fresh.id);
+            openConversation(fresh.id);
             notify("گفتگوی تازه از همین نقطه ساخته شد.");
         } catch (err) {
             notify(errorMessage(err, "انشعاب از این نقطه ناموفق بود."), "error");
         }
-    }, [activeId]);
+    }, [activeId, openConversation]);
 
     const renameConversation = async (id, title) => {
         // ⚠️ خوش‌بینانه: نامِ تازه بلافاصله می‌نشیند و در صورتِ شکست برمی‌گردد.
@@ -291,14 +328,17 @@ const Chat = () => {
         }
         const rest = conversations.filter((c) => c.id !== id);
         setConversations(rest);
-        if (id === activeId) setActiveId(rest[0]?.id ?? null);
+        if (id === activeId) openConversation(rest[0]?.id ?? null);
     };
 
     // ارسالِ پیام. پیامِ کاربر بلافاصله روی صفحه می‌نشیند و بعد سرور تاییدش
     // می‌کند — انتظار برای رفت‌وبرگشتِ شبکه قبل از دیدنِ حرفِ خود کاربر، چت را
     // کند نشان می‌دهد.
     const sendMessage = useCallback(async (body) => {
-        if (activeId === null) return;
+        const view = viewRef.current;
+        // ⚠️ اگر کاربر وسطِ پاسخ گفتگوی دیگری را باز کند، پاسخ پشتِ صحنه کامل و ذخیره
+        // می‌شود ولی روی صفحهٔ گفتگوی تازه نمی‌نشیند
+        const onScreen = () => viewRef.current === view;
         const optimistic = {id: `tmp-${Date.now()}`, role: "user", body, created: null};
         setMessages((prev) => [...prev, optimistic]);
         setEngineError(null);
@@ -306,30 +346,77 @@ const Chat = () => {
         setRunningTool(null);
         setStreamingWidgets([]);
 
+        let id = activeId;
+        if (id === null) {
+            // «گفتگوی جدید» تا همین لحظه فقط روی صفحه بود. حالا که کاربر واقعاً چیزی
+            // پرسیده روی سرور ساخته می‌شود و در فهرست می‌نشیند — نه با کلیکِ دکمه، وگرنه
+            // هر «گفتگوی جدید»ِ رهاشده یک ردیفِ خالی در فهرست می‌گذاشت.
+            //
+            // ⚠️ **خطاها با یک متنِ ثابت پوشانده نمی‌شوند.** `errorMessage` پیامِ خودِ
+            // سرور یا وضعیتِ HTTP را برمی‌گرداند، تا ۵۰۳ِ رلهٔ تونل و ۴۰۳ِ CSRF و ۵۰۰ِ
+            // سرور از هم تشخیص داده شوند.
+            try {
+                const fresh = await chatApi.create();
+                // وضعیتِ موفق با بدنهٔ خالی/ناقص هم ممکن است (پاسخِ نیمه‌کاره از پشتِ
+                // رله). بدونِ این بررسی `fresh.id` یک TypeError می‌داد که از خطای سرور
+                // قابلِ تشخیص نبود.
+                if (!fresh?.id) {
+                    throw Object.assign(new Error("empty response"),
+                        {data: {message: "پاسخِ سرور ناقص رسید؛ دوباره تلاش کنید."}});
+                }
+                id = fresh.id;
+                // عنوان همانی است که سرور از اولین پیام می‌سازد، تا ردیف پیش از رسیدنِ
+                // `start` یک لحظه «گفتگوی جدید» نشان ندهد
+                setConversations((prev) => [{...fresh, title: body.slice(0, 60)}, ...prev]);
+                if (onScreen()) {
+                    setActiveId(fresh.id);
+                    // خالی است و پیامش همین‌جاست؛ خواندن از سرور فقط پیامِ خوش‌بینانه را
+                    // از صفحه پاک می‌کرد
+                    setLoadedId(fresh.id);
+                }
+            } catch (err) {
+                if (onScreen()) setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+                console.error("create conversation failed", err?.status, err?.data ?? err);
+                notify(errorMessage(err, "ساختِ گفتگوی تازه ناموفق بود."), "error");
+                return;
+            }
+        }
+
         const controller = new AbortController();
         abortRef.current = controller;
 
         try {
-            await streamMessage(activeId, body, {
+            await streamMessage(id, body, {
                 onStart: (payload) => {
+                    // گفتگوی به‌یادمانده‌ای که پیام نداشت در فهرست نیست؛ با اولین پیام می‌آید
+                    setConversations((prev) => (prev.some((c) => c.id === id)
+                        ? prev.map((c) => (c.id === id ? {...c, title: payload.title} : c))
+                        : [{id, title: payload.title, model, message_count: 1}, ...prev]));
+                    if (!onScreen()) return;
                     setMessages((prev) => prev.map((m) =>
                         (m.id === optimistic.id ? payload.userMessage : m)));
-                    setConversations((prev) => prev.map((c) =>
-                        (c.id === activeId ? {...c, title: payload.title} : c)));
                 },
-                onTool: (name) => setRunningTool(name),
+                onTool: (name) => {
+                    if (onScreen()) setRunningTool(name);
+                },
                 // ⚠️ `runningTool` اینجا پاک نمی‌شود: ویجت یعنی همان ابزار تمام شد، ولی
                 // شاید ابزارِ بعدی در راه باشد؛ پاک کردنش را `onDelta` یا ابزارِ
                 // بعدی انجام می‌دهد
-                onWidget: (widget) => setStreamingWidgets((prev) => [...prev, widget]),
+                onWidget: (widget) => {
+                    if (onScreen()) setStreamingWidgets((prev) => [...prev, widget]);
+                },
                 onDelta: (text) => {
+                    if (!onScreen()) return;
                     setRunningTool(null);
                     setStreamingText((prev) => (prev ?? "") + text);
                 },
                 // متنِ خامِ یک فراخوانیِ ابزار روی صفحه رفته بود — دور ریخته شود.
                 // ویجت‌ها می‌مانند: دادهٔ واقعیِ ابزارند نه متنِ مدل.
-                onReset: () => setStreamingText(null),
+                onReset: () => {
+                    if (onScreen()) setStreamingText(null);
+                },
                 onDone: (message) => {
+                    if (!onScreen()) return;
                     setStreamingText(null);
                     setRunningTool(null);
                     setStreamingWidgets([]);
@@ -337,6 +424,7 @@ const Chat = () => {
                 },
                 // خطای موتور یعنی پیامی ذخیره نشد؛ ویجت‌ها هم با همان پاسخ می‌روند
                 onError: (text) => {
+                    if (!onScreen()) return;
                     setStreamingText(null);
                     setRunningTool(null);
                     setStreamingWidgets([]);
@@ -344,6 +432,7 @@ const Chat = () => {
                 },
             }, controller.signal, model, visual);
         } catch (err) {
+            if (!onScreen()) return;
             setStreamingText(null);
             setRunningTool(null);
             setStreamingWidgets([]);
@@ -356,7 +445,9 @@ const Chat = () => {
             setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
             notify(errorMessage(err, "ارسال پیام ناموفق بود."), "error");
         } finally {
-            abortRef.current = null;
+            // ⚠️ فقط اگر هنوز مالِ همین پاسخ است: پاسخی که پشتِ صحنه تمام می‌شود نباید
+            // کنترلرِ پاسخِ بعدی را پاک کند، وگرنه دکمهٔ توقفِ آن بی‌اثر می‌شد
+            if (abortRef.current === controller) abortRef.current = null;
         }
     }, [activeId, model, visual]);
 
@@ -373,8 +464,8 @@ const Chat = () => {
             <Sidebar className="max-h-52 md:max-h-none">
                 <ChatSidebar conversations={conversations} activeId={activeId}
                              loading={loading}
-                             onBack={goBack} onNew={createConversation}
-                             onSelect={setActiveId} onDelete={deleteConversation}
+                             onBack={goBack} onNew={() => openConversation(null)}
+                             onSelect={openConversation} onDelete={deleteConversation}
                              onRename={renameConversation}/>
             </Sidebar>
 
@@ -388,7 +479,7 @@ const Chat = () => {
                 <div className="shrink-0 px-3 pt-3">
                     <Breadcrumb items={[{label: "دستیار هوش مصنوعی", to: CHAT_PATH, icon: AgentIcon}]}/>
                 </div>
-                <ChatPane key={activeId} conversation={active} messages={messages}
+                <ChatPane key={paneKey} messages={messages}
                           historyLoading={activeId !== null && loadedId !== activeId}
                           streamingText={streamingText} runningTool={runningTool}
                           streamingWidgets={streamingWidgets}

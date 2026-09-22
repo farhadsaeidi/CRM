@@ -152,7 +152,7 @@ const AssistantMessage = ({message, streaming = false, waiting = false, runningT
 };
 
 
-const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,
+const ChatPane = ({messages = [], streamingText = null, runningTool = null,
                   streamingWidgets = [], engineError = null, onSend, onStop,
                   models = [], model = "", onModelChange,
                   onRewind, onFork, historyLoading = false,
@@ -194,7 +194,9 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
 
     const send = async (text) => {
         const body = (text ?? draft).trim();
-        if (!body || pending || !conversation) return;
+        // ⚠️ گفتگوی باز لازم نیست: «گفتگوی جدید» تا اولین پیام روی سرور وجود ندارد و
+        // همین ارسال است که آن را می‌سازد (`sendMessage` در Chat.jsx)
+        if (!body || pending) return;
         setDraft("");
         if (taRef.current) taRef.current.style.height = "auto";
         setPending(true);
