@@ -155,7 +155,11 @@ export const COMPONENT_GROUPS = [
     {
         name: "Charts",
         components: ["BarChart", "LineChart", "DonutChart", "Series"],
-        notes: ["- LineChart for trends over months, BarChart to compare items, DonutChart for parts of a whole."],
+        notes: [
+            "- LineChart for trends over months, BarChart to compare items, DonutChart for parts of a whole.",
+            // سنجشِ ۲۰۲۶-۰۹-۲۲: یک مدل قالبِ نمودار را جای تُنِ سری نوشت
+            '- The format ("money", "percent", …) belongs to the chart, never to Series; Series only takes a tone.',
+        ],
     },
     {
         name: "Filters and text",

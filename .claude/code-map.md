@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-09-22 03:51 · کامیت `ccab14b`
+آخرین تولید: 2026-09-22 14:50 · کامیت `43f3aa0`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 121 | 17074 |
-| فرانت‌اند | 126 | 12442 |
+| بک‌اند | 125 | 17529 |
+| فرانت‌اند | 127 | 12508 |
 
 اپ‌های جنگو: account api chat home
 
@@ -390,26 +390,32 @@
     - `MessageAdmin` :29
 - **./chat/apps.py** (5 خط، 1 نماد)
     - `ChatConfig` :4
-- **./chat/catalog.py** (82 خط، 4 نماد)
-    - `default_model` :39
-    - `resolve` :48
-    - `supports_ui` :61
-    - `choices` :71
-- **./chat/engine.py** (814 خط، 18 نماد)
+- **./chat/catalog.py** (96 خط، 4 نماد)
+    - `default_model` :50
+    - `resolve` :59
+    - `supports_ui` :72
+    - `choices` :85
+- **./chat/engine.py** (836 خط، 18 نماد)
     - `is_fallback` :91
-    - `_has_numbers` :104
-    - `split_ui` :114
-    - `_ui_prose_has_numbers` :216
-    - `EngineNotConfigured` :220
-    - `EngineError` :224
-    - `is_configured` :228
-    - `_proxies` :236
-    - `_call_model` :259
-    - `_merge_tool_deltas` :291
-    - `_stream_model` :316
-    - `_rescue_tool_calls` :396
-    - `_looks_machine` :452
-    - `_rescue_bare_call` :470
+    - `_has_numbers` :110
+    - `split_ui` :120
+    - `_ui_prose_has_numbers` :225
+    - `EngineNotConfigured` :229
+    - `EngineError` :233
+    - `is_configured` :237
+    - `_proxies` :245
+    - `_call_model` :268
+    - `_merge_tool_deltas` :300
+    - `_stream_model` :325
+    - `_rescue_tool_calls` :410
+    - `_looks_machine` :466
+    - `_rescue_bare_call` :484
+- **./chat/management/commands/eval_models.py** (283 خط، 12 نماد)
+    - `_unused_phone` :68
+    - `_split_args` :75
+    - `_queries` :101
+    - `_literal_data` :116
+    - `Command` :122
 - **./chat/models.py** (124 خط، 11 نماد)
     - `Conversation` :6
     - `Message` :46
@@ -430,6 +436,11 @@
     - `MachineOutputTests` :345
     - `ProxyTests` :386
     - `NotConfiguredTests` :420
+- **./chat/test_eval.py** (89 خط، 18 نماد)
+    - `run_of` :15
+    - `QueryParsingTests` :23
+    - `LiteralDataTests` :40
+    - `ScoreTests` :51
 - **./chat/test_pins.py** (102 خط، 15 نماد)
     - `PinTests` :20
 - **./chat/test_stream.py** (243 خط، 27 نماد)
@@ -439,13 +450,14 @@
     - `StreamEncodingTests` :117
     - `ToolDeltaMergeTests` :150
     - `SuggestionTests` :182
-- **./chat/test_ui.py** (275 خط، 44 نماد)
+- **./chat/test_ui.py** (319 خط، 51 نماد)
     - `LedgerMixin` :33
     - `UiToolTests` :48
     - `UiQueryViewTests` :107
     - `EngineUiModeTests` :151
-    - `SplitUiTests` :240
-    - `UiPromptTests` :255
+    - `SmartViewFlagTests` :256
+    - `SplitUiTests` :284
+    - `UiPromptTests` :299
 - **./chat/test_widgets.py** (205 خط، 26 نماد)
     - `widget_for` :24
     - `WidgetBuilderTests` :30
@@ -487,7 +499,7 @@
     - `_transaction` :166
     - `customer_transactions` :172
     - `recent_transactions` :182
-- **./chat/views.py** (438 خط، 31 نماد)
+- **./chat/views.py** (441 خط، 31 نماد)
     - `OwnerScopedMixin` :28
     - `ConversationListCreateView` :41
     - `ConversationDetailView` :53
@@ -627,7 +639,7 @@
 ## فرانت‌اند
 
 ### صفحه‌ها
-- **frontend/src/pages/Chat/Chat.jsx** (382 خط)
+- **frontend/src/pages/Chat/Chat.jsx** (406 خط)
     - AgentIcon
     - Breadcrumb
     - ChatPane

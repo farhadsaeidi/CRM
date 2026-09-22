@@ -154,8 +154,8 @@ class EngineUiModeTests(LedgerMixin, APITestCase):
         self.conversation = Conversation.objects.create(owner=self.owner, model=UI_MODEL)
         self.conversation.messages.create(role="user", body="بدهکارانم؟")
 
-    def run_with(self, *streams):
-        """رویدادها + آنچه هر بار به مدل رفت (پیام‌ها و ابزارها)."""
+    def run_with(self, *streams, visual=True):
+        """رویدادها + آنچه هر بار به مدل رفت. پیش‌فرض «نمایش هوشمند» روشن است."""
         calls, seen = iter(streams), []
 
         def fake(messages, model=None, tools=None):
@@ -163,7 +163,7 @@ class EngineUiModeTests(LedgerMixin, APITestCase):
             return next(calls)(messages)
 
         with patch("chat.engine._stream_model", side_effect=fake):
-            events = list(answer_stream(self.owner, self.conversation))
+            events = list(answer_stream(self.owner, self.conversation, visual=visual))
         return events, seen
 
     @staticmethod
@@ -183,6 +183,22 @@ class EngineUiModeTests(LedgerMixin, APITestCase):
         _events, seen = self.run_with(stream_of("سلام"))
         self.assertNotIn("Generative UI", seen[0]["messages"][0]["content"])
         self.assertEqual([t["function"]["name"] for t in seen[0]["tools"]], [t["name"] for t in TOOLS])
+
+    def test_smart_view_off_means_text_only(self):
+        """⚠️ «نمایش هوشمند» خاموش: متنِ خالی، حتی با مدلِ رابط‌ساز — نه رابط، نه کارتِ ثابت."""
+        events, seen = self.run_with(stream_of(tool_calls=tool_call("debtors")), stream_of("دو نفر."),
+                                     visual=False)
+        self.assertNotIn("Generative UI", seen[0]["messages"][0]["content"])
+        self.assertEqual([t["function"]["name"] for t in seen[0]["tools"]], [t["name"] for t in TOOLS])
+        self.assertNotIn("widget", [kind for kind, _ in events])
+
+    def test_smart_view_on_with_a_model_that_cannot_build_ui_shows_fixed_widgets(self):
+        """روشن کردنِ گزینه با هر مدلی خروجیِ تصویری می‌دهد؛ مدلِ بی‌رابط، کارتِ ثابت."""
+        self.conversation.model = "openai/gpt-4.1-nano"   # در سنجش رد شد: `ui: False`
+        self.conversation.save()
+        events, seen = self.run_with(stream_of(tool_calls=tool_call("debtors")), stream_of("دو نفر."))
+        self.assertNotIn("Generative UI", seen[0]["messages"][0]["content"])
+        self.assertIn("widget", [kind for kind, _ in events])
 
     def test_digits_inside_the_ui_code_are_not_claims(self):
         events, seen = self.run_with(stream_of(UI_ANSWER))
@@ -235,6 +251,34 @@ class EngineUiModeTests(LedgerMixin, APITestCase):
         self.assertEqual(kept[-2]["content"], UI_ANSWER)
         self.assertEqual(stripped[-2]["content"], "این هم بدهکاران:")
         self.assertEqual(stripped[-1]["content"], UI_PLACEHOLDER)
+
+
+class SmartViewFlagTests(APITestCase):
+    """ویوِ استریم پرچمِ «نمایش هوشمند» را فقط با `true`ِ صریح روشن می‌کند."""
+
+    def setUp(self):
+        self.owner = make_owner()
+        self.client.force_authenticate(self.owner)
+        self.conversation = Conversation.objects.create(owner=self.owner)
+        self.seen = []
+
+    def fake_engine(self, _user, _conversation, visual=False):
+        self.seen.append(visual)
+        yield ("delta", "باشد.")
+        yield ("done", ("باشد.", [], {}))
+
+    def send(self, **extra):
+        with patch("chat.views.is_configured", return_value=True), \
+                patch("chat.views.answer_stream", side_effect=self.fake_engine):
+            response = self.client.post(reverse("api:conversation_stream", args=[self.conversation.id]),
+                                        {"body": "سلام", **extra}, format="json")
+            b"".join(response.streaming_content)
+
+    def test_only_an_explicit_true_turns_it_on(self):
+        self.send(visual=True)
+        self.send()
+        self.send(visual="true")
+        self.assertEqual(self.seen, [True, False, False])
 
 
 class SplitUiTests(SimpleTestCase):

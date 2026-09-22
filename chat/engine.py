@@ -100,9 +100,15 @@ def is_fallback(text):
 # ارقامِ لاتین، فارسی و عربی — عددی که ابزاری پشتش نیست، ساختهٔ مدل است
 _DIGITS = re.compile(r"[0-9۰-۹٠-٩]")
 
+# ⚠️ شمارهٔ فهرست («۱. رضا احمدی») مقدار نیست، ترتیب است. سنجشِ ۲۰۲۶-۰۹-۲۲ نشان
+# داد سه مدل برای «رضا»ی مبهم دو گزینه را درست شماره زدند و گارد همان را «عدد»
+# می‌شمرد. فقط یک یا دو رقمِ اولِ خط با نقطه یا پرانتز و فاصلهٔ بعدش — مبلغِ
+# ساختگی هیچ‌وقت این شکل را ندارد.
+_LIST_MARKER = re.compile(r"(?m)^\s*[0-9۰-۹٠-٩]{1,2}[.)]\s")
+
 
 def _has_numbers(text):
-    return bool(_DIGITS.search(text or ""))
+    return bool(_DIGITS.search(_LIST_MARKER.sub("", text or "")))
 
 
 # کدِ رابط داخلِ حصارِ ``` است. اگر مدل حصار را جا بیندازد، از خطِ `root =` به
@@ -188,6 +194,9 @@ UI_SYSTEM_PROMPT = """تو دستیارِ سامانهٔ «مدیریت مشتر
 - همیشه فارسی و کوتاه جواب بده.
 - **هر سوال دربارهٔ دادهٔ دفتر را با رابط جواب بده** (بدهی، مشتری، تراکنش، روند، وضعیتِ کلی).
   عددها را خودِ رابط هنگامِ نمایش از دفتر می‌خواند؛ متنِ تو فقط یک یا دو جملهٔ کوتاه برای معرفیِ آن است.
+- کاربر «نمایش هوشمند» را روشن کرده، پس رابط را **جامع و سنجیده** بساز، مثلِ یک داشبوردِ کوچک
+  برای همان سوال: عددهای اصلی، نموداری که شکلِ داده را نشان دهد و جدولِ جزئیات — به‌علاوهٔ نمای
+  مرتبطی که صاحبِ کسب‌وکار احتمالاً بعدش می‌پرسد. حداکثر سه کارت.
 - در متن **هیچ عدد، مبلغ یا تاریخی** ننویس — نه با رقم، نه با حروف. تو داده را نمی‌بینی و هر عددی
   که بنویسی ساختگی است. نامِ مشتری را فقط وقتی بنویس که کاربر خودش گفته یا find_customer برگردانده.
 - find_customer را **فقط وقتی** صدا بزن که کاربر نامِ یک مشتریِ مشخص را گفته، تا customer_id او را
@@ -313,7 +322,7 @@ def _merge_tool_deltas(buffer, deltas):
             slot["function"]["arguments"] += function["arguments"]
 
 
-def _stream_model(messages, model=None, tools=None):
+def _stream_model(messages, model=None, tools=None, on_usage=None):
     """یک رفت‌وبرگشت با مدل، به‌صورت استریم.
 
     ژنراتوری که تکه‌های متن را حین رسیدن بیرون می‌دهد و در پایان پیامِ کاملِ
@@ -371,6 +380,11 @@ def _stream_model(messages, model=None, tools=None):
                 chunk = json.loads(payload)
             except ValueError:
                 continue
+
+            # مصرف و هزینهٔ همین فراخوانی — OpenRouter در آخرین تکه می‌فرستد. فقط
+            # سنجشِ مدل‌ها (`manage.py eval_models`) گوش می‌دهد؛ مسیرِ عادی `None` است
+            if on_usage and chunk.get("usage"):
+                on_usage(chunk["usage"])
 
             choices = chunk.get("choices") or []
             if not choices:
@@ -645,7 +659,7 @@ def answer(user, conversation):
     return NO_SUMMARY, used
 
 
-def answer_stream(user, conversation):
+def answer_stream(user, conversation, visual=False):
     """همان حلقهٔ `answer` ولی تکه‌تکه.
 
     رویدادهایی که بیرون می‌دهد:
@@ -671,11 +685,18 @@ def answer_stream(user, conversation):
     # شناسه‌های فهرستِ سفید را می‌پذیرد، پس کلاینت نمی‌تواند مدلِ دلخواه
     # (و گران) را به ارائه‌دهنده تحمیل کند.
     model = resolve_model(conversation.model)
-    # ⚠️ **حالتِ رابط:** مدلِ ابری جوابش را با رابط (کارت، جدول، نمودار) می‌سازد و
-    # عددها را مرورگر هنگامِ رندر از همان ابزارها می‌خواند، نه از متنِ مدل. پس
-    # ابزارها هم ابزارهای رابط‌اند (`ui_tools.py`) تا شکلی که مدل می‌بیند همانی
-    # باشد که صفحه می‌گیرد. مدلِ محلی همان مسیرِ قبلی را می‌رود.
-    ui = supports_ui(model)
+    # ⚠️ **«نمایش هوشمند» در کادرِ نوشتن (`visual`) یک کلید است و سه حالت دارد:**
+    #   خاموش — فقط متن، برای هر مدلی: نه رابط، نه کارتِ ثابت. خواستهٔ صریحِ
+    #           صاحبِ پروژه؛ پیش‌فرض همین است.
+    #   روشن + مدلِ رابط‌ساز — رابطی که خودِ مدل می‌چیند (OpenUI). عددها را مرورگر
+    #           هنگامِ رندر از همان ابزارها می‌خواند، نه از متنِ مدل؛ پس ابزارها هم
+    #           ابزارهای رابط‌اند (`ui_tools.py`) تا شکلی که مدل می‌بیند همانی باشد
+    #           که صفحه می‌گیرد.
+    #   روشن + مدلی که رابط نمی‌سازد (مدلِ محلی یا ردیفی که در سنجش رد شد) — همان
+    #           کارت و جدولِ ثابتِ `widgets.py`، تا روشن کردنِ گزینه با هر مدلی
+    #           خروجیِ تصویری بدهد، نه اینکه بی‌صدا بی‌اثر بماند.
+    ui = visual and supports_ui(model)
+    fixed_widgets = visual and not ui
     tools = ui_tool_schemas() if ui else tool_schemas()
     system = f"{UI_SYSTEM_PROMPT}\n\n{ui_prompt()}" if ui else SYSTEM_PROMPT
     numeric = _ui_prose_has_numbers if ui else _has_numbers
@@ -792,9 +813,10 @@ def answer_stream(user, conversation):
                 context["customer_id"] = arguments["customer_id"]
             logger.info("chat tool %s(%s) -> %s", name, arguments, str(result)[:200])
 
-            # در حالتِ رابط خودِ مدل رابط می‌سازد و ویجتِ ثابت کنارش تکرارِ همان
-            # داده بود — تازه شکلِ خروجیِ ابزارهای رابط را هم نمی‌شناسد
-            widget = None if ui else build_widget(name, arguments, result)
+            # فقط در «روشن + مدلِ بی‌رابط». در حالتِ رابط، ویجتِ ثابت کنارِ رابطِ مدل
+            # تکرارِ همان داده بود (و شکلِ خروجیِ ابزارهای رابط را هم نمی‌شناسد)؛ و
+            # خاموش یعنی فقط متن
+            widget = build_widget(name, arguments, result) if fixed_widgets else None
             if widget is not None:
                 key = (name, json.dumps(arguments, sort_keys=True, ensure_ascii=False, default=str))
                 if key not in shown_widgets:

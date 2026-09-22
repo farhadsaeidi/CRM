@@ -6,6 +6,7 @@ import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import ModelPicker from "./ModelPicker.jsx";
 import MessageActions from "./MessageActions.jsx";
 import PinButton from "./PinButton.jsx";
+import SmartViewToggle from "./SmartViewToggle.jsx";
 import ChatWidgets from "./widgets/ChatWidgets.jsx";
 import {splitAnswer} from "../openui/splitAnswer.js";
 
@@ -155,7 +156,7 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                   streamingWidgets = [], engineError = null, onSend, onStop,
                   models = [], model = "", onModelChange,
                   onRewind, onFork, historyLoading = false,
-                  pins = [], onPin, onUnpin}) => {
+                  pins = [], onPin, onUnpin, visual = false, onVisualChange}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
@@ -405,6 +406,10 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                            hover:bg-var-color-01 dark:hover:bg-var-color-65 transition-colors">
                             <FiPlus className="w-4.5 h-4.5"/>
                         </button>
+                        {/* گزینه‌های شکلِ جواب کنارِ «افزودن» در آغازِ خط‌اند، و مدل و
+                            ارسال در انتهایش. حینِ پاسخ قفل است، مثلِ کشوی مدل: عوض
+                            کردنش وسطِ جوابی که دارد نوشته می‌شود اثری ندارد و فقط گیج می‌کند. */}
+                        {onVisualChange && <SmartViewToggle on={visual} onChange={onVisualChange} disabled={pending}/>}
                         {/* mr-auto فضای خالی را سمت راست جمع می‌کند و این گروه را به لبهٔ چپ می‌برد
                             (در RTL معادلِ «انتهای خط») */}
                         <span className="mr-auto flex items-center gap-1">

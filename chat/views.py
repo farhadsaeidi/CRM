@@ -355,8 +355,11 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
         conversation.updated = timezone.now()
         conversation.save(update_fields=fields)
 
+        # «نمایش هوشمند»ِ کادرِ نوشتن — فقط `true`ِ صریح روشنش می‌کند، هر چیزِ دیگری
+        # یعنی متن. معنای سه حالتش کنارِ `answer_stream` است
+        visual = request.data.get("visual") is True
         response = StreamingHttpResponse(
-            self._events(request.user, conversation, user_message),
+            self._events(request.user, conversation, user_message, visual),
             content_type="text/event-stream",
         )
         # بدونِ این‌ها پراکسی یا مرورگر جریان را بافر می‌کند و همه‌چیز یکجا
@@ -365,7 +368,7 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
         response["X-Accel-Buffering"] = "no"
         return response
 
-    def _events(self, user, conversation, user_message):
+    def _events(self, user, conversation, user_message, visual=False):
         yield _sse("start", {
             "userMessage": MessageSerializer(user_message).data,
             "title": conversation.title,
@@ -382,7 +385,7 @@ class MessageStreamView(OwnerScopedMixin, generics.GenericAPIView):
 
         def produce():
             try:
-                for item in answer_stream(user, conversation):
+                for item in answer_stream(user, conversation, visual=visual):
                     events.put(("event", item))
             except (EngineNotConfigured, EngineError) as exc:
                 events.put(("error", str(exc)))

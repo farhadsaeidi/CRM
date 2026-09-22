@@ -126,7 +126,7 @@ class WidgetStreamTests(APITestCase):
         calls = iter(streams)
         with patch("chat.engine._stream_model",
                    side_effect=lambda messages, model=None, tools=None: next(calls)(messages)):
-            return list(answer_stream(self.owner, self.conversation))
+            return list(answer_stream(self.owner, self.conversation, visual=True))
 
     def test_widget_arrives_before_the_answer_text(self):
         """قرارداد: ویجت همان لحظهٔ اجرای ابزار می‌رود، نه همراهِ متن در `done`.
@@ -172,7 +172,7 @@ class WidgetPersistenceTests(APITestCase):
         self.client.force_authenticate(self.owner)
         self.conversation = Conversation.objects.create(owner=self.owner)
 
-    def fake_engine(self, _user, _conversation):
+    def fake_engine(self, _user, _conversation, visual=False):
         yield ("tool", "debtors")
         yield ("widget", self.WIDGET)
         yield ("delta", "یک نفر.")

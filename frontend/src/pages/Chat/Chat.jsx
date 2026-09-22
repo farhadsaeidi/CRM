@@ -11,6 +11,9 @@ import {notify} from "../../lib/notify.jsx";
 import {CHAT_PATH} from "../../lib/paths.js";
 import {useGoBack} from "../../lib/useGoBack.js";
 
+// کلیدِ یادآوریِ «نمایش هوشمند» روی همین دستگاه
+const VISUAL_KEY = "crm:chat-visual";
+
 /**
  * صفحهٔ گفتگو. سایدبارش فهرستِ گفتگوهاست، نه ناوبریِ برنامه — ناوبری فقط در
  * صفحهٔ خانه است و دکمهٔ بازگشتِ همین سایدبار به صفحهٔ قبل برمی‌گردد.
@@ -70,6 +73,26 @@ const Chat = () => {
         return () => {
             ignore = true;
         };
+    }, []);
+
+    // «نمایش هوشمند» — خاموش یعنی جوابِ متنی، روشن یعنی کارت و جدول و نمودار (سه
+    // حالتش کنارِ `answer_stream` در سرور است). ترجیحِ شخصیِ همین دستگاه است نه
+    // دادهٔ گفتگو، پس در localStorage می‌ماند؛ در حالتِ خصوصیِ مرورگر که
+    // دسترسی به آن خطا می‌دهد، بی‌صدا به «خاموش» برمی‌گردد.
+    const [visual, setVisual] = useState(() => {
+        try {
+            return localStorage.getItem(VISUAL_KEY) === "1";
+        } catch {
+            return false;
+        }
+    });
+    const changeVisual = useCallback((next) => {
+        setVisual(next);
+        try {
+            localStorage.setItem(VISUAL_KEY, next ? "1" : "0");
+        } catch {
+            // فقط یادآوری از دست می‌رود؛ خودِ انتخاب برای همین نشست کار می‌کند
+        }
     }, []);
 
     // سنجاق‌های داشبورد — اینجا فقط برای اینکه دکمهٔ زیرِ هر جواب بداند سنجاق شده یا نه.
@@ -319,7 +342,7 @@ const Chat = () => {
                     setStreamingWidgets([]);
                     setEngineError(text);
                 },
-            }, controller.signal, model);
+            }, controller.signal, model, visual);
         } catch (err) {
             setStreamingText(null);
             setRunningTool(null);
@@ -335,7 +358,7 @@ const Chat = () => {
         } finally {
             abortRef.current = null;
         }
-    }, [activeId, model]);
+    }, [activeId, model, visual]);
 
     // ⚠️ با قطعِ اتصال، ژنراتورِ سرور هم بسته می‌شود و پاسخِ نیمه‌کاره **ذخیره
     // نمی‌شود** — چون ذخیره در همان ژنراتور اتفاق می‌افتد نه در تردِ تولید.
@@ -373,7 +396,8 @@ const Chat = () => {
                           onStop={stopStreaming}
                           models={models} model={model} onModelChange={changeModel}
                           onRewind={rewindTo} onFork={forkFrom}
-                          pins={pins} onPin={pinAnswer} onUnpin={unpinAnswer}/>
+                          pins={pins} onPin={pinAnswer} onUnpin={unpinAnswer}
+                          visual={visual} onVisualChange={changeVisual}/>
             </div>
         </section>
     );

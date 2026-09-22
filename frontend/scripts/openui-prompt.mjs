@@ -18,16 +18,19 @@ const OUT = fileURLToPath(new URL("../../chat/openui/prompt.txt", import.meta.ur
 
 const PREAMBLE = `## Generative UI (openui-lang)
 
-Besides plain Persian text you can answer with a live UI. You write it in openui-lang, the small
-language described below, and the user's browser renders it with the app's own components.
+The user switched on «نمایش هوشمند» (smart display), so you answer with a live UI. You write it in
+openui-lang, the small language described below, and the user's browser renders it with the app's
+own components.
 
-- For a question about the ledger's data (debts, customers, transactions, trends), answer with a UI.
+- For a question about the ledger's data (debts, customers, transactions, trends), answer with a
+  comprehensive UI — a small dashboard built for this one question.
 - For conversation or questions about using the app, answer in plain Persian text with no code.
 
 The most important rule: you never carry the data. Every number, name and date the user sees comes
 from Query() when the UI renders. You only write the wiring.`;
 
 const RULES = [
+    "Be comprehensive, not minimal: combine headline numbers (KpiGrid), a chart that shows the shape of the data and a Table with the details. Add the closely related view the owner would want next — for debtors the debt aging, for one customer their transactions, for a trend the period totals. Add a period Select when the numbers depend on the period. At most three Cards.",
     "All visible text (titles, labels, options, notes, emptyText) is Persian.",
     'Query defaults are exactly the empty shapes listed under "Default values for Query results". Never copy real rows, names or numbers into them.',
     "Never use mock, example or invented data. If no listed tool provides what the user asks for, say so in Persian text and output no code.",
@@ -39,20 +42,23 @@ const RULES = [
     "Output at most one ```openui-lang block per answer, after the introductory text.",
     'Dates from tools are strings like 1405/02/20: show them with format "date" and never convert them.',
     'Formats: "money" for Toman amounts, "percent" for collection_rate and ratio, "days" for day counts, "count" for how many, "status" for a status field.',
+    "A conditional value is the ternary `cond ? a : b`; there is no if/else keyword.",
 ];
 
 const EXAMPLES = [
     `User: بدهکارانم را نشان بده
 
-فهرستِ بدهکاران و سهمِ هر کدام از طلبِ شما:
+بدهکاران، سهمِ هر کدام از طلبِ شما، و کهنگیِ بدهی‌ها:
 
 \`\`\`openui-lang
-root = Stack([card])
+root = Stack([card, agingCard])
 debt = Query("debtors", {limit: 10}, {rows: []})
+aging = Query("debt_aging", {}, {rows: []})
 card = Card("بدهکاران", [kpis, chart, tbl])
 kpis = KpiGrid([Kpi("تعداد بدهکاران", debt.count, "count"), Kpi("مجموع طلب", debt.total, "money", "debt")])
 chart = BarChart(debt.rows.name, [Series("بدهی", debt.rows.amount, "debt")], "money")
 tbl = Table([CustomerCol("مشتری", debt.rows.name, debt.rows.customer_id), Col("بدهی", debt.rows.amount, "money", "debt"), Col("آخرین تراکنش", debt.rows.days, "days")], "هیچ مشتری‌ای بدهکار نیست")
+agingCard = Card("سررسید بدهی‌ها", [BarChart(aging.rows.label, [Series("بدهی", aging.rows.amount, "debt")], "money")], "بر پایهٔ روزهای گذشته از آخرین تراکنش")
 \`\`\``,
     `User: وضع کلی دفترم چطور است؟
 

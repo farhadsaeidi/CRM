@@ -238,9 +238,9 @@ class ModelPickerTests(APITestCase):
     def test_an_allowed_model_is_stored_on_the_conversation(self):
         with patch("chat.views.answer", return_value=("باشد", [])):
             self.client.post(f"/api/chat/conversations/{self.conversation.id}/messages/",
-                             {"body": "سلام", "model": "z-ai/glm-5.2:free"}, format="json")
+                             {"body": "سلام", "model": "qwen/qwen3.7-flash"}, format="json")
         self.conversation.refresh_from_db()
-        self.assertEqual(self.conversation.model, "z-ai/glm-5.2:free")
+        self.assertEqual(self.conversation.model, "qwen/qwen3.7-flash")
 
     def test_a_model_outside_the_catalog_falls_back_to_the_default(self):
         """رد کردنِ کلِ پیام تنبیهِ کاربر است؛ برگشت به پیش‌فرض اصلاحِ خطاست."""
@@ -257,14 +257,14 @@ class ModelPickerTests(APITestCase):
 
         بدونِ این تست، کشو می‌توانست چیزی نشان دهد و مدلِ دیگری جواب بدهد.
         """
-        self.conversation.model = "z-ai/glm-5.2:free"
+        self.conversation.model = "qwen/qwen3.7-flash"
         self.conversation.save(update_fields=["model"])
         self.conversation.messages.create(role="user", body="سلام")
 
         with patch("chat.engine._call_model", return_value={"role": "assistant",
                                                             "content": "سلام!"}) as mock:
             engine_answer(self.owner, self.conversation)
-        self.assertEqual(mock.call_args[0][1], "z-ai/glm-5.2:free")
+        self.assertEqual(mock.call_args[0][1], "qwen/qwen3.7-flash")
 
     def test_patching_the_conversation_cannot_bypass_the_catalog(self):
         """⚠️ همان فهرستِ سفید، روی مسیرِ دومِ نوشتن.

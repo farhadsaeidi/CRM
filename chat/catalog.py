@@ -20,17 +20,28 @@ from django.conf import settings
 # ⚠️ مدلِ **استدلالی** (reasoning) حینِ فکر کردن هیچ متنی بیرون نمی‌دهد و پارسرِ
 # استریمِ ما هم فقط `delta.content` را می‌خواند، پس صفحه چند ثانیه ساکت می‌ماند.
 # این نقص نیست ولی کاربر باید بداند، پس در همان کشو برچسب می‌خورد.
+#
+# ⚠️ **ترتیب و پرچمِ `ui` از سنجش آمده‌اند، نه از حدس** — `manage.py eval_models`،
+# ۲۰۲۶-۰۹-۲۲: یازده سوالِ واقعی، هر کدام دو بار، با پرامپتِ «نمایش هوشمند». ترتیب
+# همان ترتیبِ سرعت است (زمانِ میانه تا اولین حرفِ جواب). عددها در CLAUDE.md؛ با هر
+# تغییرِ پرامپت یا مدل دوباره اجرا کنید — هر دورِ کامل حدودِ ۶ سنت است.
 MODELS = [
-    # پیشنهادِ پیش‌فرض: بدونِ لایهٔ استدلال، پس جواب بی‌مکث شروع می‌شود
-    {"id": "openai/gpt-4o-mini", "label": "GPT-4o mini", "reasoning": False},
-    {"id": "openai/gpt-4.1-nano", "label": "GPT-4.1 nano", "reasoning": False},
-    {"id": "qwen/qwen3.7-flash", "label": "Qwen3.7 Flash", "reasoning": True},
-    {"id": "z-ai/glm-5.3-flash", "label": "GLM-5.3 Flash", "reasoning": True},
-    {"id": "deepseek/deepseek-v4-flash", "label": "DeepSeek V4 Flash", "reasoning": True},
-    {"id": "xiaomi/mimo-v2.5", "label": "MiMo v2.5", "reasoning": True},
-    {"id": "z-ai/glm-5.2:free", "label": "GLM-5.2", "reasoning": True, "free": True},
-    {"id": "minimax/minimax-m3:free", "label": "MiniMax M3", "reasoning": True, "free": True},
-    {"id": "google/gemma-4-31b-it:free", "label": "Gemma 4 31B", "reasoning": True, "free": True},
+    # ۲۲/۲۲ در هر سه دور، سریع‌ترین (اولین حرف ۱٫۷ث، کلِ جواب ۳ث)، بی‌لایهٔ استدلال؛
+    # رابط‌هایش اما ساده‌ترند (به‌طورِ میانگین ۱٫۲ کاشیِ شاخص در برابرِ ۳ تا ۴ِ بقیه)
+    {"id": "openai/gpt-4o-mini", "label": "GPT-4o mini", "reasoning": False, "ui": True},
+    # چهار تای استدلالی: درست و رابطِ پُرتر، ولی سه تا شش برابر کندتر
+    {"id": "deepseek/deepseek-v4-flash", "label": "DeepSeek V4 Flash", "reasoning": True, "ui": True},
+    {"id": "xiaomi/mimo-v2.5", "label": "MiMo v2.5", "reasoning": True, "ui": True},
+    {"id": "qwen/qwen3.7-flash", "label": "Qwen3.7 Flash", "reasoning": True, "ui": True},
+    # پُرترین رابط‌ها ولی کندترین (میانه ۱۸ث، بدترین ۸۶ث) و گران‌ترینِ فهرست
+    {"id": "z-ai/glm-5.3-flash", "label": "GLM-5.3 Flash", "reasoning": True, "ui": True},
+    # ⚠️ رابط نمی‌سازد: در ۱۵ از ۱۶ سوالِ داده‌ای یا نوشت «نمایش داده می‌شود» و پیش از
+    # کد ایستاد، یا برای سوالِ کلی نامِ مشتری خواست. با «نمایش هوشمند» همان کارت و
+    # جدولِ ثابت را می‌گیرد، نه رابطِ خراب.
+    {"id": "openai/gpt-4.1-nano", "label": "GPT-4.1 nano", "reasoning": False, "ui": False},
+    # حذف‌شده‌ها — هر سه در همهٔ ۲۲ اجرا خطا دادند: `z-ai/glm-5.2:free` دیگر tool
+    # calling ندارد، `minimax/minimax-m3:free` دیگر رایگان نیست، و
+    # `google/gemma-4-31b-it:free` همیشه ۴۲۹ (سهمیهٔ رایگانِ مشترک) می‌داد.
 ]
 
 _BY_ID = {model["id"]: model for model in MODELS}
@@ -59,13 +70,16 @@ def resolve(requested):
 
 
 def supports_ui(model_id):
-    """آیا جوابِ این مدل می‌تواند رابط (کارت، جدول، نمودار) بسازد؟
+    """آیا جوابِ این مدل رابط (کارت، جدول، نمودار) می‌سازد؟
 
-    فقط ردیف‌های همین فهرست — مدل‌های ابریِ بررسی‌شده. مدلِ محلیِ `.env` بیرون
-    می‌ماند: زبانِ رابط برای یک مدلِ ۷ میلیاردی روی CPU هم کُند است هم ناپایدار، و
-    همان مسیرِ متن + ویجتِ ثابت برایش امن‌تر است.
+    ⚠️ **فقط ردیف‌هایی که در سنجش رابطِ درست ساختند** (`"ui": True`) — نه هر مدلِ
+    ابری. `manage.py eval_models` نشان داد مدلی که tool calling دارد لزوماً از پسِ
+    این زبان برنمی‌آید: یکی جملهٔ معرفی را می‌نوشت و پیش از کد می‌ایستاد. مدلی که
+    رابطِ خراب می‌سازد، روی همان مسیرِ متن + ویجتِ ثابت امن‌تر است.
+
+    مدلِ محلیِ `.env` هم بیرون می‌ماند: برای ۷B روی CPU این زبان هم کُند است هم ناپایدار.
     """
-    return model_id in _BY_ID
+    return bool(_BY_ID.get(model_id, {}).get("ui"))
 
 
 def choices():
