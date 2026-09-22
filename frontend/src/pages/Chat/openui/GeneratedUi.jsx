@@ -53,8 +53,11 @@ const Warning = ({children}) => (
  *
  * اگر بعد از پایانِ استریم کد هیچ ریشه‌ای نساخت، به‌جای کادرِ خالی یک خطِ
  * توضیح می‌نشیند و متنِ جواب سرِ جایش می‌ماند.
+ *
+ * `children` زیرِ رابط می‌نشیند و **فقط اگر رابط ساخته شد** — جای دکمهٔ سنجاق:
+ * سنجاق کردنِ برنامه‌ای که ساخته نمی‌شود یعنی یک کارتِ شکسته روی داشبورد.
  */
-const GeneratedUi = ({code, streaming = false}) => {
+const GeneratedUi = ({code, streaming = false, children}) => {
     const [dataFailed, setDataFailed] = useState(false);
     const built = useMemo(() => streaming || Boolean(parser.parse(code).root), [code, streaming]);
 
@@ -66,6 +69,7 @@ const GeneratedUi = ({code, streaming = false}) => {
                       toolProvider={TOOL_PROVIDER} queryLoader={<QueryLoader/>}
                       onError={(errors) => setDataFailed(errors.some((error) => QUERY_ERRORS.has(error.code)))}/>
             {dataFailed && <Warning>بخشی از داده از دفتر خوانده نشد؛ خانه‌های خالی یعنی همین.</Warning>}
+            {children}
         </div>
     );
 };

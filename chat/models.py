@@ -86,3 +86,39 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.role}: {self.body[:40]}"
+
+
+class PinnedView(models.Model):
+    """رابطی از جوابِ دستیار که روی داشبورد سنجاق شده.
+
+    ⚠️ **برنامه کپی می‌شود، نه ارجاع.** گفتگو را می‌شود حذف کرد، به عقب برگرداند یا
+    انشعاب داد، و داشبورد نباید با هیچ‌کدام خالی شود. پیوند با پیام فقط برای این
+    است که صفحهٔ گفتگو بداند کدام جواب سنجاق شده؛ با حذفِ پیام `NULL` می‌شود و
+    سنجاق سرِ جایش می‌ماند.
+
+    ⚠️ **داده ذخیره نمی‌شود، فقط سیم‌کشی.** رابط روی داشبورد با هر بار باز شدن
+    Queryهایش را دوباره اجرا می‌کند: عددِ امروز، نه عددِ روزی که سنجاق شد.
+    """
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name="pinned_views", verbose_name="مالک",
+    )
+    message = models.ForeignKey(
+        Message, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="pins", verbose_name="پیام",
+    )
+    # سوالی که این جواب را ساخت — برچسبِ سنجاق روی داشبورد
+    title = models.CharField(max_length=200, verbose_name="عنوان")
+    code = models.TextField(verbose_name="برنامهٔ رابط")
+    created = models.DateTimeField(default=timezone.now, verbose_name="زمان")
+
+    class Meta:
+        verbose_name = "Pinned view"
+        verbose_name_plural = "Pinned views"
+        ordering = ["-created", "-id"]
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "message"], name="chat_pin_once_per_message"),
+        ]
+
+    def __str__(self):
+        return self.title

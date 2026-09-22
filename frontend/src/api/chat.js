@@ -19,4 +19,8 @@ export const chatApi = {
     // دادهٔ یک `Query` در رابطی که دستیار ساخته — نام و آرگومان را مدل نوشته،
     // پس فهرستِ سفید و اسکوپِ کاربر سمتِ سرور است (`UiQueryView`)
     query: (tool, args) => api.post("/chat/query/", {tool, args}),
+    // سنجاق‌های داشبورد. فقط شناسهٔ پیام می‌رود؛ کدِ رابط را سرور از خودِ پیام برمی‌دارد
+    pins: () => api.get("/chat/pins/"),
+    pin: (messageId) => api.post("/chat/pins/", {message_id: messageId}),
+    unpin: (id) => api.delete(`/chat/pins/${id}/`),
 };

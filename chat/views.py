@@ -15,10 +15,11 @@ from core.permissions import IsOwner
 
 from .catalog import choices as model_choices, default_model, resolve as resolve_model
 from .engine import (EngineError, EngineNotConfigured, answer, answer_stream,
-                     is_configured, is_fallback)
-from .models import Conversation, Message
+                     is_configured, is_fallback, split_ui)
+from .models import Conversation, Message, PinnedView
 from .suggestions import build_suggestions
-from .serializers import ConversationDetailSerializer, ConversationSerializer, MessageSerializer
+from .serializers import (ConversationDetailSerializer, ConversationSerializer, MessageSerializer,
+                          PinSerializer)
 from .ui_tools import is_ui_tool, run_ui_tool
 
 logger = logging.getLogger(__name__)
@@ -96,6 +97,64 @@ class UiQueryView(APIView):
         if "error" in result:
             return Response({"detail": result["error"]}, status=status.HTTP_400_BAD_REQUEST)
         return Response(result)
+
+
+# سقفِ سنجاق‌های هر مالک: هر سنجاق با هر بار باز شدنِ داشبورد چند Query می‌زند، و
+# داشبوردی با پنجاه رابط دیگر داشبورد نیست، فهرست است
+MAX_PINS = 12
+
+
+# noinspection PyMethodMayBeStatic
+class PinListCreateView(APIView):
+    """سنجاق‌های مالک (`GET`) و سنجاق کردنِ رابطِ یک جواب (`POST {message_id}`).
+
+    ⚠️ **کد از خودِ پیام برداشته می‌شود، نه از بدنهٔ درخواست.** کلاینت فقط شناسهٔ
+    پیام را می‌فرستد، پس روی داشبورد دقیقاً همان رابطی می‌نشیند که دستیار ساخت —
+    نه هر برنامه‌ای که کسی بخواهد ذخیره کند. پیام هم فقط در گفتگوهای همین مالک
+    جسته می‌شود؛ بقیه ۴۰۴.
+
+    سنجاقِ دوباره‌ی همان جواب خطا نیست: همان سنجاقِ قبلی برمی‌گردد. «دوبار کلیک
+    کردن» رایج است و نباید دو کارتِ یکسان روی داشبورد بسازد.
+    """
+    permission_classes = [IsOwner]
+
+    def get(self, request):
+        return Response(PinSerializer(PinnedView.objects.filter(owner=request.user), many=True).data)
+
+    def post(self, request):
+        try:
+            message_id = int(request.data.get("message_id"))
+        except (TypeError, ValueError):
+            return Response({"detail": "شناسهٔ پیام معتبر نیست."}, status=status.HTTP_400_BAD_REQUEST)
+        message = get_object_or_404(Message, pk=message_id, role=Message.Role.ASSISTANT,
+                                    conversation__owner=request.user)
+        _prose, code = split_ui(message.body)
+        if not code:
+            return Response({"detail": "این جواب رابطی برای سنجاق کردن ندارد."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        pins = PinnedView.objects.filter(owner=request.user)
+        if not pins.filter(message=message).exists() and pins.count() >= MAX_PINS:
+            return Response({"detail": "به سقفِ سنجاق‌ها رسیده‌اید؛ اول یکی را از داشبورد بردارید."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # برچسبِ سنجاق همان سوالی است که این جواب را ساخت
+        question = (message.conversation.messages
+                    .filter(role=Message.Role.USER, id__lt=message.id).order_by("-id").first())
+        title = (question.body.strip() if question else "")[:200] or "رابطِ سنجاق‌شده"
+        pin, created = PinnedView.objects.get_or_create(
+            owner=request.user, message=message, defaults={"title": title, "code": code},
+        )
+        return Response(PinSerializer(pin).data,
+                        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
+class PinDetailView(generics.DestroyAPIView):
+    """برداشتنِ یک سنجاق. سنجاقِ مالکِ دیگر ۴۰۴ می‌گیرد، مثلِ بقیهٔ دامنه."""
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return PinnedView.objects.filter(owner=self.request.user)
 
 
 def _apply_model(conversation, requested, fields):

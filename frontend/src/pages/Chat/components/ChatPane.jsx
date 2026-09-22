@@ -5,6 +5,7 @@ import {HiOutlineChartBar, HiOutlineCash, HiOutlineSearch, HiOutlineDocumentRepo
 import ScrollContainer from "../../../components/common/ScrollContainer.jsx";
 import ModelPicker from "./ModelPicker.jsx";
 import MessageActions from "./MessageActions.jsx";
+import PinButton from "./PinButton.jsx";
 import ChatWidgets from "./widgets/ChatWidgets.jsx";
 import {splitAnswer} from "../openui/splitAnswer.js";
 
@@ -94,7 +95,10 @@ const PROSE = `m-0 pt-0.5 text-[13.5px] leading-7 text-var-color-06 dark:text-va
 
 // `waiting`: ویجت‌ها رسیده‌اند ولی متنِ جواب هنوز نه — به‌جای پاراگرافِ خالی، همان
 // خطِ «در حال …» داخلِ همین حباب می‌نشیند، نه در حبابِ دوم با آیکونِ دوم.
-const AssistantMessage = ({message, streaming = false, waiting = false, runningTool = null}) => {
+// `pin`: سنجاقِ همین جواب اگر هست. دکمه فقط زیرِ جوابِ ذخیره‌شده می‌نشیند — جوابِ
+// در حالِ استریم هنوز شناسه‌ای ندارد که سرور کدش را از رویش بردارد.
+const AssistantMessage = ({message, streaming = false, waiting = false, runningTool = null,
+                           pin = null, onPin, onUnpin}) => {
     // جوابِ مدلِ ابری ممکن است یک بلوکِ رابط داشته باشد؛ متنِ قبل و بعدش سرِ جایشان
     // می‌مانند و خودِ بلوک به کارت و جدول تبدیل می‌شود
     const {before, code, after} = splitAnswer(message.body);
@@ -124,7 +128,12 @@ const AssistantMessage = ({message, streaming = false, waiting = false, runningT
                         {before && <p className={PROSE}>{before}</p>}
                         <Suspense fallback={<div className="mt-2 h-24 rounded-2xl animate-pulse
                                                             bg-var-color-01 dark:bg-var-color-36"/>}>
-                            <GeneratedUi code={code} streaming={streaming}/>
+                            <GeneratedUi code={code} streaming={streaming}>
+                                {message.id && onPin && (
+                                    <PinButton pinned={Boolean(pin)} onPin={() => onPin(message.id)}
+                                               onUnpin={() => onUnpin(pin.id)}/>
+                                )}
+                            </GeneratedUi>
                         </Suspense>
                         {after && <p className={`${PROSE} mt-2`}>{after}</p>}
                     </>
@@ -145,7 +154,8 @@ const AssistantMessage = ({message, streaming = false, waiting = false, runningT
 const ChatPane = ({conversation, messages = [], streamingText = null, runningTool = null,
                   streamingWidgets = [], engineError = null, onSend, onStop,
                   models = [], model = "", onModelChange,
-                  onRewind, onFork, historyLoading = false}) => {
+                  onRewind, onFork, historyLoading = false,
+                  pins = [], onPin, onUnpin}) => {
     const [draft, setDraft] = useState("");
     const [pending, setPending] = useState(false);
     const scrollRef = useRef(null);
@@ -334,7 +344,8 @@ const ChatPane = ({conversation, messages = [], streamingText = null, runningToo
                                 )}
                             </div>
                         ) : (
-                            <AssistantMessage key={m.id} message={m}/>
+                            <AssistantMessage key={m.id} message={m} onPin={onPin} onUnpin={onUnpin}
+                                              pin={pins.find((p) => p.message === m.id) ?? null}/>
                         ))}
 
                         {/* پاسخی که همین حالا نوشته می‌شود. همان قالبِ بالا را

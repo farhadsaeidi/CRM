@@ -72,6 +72,43 @@ const Chat = () => {
         };
     }, []);
 
+    // سنجاق‌های داشبورد — اینجا فقط برای اینکه دکمهٔ زیرِ هر جواب بداند سنجاق شده یا نه.
+    // بی‌صدا مثلِ فهرستِ مدل‌ها: بدونش دکمه‌ها «سنجاق‌نشده» می‌مانند و بقیهٔ چت سالم است.
+    const [pins, setPins] = useState([]);
+    useEffect(() => {
+        let ignore = false;
+        chatApi.pins()
+            .then((rows) => {
+                if (!ignore) setPins(rows ?? []);
+            })
+            .catch(() => {});
+        return () => {
+            ignore = true;
+        };
+    }, []);
+
+    const pinAnswer = useCallback(async (messageId) => {
+        try {
+            const pin = await chatApi.pin(messageId);
+            setPins((prev) => [pin, ...prev.filter((p) => p.id !== pin.id)]);
+            notify("به داشبورد سنجاق شد.", "success");
+        } catch (err) {
+            notify(errorMessage(err, "سنجاق کردن ناموفق بود."), "error");
+        }
+    }, []);
+
+    // خوش‌بینانه: دکمه همان لحظه برمی‌گردد. در شکست فهرست از سرور خوانده می‌شود،
+    // نه اینکه حدس بزنیم چه چیزی را برگردانیم.
+    const unpinAnswer = useCallback(async (pinId) => {
+        setPins((prev) => prev.filter((p) => p.id !== pinId));
+        try {
+            await chatApi.unpin(pinId);
+        } catch (err) {
+            notify(errorMessage(err, "برداشتنِ سنجاق ناموفق بود."), "error");
+            chatApi.pins().then((rows) => setPins(rows ?? [])).catch(() => {});
+        }
+    }, []);
+
     // مدلِ گفتگوی باز. سرور مرجع است؛ تا پاسخِ گفتگو نیامده پیش‌فرض نشان
     // داده می‌شود.
     const [pendingModel, setPendingModel] = useState(null);
@@ -335,7 +372,8 @@ const Chat = () => {
                           engineError={engineError} onSend={sendMessage}
                           onStop={stopStreaming}
                           models={models} model={model} onModelChange={changeModel}
-                          onRewind={rewindTo} onFork={forkFrom}/>
+                          onRewind={rewindTo} onFork={forkFrom}
+                          pins={pins} onPin={pinAnswer} onUnpin={unpinAnswer}/>
             </div>
         </section>
     );

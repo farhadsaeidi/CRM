@@ -4,12 +4,12 @@
 > هدف: به‌جای گشتن در فایل‌ها، مستقیم رفتن سراغ نقطهٔ درست.
 > برای «چرا»ها به `.claude/architecture.md` و برای قراردادها به `CLAUDE.md` مراجعه کنید.
 
-آخرین تولید: 2026-09-22 03:25 · کامیت `1227a43`
+آخرین تولید: 2026-09-22 03:51 · کامیت `ccab14b`
 
 | بخش | فایل | خط |
 |---|---|---|
-| بک‌اند | 120 | 16859 |
-| فرانت‌اند | 124 | 12258 |
+| بک‌اند | 121 | 17074 |
+| فرانت‌اند | 126 | 12442 |
 
 اپ‌های جنگو: account api chat home
 
@@ -38,14 +38,16 @@
 | `/api/transactions/` | AllTransactionsView | home/views.py:220 | _(پیش‌فرض DRF)_ |
 | `/api/transactions/search/` | AllTransactionsSearchView | home/views.py:256 | _(پیش‌فرض DRF)_ |
 | `/api/transactions/stats/` | AllTransactionsStatsView | home/views.py:249 | _(پیش‌فرض DRF)_ |
-| `/api/chat/models/` | ModelListView | chat/views.py:64 | [IsOwner] |
-| `/api/chat/query/` | UiQueryView | chat/views.py:78 | [IsOwner] |
-| `/api/chat/conversations/` | ConversationListCreateView | chat/views.py:40 | _(پیش‌فرض DRF)_ |
-| `/api/chat/conversations/<int:pk>/` | ConversationDetailView | chat/views.py:52 | _(پیش‌فرض DRF)_ |
-| `/api/chat/conversations/<int:pk>/messages/` | MessageCreateView | chat/views.py:115 | _(پیش‌فرض DRF)_ |
-| `/api/chat/conversations/<int:pk>/stream/` | MessageStreamView | chat/views.py:271 | _(پیش‌فرض DRF)_ |
-| `/api/chat/conversations/<int:pk>/rewind/` | MessageRewindView | chat/views.py:191 | _(پیش‌فرض DRF)_ |
-| `/api/chat/conversations/<int:pk>/fork/` | MessageForkView | chat/views.py:216 | _(پیش‌فرض DRF)_ |
+| `/api/chat/models/` | ModelListView | chat/views.py:65 | [IsOwner] |
+| `/api/chat/query/` | UiQueryView | chat/views.py:79 | [IsOwner] |
+| `/api/chat/pins/` | PinListCreateView | chat/views.py:108 | [IsOwner] |
+| `/api/chat/pins/<int:pk>/` | PinDetailView | chat/views.py:152 | [IsOwner] |
+| `/api/chat/conversations/` | ConversationListCreateView | chat/views.py:41 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/` | ConversationDetailView | chat/views.py:53 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/messages/` | MessageCreateView | chat/views.py:174 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/stream/` | MessageStreamView | chat/views.py:330 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/rewind/` | MessageRewindView | chat/views.py:250 | _(پیش‌فرض DRF)_ |
+| `/api/chat/conversations/<int:pk>/fork/` | MessageForkView | chat/views.py:275 | _(پیش‌فرض DRF)_ |
 | `/api/health/` | HealthView | api/views.py:7 | [AllowAny] |
 
 ## مدل‌ها
@@ -66,6 +68,7 @@
 - `account.SMSLog` — 6 فیلد — ./account/models.py:103
 - `chat.Conversation` — 5 فیلد — ./chat/models.py:6
 - `chat.Message` — 7 فیلد — ./chat/models.py:46
+- `chat.PinnedView` — 5 فیلد — ./chat/models.py:91
 - `home.AccountCode` — 0 فیلد — ./home/models.py:7
 - `home.Customer` — 5 فیلد — ./home/models.py:17
 - `home.CustomerOwner` — 3 فیلد — ./home/models.py:55
@@ -380,10 +383,11 @@
     - `ApiConfig` :4
 - **./api/views.py** (15 خط، 2 نماد)
     - `HealthView` :7
-- **./chat/admin.py** (26 خط، 3 نماد)
+- **./chat/admin.py** (33 خط، 4 نماد)
     - `MessageInline` :6
     - `ConversationAdmin` :14
-    - `MessageAdmin` :22
+    - `PinnedViewAdmin` :22
+    - `MessageAdmin` :29
 - **./chat/apps.py** (5 خط، 1 نماد)
     - `ChatConfig` :4
 - **./chat/catalog.py** (82 خط، 4 نماد)
@@ -406,13 +410,15 @@
     - `_rescue_tool_calls` :396
     - `_looks_machine` :452
     - `_rescue_bare_call` :470
-- **./chat/models.py** (88 خط، 8 نماد)
+- **./chat/models.py** (124 خط، 11 نماد)
     - `Conversation` :6
     - `Message` :46
-- **./chat/serializers.py** (42 خط، 7 نماد)
-    - `MessageSerializer` :7
-    - `ConversationSerializer` :14
-    - `ConversationDetailSerializer` :38
+    - `PinnedView` :91
+- **./chat/serializers.py** (51 خط، 9 نماد)
+    - `PinSerializer` :7
+    - `MessageSerializer` :16
+    - `ConversationSerializer` :23
+    - `ConversationDetailSerializer` :47
 - **./chat/suggestions.py** (129 خط، 2 نماد)
     - `build_suggestions` :86
 - **./chat/test_engine.py** (426 خط، 51 نماد)
@@ -424,6 +430,8 @@
     - `MachineOutputTests` :345
     - `ProxyTests` :386
     - `NotConfiguredTests` :420
+- **./chat/test_pins.py** (102 خط، 15 نماد)
+    - `PinTests` :20
 - **./chat/test_stream.py** (243 خط، 27 نماد)
     - `stream_of` :31
     - `tool_call` :43
@@ -479,19 +487,21 @@
     - `_transaction` :166
     - `customer_transactions` :172
     - `recent_transactions` :182
-- **./chat/views.py** (379 خط، 26 نماد)
-    - `OwnerScopedMixin` :27
-    - `ConversationListCreateView` :40
-    - `ConversationDetailView` :52
-    - `ModelListView` :64
-    - `UiQueryView` :78
-    - `_apply_model` :101
-    - `MessageCreateView` :115
-    - `MessageActionMixin` :173
-    - `MessageRewindView` :191
-    - `MessageForkView` :216
-    - `_sse` :261
-    - `MessageStreamView` :271
+- **./chat/views.py** (438 خط، 31 نماد)
+    - `OwnerScopedMixin` :28
+    - `ConversationListCreateView` :41
+    - `ConversationDetailView` :53
+    - `ModelListView` :65
+    - `UiQueryView` :79
+    - `PinListCreateView` :108
+    - `PinDetailView` :152
+    - `_apply_model` :160
+    - `MessageCreateView` :174
+    - `MessageActionMixin` :232
+    - `MessageRewindView` :250
+    - `MessageForkView` :275
+    - `_sse` :320
+    - `MessageStreamView` :330
 - **./chat/widgets.py** (308 خط، 15 نماد)
     - `_status` :36
     - `_book_balance` :48
@@ -617,7 +627,7 @@
 ## فرانت‌اند
 
 ### صفحه‌ها
-- **frontend/src/pages/Chat/Chat.jsx** (344 خط)
+- **frontend/src/pages/Chat/Chat.jsx** (382 خط)
     - AgentIcon
     - Breadcrumb
     - ChatPane
@@ -684,7 +694,7 @@
 ### لایهٔ API
 - **auth.js**: me login register otpPhone otpConfirm forgetPassword updateProfile changePassword logout
 
-- **chat.js**: list create detail remove rename rewind fork send models query
+- **chat.js**: list create detail remove rename rewind fork send models query pins pin unpin
 
 - **chatStream.js**: 
 

@@ -1,7 +1,16 @@
 from rest_framework import serializers
 
 from .catalog import resolve as resolve_model
-from .models import Conversation, Message
+from .models import Conversation, Message, PinnedView
+
+
+class PinSerializer(serializers.ModelSerializer):
+    # `message` شناسهٔ پیامی است که سنجاق از آن آمده؛ صفحهٔ گفتگو از رویش دکمهٔ
+    # «سنجاق‌شده» را روشن می‌کند
+    class Meta:
+        model = PinnedView
+        fields = ["id", "title", "code", "message", "created"]
+        read_only_fields = fields
 
 
 class MessageSerializer(serializers.ModelSerializer):

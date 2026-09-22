@@ -20,6 +20,7 @@ import {RecentCustomers, RecentTransactions} from "./RecentLists.jsx";
 import DormantCustomers from "./DormantCustomers.jsx";
 import ConcentrationCard from "./ConcentrationCard.jsx";
 import DebtorsCta from "./DebtorsCta.jsx";
+import PinnedViews from "./PinnedViews.jsx";
 
 // گامِ تاخیرِ ورودِ کاشی‌ها. کوچک نگه داشته شده: با دوازده کاشی، گامِ بزرگ یعنی
 // آخرین کاشی یک ثانیه بعد از اولی ظاهر شود که دیگر «انیمیشن» نیست، «کندی» است.
@@ -82,12 +83,22 @@ const Dashboard = () => {
             const gap = viewport.clientHeight - content.offsetHeight;
             if (gap > 0 && gap <= FILL_LIMIT) target.style.minHeight = `${target.offsetHeight + gap}px`;
         };
-        // کادر با پنجره و با کشیدنِ لبهٔ سایدبار عوض می‌شود، محتوا با هر بارگذاری
-        // (وابستگیِ همین افکت). ناظر فقط روی کادر است نه محتوا: `fit` خودش اندازهٔ
-        // محتوا را عوض می‌کند و ناظرِ روی آن، هشدارِ حلقهٔ ResizeObserver می‌داد.
-        const observer = new ResizeObserver(fit);
+        // کادر با پنجره و با کشیدنِ لبهٔ سایدبار عوض می‌شود، و محتوا با هر بارگذاری —
+        // و با سنجاق‌ها که جدا و دیرتر از کاشی‌ها می‌رسند. پس هر دو پاییده می‌شوند.
+        // ⚠️ `fit` در فریمِ بعد اجرا می‌شود نه داخلِ خودِ callback: خودش اندازهٔ محتوا
+        // را عوض می‌کند، و عوض کردنِ اندازهٔ عنصرِ پاییده داخلِ callbackِ همان ناظر
+        // هشدارِ حلقهٔ ResizeObserver می‌داد. دورِ دوم اندازه را همان می‌بیند و می‌ایستد.
+        let frame = 0;
+        const observer = new ResizeObserver(() => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(fit);
+        });
         observer.observe(viewport);
-        return () => observer.disconnect();
+        observer.observe(content);
+        return () => {
+            cancelAnimationFrame(frame);
+            observer.disconnect();
+        };
     }, [state.data]);
 
     const startLoading = () => setState((prev) => ({...prev, loading: true}));
@@ -117,6 +128,9 @@ const Dashboard = () => {
             <ScrollContainer viewportRef={viewportRef} className="flex-1 min-h-0" overflowX="hidden"
                              position="right" trackPadding={18}>
                 <div ref={contentRef} className="pl-2">
+                    {/* رابط‌هایی که کاربر از جواب‌های دستیار سنجاق کرده، بالای همه —
+                        بخشِ شخصیِ داشبورد. کنارِ دعوتِ «دفترتان خالی است» جایی ندارند. */}
+                    {data?.customers_total !== 0 && <PinnedViews/>}
                     {!data ? (
                         <SkeletonGrid failed={failed && !loading}/>
                     ) : data.customers_total === 0 ? (

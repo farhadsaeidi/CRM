@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Conversation, Message
+from .models import Conversation, Message, PinnedView
 
 
 class MessageInline(admin.TabularInline):
@@ -16,6 +16,13 @@ class ConversationAdmin(admin.ModelAdmin):
     list_filter = ["updated"]
     search_fields = ["title", "owner__phone", "owner__fullname"]
     inlines = [MessageInline]
+
+
+@admin.register(PinnedView)
+class PinnedViewAdmin(admin.ModelAdmin):
+    list_display = ["title", "owner", "created"]
+    search_fields = ["title", "owner__phone"]
+    readonly_fields = ["owner", "message", "code", "created"]
 
 
 @admin.register(Message)
